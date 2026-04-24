@@ -48,7 +48,7 @@ export default function AnotacionesDiario({ perfil }) {
 
   const filtered = rows.filter(r => {
     if (!bus) return true;
-    const txt = [r.folio, r.tramo, r.civ, r.descripcion, r.creado_por_nombre].join(' ').toLowerCase();
+    const txt = [r.folio, r.id_tramo, r.civ, r.observaciones, r.usuario_qfield].join(' ').toLowerCase();
     return txt.includes(bus.toLowerCase());
   });
 
@@ -65,7 +65,7 @@ export default function AnotacionesDiario({ perfil }) {
     await supabase.from('registros_reporte_diario').update({
       estado:              nuevoEstado,
       [campos.campoEstado]: nuevoEstado,
-      [campos.campoApr]:    true,
+      [campos.campoApr]:    perfil.id,
       [campos.campoFecha]:  new Date().toISOString(),
       [campos.campoObs]:    obs[row.folio] || '',
     }).eq('folio', row.folio);
@@ -120,17 +120,17 @@ export default function AnotacionesDiario({ perfil }) {
                 <Badge estado={row.estado} />
                 <span style={{ marginLeft: '0.5rem', fontWeight: 600 }}>{row.folio}</span>
                 <span style={{ marginLeft: '0.5rem', color: 'var(--text-muted)' }}>
-                  {fmtDate(row.fecha_creacion)} · {row.creado_por_nombre || ''}
+                  {fmtDate(row.fecha_creacion)} · {row.usuario_qfield || ''}
                 </span>
               </summary>
               <div className="details-body">
                 <div className="record-field-grid">
                   {[
                     ['Folio', row.folio], ['Fecha', fmtDate(row.fecha_creacion)],
-                    ['Tramo', row.tramo], ['CIV', row.civ], ['PK', row.pk],
-                    ['Actividad', row.actividad], ['Descripción', row.descripcion],
-                    ['Inspector', row.creado_por_nombre], ['Estado', row.estado],
-                    ['Clima', row.clima], ['Personal', row.personal_total],
+                    ['Tramo', row.id_tramo], ['CIV', row.civ], ['PK', row.pk_id],
+                    ['Observaciones', row.observaciones],
+                    ['Inspector', row.usuario_qfield], ['Estado', row.estado],
+                    ['Cantidad', row.cantidad], ['Unidad', row.unidad],
                   ].filter(([, v]) => v != null && String(v).trim() !== '' && String(v) !== 'null').map(([label, val]) => (
                     <div key={label}>
                       <div className="record-field-label">{label}</div>
@@ -143,7 +143,7 @@ export default function AnotacionesDiario({ perfil }) {
                   <div className="photo-grid">
                     {fotos[row.folio].map((f, i) => (
                       <div className="photo-thumb" key={i}>
-                        <img src={f.url || f.foto_url} alt={`Foto ${i + 1}`}
+                        <img src={f.foto_url} alt={`Foto ${i + 1}`}
                           onError={e => { e.target.style.display = 'none'; }} />
                       </div>
                     ))}

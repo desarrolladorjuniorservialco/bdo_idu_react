@@ -49,7 +49,7 @@ export default function ComponenteBase({ perfil, titulo, color, componente }) {
 
   const filtered = rows.filter(r => {
     if (!bus) return true;
-    const txt = [r.folio, r.tramo, r.civ, r.descripcion, r.creado_por_nombre].join(' ').toLowerCase();
+    const txt = [r.folio, r.tramo, r.civ, r.observaciones, r.usuario_qfield].join(' ').toLowerCase();
     return txt.includes(bus.toLowerCase());
   });
 
@@ -66,7 +66,7 @@ export default function ComponenteBase({ perfil, titulo, color, componente }) {
     await supabase.from('registros_componentes').update({
       estado:              nuevoEstado,
       [campos.campoEstado]: nuevoEstado,
-      [campos.campoApr]:    true,
+      [campos.campoApr]:    perfil.id,
       [campos.campoFecha]:  new Date().toISOString(),
       [campos.campoObs]:    obs[row.folio] || '',
     }).eq('folio', row.folio);
@@ -131,17 +131,17 @@ export default function ComponenteBase({ perfil, titulo, color, componente }) {
                   <Badge estado={row.estado} />
                   <span style={{ marginLeft: '0.5rem', fontWeight: 600 }}>{row.folio}</span>
                   <span style={{ marginLeft: '0.5rem', color: 'var(--text-muted)' }}>
-                    {fmtDate(row.fecha_creacion)} · {row.creado_por_nombre || ''}
+                    {fmtDate(row.fecha_creacion)} · {row.usuario_qfield || ''}
                   </span>
                 </summary>
                 <div className="details-body">
                   <div className="record-field-grid">
                     {[
                       ['Folio', row.folio], ['Fecha', fmtDate(row.fecha_creacion)],
-                      ['Tramo', row.tramo], ['CIV', row.civ], ['PK', row.pk],
-                      ['Descripción', row.descripcion], ['Inspector', row.creado_por_nombre],
+                      ['Tramo', row.tramo], ['CIV', row.civ],
+                      ['Observaciones', row.observaciones], ['Inspector', row.usuario_qfield],
                       ['Estado', row.estado], ['Componente', row.componente],
-                      ['Capítulo', row.capitulo_num], ['Ítem', row.item_num],
+                      ['Capítulo', row.capitulo_num], ['Ítem de pago', row.item_pago],
                       ['Cantidad', row.cantidad], ['Unidad', row.unidad],
                     ].filter(([, v]) => v != null && String(v).trim() !== '' && String(v) !== 'null')
                      .map(([label, val]) => (
@@ -156,7 +156,7 @@ export default function ComponenteBase({ perfil, titulo, color, componente }) {
                     <div className="photo-grid">
                       {fotos[row.folio].map((f, i) => (
                         <div className="photo-thumb" key={i}>
-                          <img src={f.url || f.foto_url} alt={`Foto ${i + 1}`}
+                          <img src={f.foto_url} alt={`Foto ${i + 1}`}
                             onError={e => { e.target.style.display = 'none'; }} />
                         </div>
                       ))}

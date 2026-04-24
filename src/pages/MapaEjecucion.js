@@ -18,20 +18,20 @@ export default function MapaEjecucion({ perfil }) {
 
   const filtered = tramos.filter(r => {
     if (!bus) return true;
-    return [r.id_tramo, r.descripcion, r.civ, r.localidad].join(' ').toLowerCase().includes(bus.toLowerCase());
+    return [r.id_tramo, r.tramo_descripcion, r.localidad].join(' ').toLowerCase().includes(bus.toLowerCase());
   });
 
   const completados = filtered.filter(r => {
-    const p = parseFloat(r.ejecutado) / (parseFloat(r.meta) || 1) * 100;
+    const p = parseFloat(r.ejecutado) / (parseFloat(r.meta_fisica) || 1) * 100;
     return p >= 100;
   }).length;
   const enProgreso = filtered.filter(r => {
-    const p = parseFloat(r.ejecutado) / (parseFloat(r.meta) || 1) * 100;
+    const p = parseFloat(r.ejecutado) / (parseFloat(r.meta_fisica) || 1) * 100;
     return p > 0 && p < 100;
   }).length;
 
   function getColor(r) {
-    const p = parseFloat(r.ejecutado) / (parseFloat(r.meta) || 1) * 100;
+    const p = parseFloat(r.ejecutado) / (parseFloat(r.meta_fisica) || 1) * 100;
     if (p >= 100) return 'var(--exec-completado)';
     if (p > 0)    return 'var(--exec-progreso)';
     return 'var(--exec-planeacion)';
@@ -68,21 +68,21 @@ export default function MapaEjecucion({ perfil }) {
       <div className="data-table-wrap">
         <table className="data-table">
           <thead>
-            <tr><th>ID Tramo</th><th>Descripción</th><th>CIV</th><th>Localidad</th><th>Meta (m)</th><th>Ejecutado (m)</th><th>Avance</th></tr>
+            <tr><th>ID Tramo</th><th>Descripción</th><th>Localidad</th><th>Infraestructura</th><th>Meta física</th><th>Ejecutado</th><th>Avance</th></tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr><td colSpan={7} className="data-table-empty">No hay tramos registrados.</td></tr>
             ) : filtered.map((r, i) => {
-              const meta = parseFloat(r.meta) || 0;
+              const meta = parseFloat(r.meta_fisica) || 0;
               const ejec = parseFloat(r.ejecutado) || 0;
               const p    = meta > 0 ? Math.min(100, (ejec / meta) * 100) : 0;
               return (
                 <tr key={r.id_tramo || i}>
                   <td><code style={{ fontSize: '0.78rem' }}>{r.id_tramo}</code></td>
-                  <td>{r.descripcion || '—'}</td>
-                  <td>{r.civ        || '—'}</td>
-                  <td>{r.localidad  || '—'}</td>
+                  <td>{r.tramo_descripcion || '—'}</td>
+                  <td>{r.localidad        || '—'}</td>
+                  <td>{r.infraestructura  || '—'}</td>
                   <td>{meta.toLocaleString('es-CO', { maximumFractionDigits: 1 })}</td>
                   <td>{ejec.toLocaleString('es-CO', { maximumFractionDigits: 1 })}</td>
                   <td style={{ minWidth: 120 }}>

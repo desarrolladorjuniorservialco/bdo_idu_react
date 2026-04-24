@@ -64,20 +64,20 @@ export default function ReporteCantidades({ perfil }) {
   }, [perfil, fi, ff, estado]);
 
   const filtered = rows.filter(r => {
-    const txt = [r.folio, r.civ, r.actividad, r.tramo, r.item_pago, r.componente, r.creado_por_nombre].join(' ').toLowerCase();
+    const txt = [r.folio, r.civ, r.item_descripcion, r.tramo_descripcion, r.item_pago, r.capitulo, r.usuario_qfield].join(' ').toLowerCase();
     if (buscar && !txt.includes(buscar.toLowerCase())) return false;
-    if (tramo && !String(r.tramo || '').toLowerCase().includes(tramo.toLowerCase())) return false;
+    if (tramo && !String(r.tramo_descripcion || '').toLowerCase().includes(tramo.toLowerCase())) return false;
     if (civ   && !String(r.civ   || '').toLowerCase().includes(civ.toLowerCase())) return false;
     if (item  && !String(r.item_pago || '').toLowerCase().includes(item.toLowerCase())) return false;
-    if (comp  && !String(r.componente || '').toLowerCase().includes(comp.toLowerCase())) return false;
-    if (user  && !String(r.creado_por_nombre || '').toLowerCase().includes(user.toLowerCase())) return false;
+    if (comp  && !String(r.capitulo || '').toLowerCase().includes(comp.toLowerCase())) return false;
+    if (user  && !String(r.usuario_qfield || '').toLowerCase().includes(user.toLowerCase())) return false;
     return true;
   });
 
   const total   = filtered.length;
   const apr     = filtered.filter(r => r.estado === 'APROBADO').length;
   const sumaCant= filtered.reduce((s, r) => s + (parseFloat(r.cantidad) || 0), 0);
-  const valorEst= filtered.reduce((s, r) => s + (parseFloat(r.valor_estimado) || 0), 0);
+  const valorEst= filtered.reduce((s, r) => s + ((parseFloat(r.precio_unitario) || 0) * (parseFloat(r.cantidad) || 0)), 0);
 
   async function loadFotos(folio) {
     if (fotos[folio] !== undefined) return;
@@ -94,7 +94,7 @@ export default function ReporteCantidades({ perfil }) {
     await supabase.from('registros_cantidades').update({
       estado:            nuevoEstado,
       [campos.campoEstado]: nuevoEstado,
-      [campos.campoApr]:    true,
+      [campos.campoApr]:    perfil.id,
       [campos.campoFecha]:  ahora,
       [campos.campoObs]:    obs,
     }).eq('folio', row.folio);
@@ -213,19 +213,18 @@ export default function ReporteCantidades({ perfil }) {
                 <Badge estado={row.estado} />
                 <span style={{ marginLeft: '0.5rem', fontWeight: 600 }}>{row.folio}</span>
                 <span style={{ marginLeft: '0.5rem', color: 'var(--text-muted)' }}>
-                  {row.actividad || row.descripcion || ''} · {fmtDate(row.fecha_creacion)}
+                  {row.item_descripcion || row.observaciones || ''} · {fmtDate(row.fecha_creacion)}
                 </span>
               </summary>
               <div className="details-body">
                 <div className="record-field-grid">
                   {[
                     ['Folio', row.folio], ['Fecha', fmtDate(row.fecha_creacion)],
-                    ['CIV', row.civ], ['Tramo', row.tramo], ['PK', row.pk],
-                    ['Ítem de pago', row.item_pago], ['Componente', row.componente],
-                    ['Actividad', row.actividad], ['Unidad', row.unidad],
+                    ['CIV', row.civ], ['Tramo', row.tramo_descripcion], ['ID Tramo', row.id_tramo],
+                    ['Ítem de pago', row.item_pago], ['Capítulo', row.capitulo],
+                    ['Actividad', row.item_descripcion], ['Unidad', row.unidad],
                     ['Cantidad', row.cantidad], ['Precio unitario', fmtCOP(row.precio_unitario)],
-                    ['Valor estimado', fmtCOP(row.valor_estimado)],
-                    ['Inspector', row.creado_por_nombre], ['Estado', row.estado],
+                    ['Inspector', row.usuario_qfield], ['Estado', row.estado],
                   ].map(([label, val]) => val != null && String(val).trim() !== '' && String(val) !== 'null' ? (
                     <div key={label}>
                       <div className="record-field-label">{label}</div>
@@ -239,7 +238,7 @@ export default function ReporteCantidades({ perfil }) {
                   <div className="photo-grid">
                     {fotos[row.folio].map((f, i) => (
                       <div className="photo-thumb" key={i}>
-                        <img src={f.url || f.foto_url} alt={`Foto ${i + 1}`}
+                        <img src={f.foto_url} alt={`Foto ${i + 1}`}
                           onError={e => { e.target.style.display = 'none'; }} />
                       </div>
                     ))}

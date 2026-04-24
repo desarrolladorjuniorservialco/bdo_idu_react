@@ -9,7 +9,13 @@ function fmtDate(v) {
   catch { return String(v).slice(0, 10); }
 }
 
-const ESTADOS_PMT = ['Todos', 'ACTIVO', 'VENCIDO', 'CANCELADO', 'PENDIENTE'];
+const ESTADOS_PMT = ['Todos', 'ACTIVO', 'VENCIDO'];
+
+function computeEstado(r) {
+  if (!r.fin_vigencia) return 'ACTIVO';
+  const hoy = new Date().toISOString().slice(0, 10);
+  return r.fin_vigencia >= hoy ? 'ACTIVO' : 'VENCIDO';
+}
 
 export default function SeguimientoPMTs({ perfil }) {
   const [rows, setRows]     = useState([]);
@@ -21,28 +27,28 @@ export default function SeguimientoPMTs({ perfil }) {
   const loadData = useCallback(async () => {
     if (!perfil?.contrato_id) return;
     setLoading(true);
-    let q = supabase
+    const { data } = await supabase
       .from('formulario_pmt')
       .select('*')
       .eq('contrato_id', perfil.contrato_id)
-      .order('created_at', { ascending: false });
-    const { data } = await q;
+      .order('fecha_creacion', { ascending: false });
     setRows(data || []);
     setLoading(false);
     setLoaded(true);
   }, [perfil]);
 
   const filtered = rows.filter(r => {
-    if (est !== 'Todos' && (r.estado || '').toUpperCase() !== est) return false;
+    const estadoCalc = computeEstado(r);
+    if (est !== 'Todos' && estadoCalc !== est) return false;
     if (bus) {
-      const txt = [r.folio, r.tramo, r.civ, r.tipo_pmt, r.creado_por_nombre, r.estado].join(' ').toLowerCase();
+      const txt = [r.folio, r.civ, r.descripcion, r.usuario].join(' ').toLowerCase();
       if (!txt.includes(bus.toLowerCase())) return false;
     }
     return true;
   });
 
-  const activos  = filtered.filter(r => (r.estado || '').toUpperCase() === 'ACTIVO').length;
-  const vencidos = filtered.filter(r => (r.estado || '').toUpperCase() === 'VENCIDO').length;
+  const activos  = filtered.filter(r => computeEstado(r) === 'ACTIVO').length;
+  const vencidos = filtered.filter(r => computeEstado(r) === 'VENCIDO').length;
   const total    = filtered.length;
 
   return (
@@ -61,7 +67,7 @@ export default function SeguimientoPMTs({ perfil }) {
           </div>
           <div className="form-group">
             <label className="form-label">Buscar</label>
-            <input type="text" className="form-input" placeholder="Folio / tramo / tipo..."
+            <input type="text" className="form-input" placeholder="Folio / CIV / descripción..."
               value={bus} onChange={e => setBus(e.target.value)} />
           </div>
         </div>
@@ -77,7 +83,7 @@ export default function SeguimientoPMTs({ perfil }) {
             <KpiCard label="Total PMTs" value={String(total)} />
             <KpiCard label="Activos" value={String(activos)} cardAccent="accent-green" accent="kpi-green" />
             <KpiCard label="Vencidos" value={String(vencidos)} cardAccent="accent-red" accent="kpi-danger" />
-            <KpiCard label="Otros" value={String(total - activos - vencidos)} />
+            <KpiCard label="Sin vigencia" value={String(total - activos - vencidos)} />
           </div>
 
           {filtered.length === 0
@@ -87,24 +93,23 @@ export default function SeguimientoPMTs({ perfil }) {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Folio</th><th>Fecha</th><th>Tramo</th><th>CIV</th>
-                      <th>Tipo</th><th>Estado</th><th>Vence</th><th>Inspector</th>
+                      <th>Folio</th><th>Inicio vigencia</th><th>CIV</th>
+                      <th>Descripción</th><th>Estado</th><th>Vence</th><th>Inspector</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.map((r, i) => {
-                      const estUpper = (r.estado || '').toUpperCase();
-                      const estColor = estUpper === 'ACTIVO' ? 'var(--accent-green)' : estUpper === 'VENCIDO' ? 'var(--accent-red)' : 'var(--text-muted)';
+                      const estadoCalc = computeEstado(r);
+                      const estColor = estadoCalc === 'ACTIVO' ? 'var(--accent-green)' : 'var(--accent-red)';
                       return (
                         <tr key={r.folio || i}>
                           <td><code style={{ fontSize: '0.8rem' }}>{r.folio}</code></td>
-                          <td>{fmtDate(r.fecha || r.created_at)}</td>
-                          <td>{r.tramo || '—'}</td>
-                          <td>{r.civ   || '—'}</td>
-                          <td>{r.tipo_pmt || r.tipo || '—'}</td>
-                          <td><span style={{ color: estColor, fontWeight: 700, fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.78rem' }}>{r.estado || '—'}</span></td>
-                          <td>{fmtDate(r.fecha_vencimiento)}</td>
-                          <td>{r.creado_por_nombre || '—'}</td>
+                          <td>{fmtDate(r.inicio_vigencia || r.fecha_creacion)}</td>
+                          <td>{r.civ || '—'}</td>
+                          <td>{r.descripcion || '—'}</td>
+                          <td><span style={{ color: estColor, fontWeight: 700, fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.78rem' }}>{estadoCalc}</span></td>
+                          <td>{fmtDate(r.fin_vigencia)}</td>
+                          <td>{r.usuario || '—'}</td>
                         </tr>
                       );
                     })}

@@ -39,7 +39,7 @@ export default function SeguimientoPresupuesto({ perfil }) {
 
   const filteredItems = items.filter(r => {
     if (!bus) return true;
-    return [r.codigo, r.descripcion, r.capitulo, r.tipo].join(' ').toLowerCase().includes(bus.toLowerCase());
+    return [r.codigo_idu, r.descripcion, r.capitulo, r.tipo_actividad].join(' ').toLowerCase().includes(bus.toLowerCase());
   });
 
   const totalPresup = items.reduce((s, r) => s + (parseFloat(r.valor_presupuesto) || 0), 0);
@@ -81,15 +81,15 @@ export default function SeguimientoPresupuesto({ perfil }) {
                 {filteredItems.length === 0 ? (
                   <tr><td colSpan={8} className="data-table-empty">No se encontraron ítems.</td></tr>
                 ) : filteredItems.map((r, i) => {
-                  const p = pct(r.valor_ejecutado, r.valor_presupuesto);
+                  const p = pct(r.valor_ejecutado, r.valor_presupuesto || r.cantidad_ppto);
                   const barColor = p > 100 ? 'danger' : p > 80 ? 'warn' : '';
                   return (
                     <tr key={r.id || i}>
-                      <td><code style={{ fontSize: '0.78rem' }}>{r.codigo}</code></td>
+                      <td><code style={{ fontSize: '0.78rem' }}>{r.codigo_idu}</code></td>
                       <td>{r.descripcion}</td>
                       <td>{r.capitulo || '—'}</td>
                       <td>{r.unidad || '—'}</td>
-                      <td>{r.cantidad || '—'}</td>
+                      <td>{r.cantidad_ppto || '—'}</td>
                       <td>{fmtCOP(r.valor_presupuesto)}</td>
                       <td>{fmtCOP(r.valor_ejecutado)}</td>
                       <td style={{ minWidth: 90 }}>
@@ -114,19 +114,19 @@ export default function SeguimientoPresupuesto({ perfil }) {
         <div className="data-table-wrap">
           <table className="data-table">
             <thead>
-              <tr><th>ID Tramo</th><th>Descripción</th><th>CIV</th><th>Meta (m)</th><th>Ejecutado (m)</th><th>%</th></tr>
+              <tr><th>ID Tramo</th><th>Descripción</th><th>Localidad</th><th>Meta física</th><th>Ejecutado</th><th>%</th></tr>
             </thead>
             <tbody>
               {tramos.length === 0 ? (
                 <tr><td colSpan={6} className="data-table-empty">No hay tramos registrados.</td></tr>
               ) : tramos.map((r, i) => {
-                const p = pct(r.ejecutado, r.meta);
+                const p = pct(r.ejecutado, r.meta_fisica);
                 return (
                   <tr key={r.id_tramo || i}>
                     <td><code style={{ fontSize: '0.78rem' }}>{r.id_tramo}</code></td>
-                    <td>{r.descripcion || '—'}</td>
-                    <td>{r.civ || '—'}</td>
-                    <td>{r.meta ?? '—'}</td>
+                    <td>{r.tramo_descripcion || '—'}</td>
+                    <td>{r.localidad || '—'}</td>
+                    <td>{r.meta_fisica ?? '—'}</td>
                     <td>{r.ejecutado ?? '—'}</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>

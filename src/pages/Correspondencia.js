@@ -11,20 +11,22 @@ function fmtDate(v) {
 function subDays(d, n) { const r = new Date(d); r.setDate(r.getDate() - n); return r; }
 function fmtInput(d) { return d.toISOString().slice(0, 10); }
 
-const TIPO_OPTS = ['Todos', 'ENTRADA', 'SALIDA'];
+const ESTADO_OPTS = ['Todos', 'PENDIENTE', 'RESPONDIDO', 'NO APLICA RESPUESTA'];
 
 export default function Correspondencia({ perfil }) {
   const today = new Date();
   const [rows, setRows]     = useState([]);
   const [loading, setLoading] = useState(false);
   const [loaded,  setLoaded]  = useState(false);
-  const [fi,   setFi]   = useState(fmtInput(subDays(today, 90)));
-  const [ff,   setFf]   = useState(fmtInput(today));
-  const [tipo, setTipo] = useState('Todos');
-  const [bus,  setBus]  = useState('');
+  const [fi,      setFi]   = useState(fmtInput(subDays(today, 90)));
+  const [ff,      setFf]   = useState(fmtInput(today));
+  const [estado,  setEstado] = useState('Todos');
+  const [bus,     setBus]  = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [msg,  setMsg]  = useState('');
-  const [form, setForm] = useState({ radicado: '', fecha: fmtInput(today), tipo: 'ENTRADA', asunto: '', remitente: '', destinatario: '', descripcion: '' });
+  const [msg,     setMsg]  = useState('');
+  const [form, setForm] = useState({
+    consecutivo: '', fecha: fmtInput(today), asunto: '', emisor: '', receptor: '',
+  });
 
   const loadData = useCallback(async () => {
     if (!perfil?.contrato_id) return;
@@ -36,26 +38,26 @@ export default function Correspondencia({ perfil }) {
       .gte('fecha', fi)
       .lte('fecha', ff)
       .order('fecha', { ascending: false });
-    if (tipo !== 'Todos') q = q.eq('tipo', tipo);
+    if (estado !== 'Todos') q = q.eq('estado', estado);
     const { data } = await q;
     setRows(data || []);
     setLoading(false);
     setLoaded(true);
-  }, [perfil, fi, ff, tipo]);
+  }, [perfil, fi, ff, estado]);
 
   const filtered = rows.filter(r => {
     if (!bus) return true;
-    const txt = [r.radicado, r.asunto, r.remitente, r.destinatario, r.descripcion].join(' ').toLowerCase();
+    const txt = [r.consecutivo, r.asunto, r.emisor, r.receptor].join(' ').toLowerCase();
     return txt.includes(bus.toLowerCase());
   });
 
   async function handleSave(e) {
     e.preventDefault();
-    if (!form.radicado || !form.fecha) return;
+    if (!form.consecutivo || !form.fecha) return;
     await supabase.from('correspondencia').insert({ ...form, contrato_id: perfil.contrato_id });
     setMsg('Correspondencia registrada correctamente.');
     setTimeout(() => setMsg(''), 4000);
-    setForm({ radicado: '', fecha: fmtInput(today), tipo: 'ENTRADA', asunto: '', remitente: '', destinatario: '', descripcion: '' });
+    setForm({ consecutivo: '', fecha: fmtInput(today), asunto: '', emisor: '', receptor: '' });
     setShowForm(false);
     await loadData();
   }
@@ -77,14 +79,14 @@ export default function Correspondencia({ perfil }) {
             <input type="date" className="form-input" value={ff} onChange={e => setFf(e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Tipo</label>
-            <select className="form-select" value={tipo} onChange={e => setTipo(e.target.value)}>
-              {TIPO_OPTS.map(o => <option key={o}>{o}</option>)}
+            <label className="form-label">Estado</label>
+            <select className="form-select" value={estado} onChange={e => setEstado(e.target.value)}>
+              {ESTADO_OPTS.map(o => <option key={o}>{o}</option>)}
             </select>
           </div>
           <div className="form-group">
             <label className="form-label">Buscar</label>
-            <input type="text" className="form-input" placeholder="Radicado / asunto / remitente..."
+            <input type="text" className="form-input" placeholder="Consecutivo / asunto / emisor..."
               value={bus} onChange={e => setBus(e.target.value)} />
           </div>
         </div>
@@ -104,9 +106,9 @@ export default function Correspondencia({ perfil }) {
           <form onSubmit={handleSave}>
             <div className="filter-grid filter-grid-3" style={{ marginBottom: '0.75rem' }}>
               <div className="form-group">
-                <label className="form-label">Radicado *</label>
-                <input type="text" className="form-input" required value={form.radicado}
-                  onChange={e => setForm(f => ({ ...f, radicado: e.target.value }))} />
+                <label className="form-label">Consecutivo *</label>
+                <input type="text" className="form-input" required value={form.consecutivo}
+                  onChange={e => setForm(f => ({ ...f, consecutivo: e.target.value }))} />
               </div>
               <div className="form-group">
                 <label className="form-label">Fecha *</label>
@@ -114,32 +116,20 @@ export default function Correspondencia({ perfil }) {
                   onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))} />
               </div>
               <div className="form-group">
-                <label className="form-label">Tipo</label>
-                <select className="form-select" value={form.tipo}
-                  onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}>
-                  <option>ENTRADA</option><option>SALIDA</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Asunto</label>
-                <input type="text" className="form-input" value={form.asunto}
+                <label className="form-label">Asunto *</label>
+                <input type="text" className="form-input" required value={form.asunto}
                   onChange={e => setForm(f => ({ ...f, asunto: e.target.value }))} />
               </div>
               <div className="form-group">
-                <label className="form-label">Remitente</label>
-                <input type="text" className="form-input" value={form.remitente}
-                  onChange={e => setForm(f => ({ ...f, remitente: e.target.value }))} />
+                <label className="form-label">Emisor *</label>
+                <input type="text" className="form-input" required value={form.emisor}
+                  onChange={e => setForm(f => ({ ...f, emisor: e.target.value }))} />
               </div>
               <div className="form-group">
-                <label className="form-label">Destinatario</label>
-                <input type="text" className="form-input" value={form.destinatario}
-                  onChange={e => setForm(f => ({ ...f, destinatario: e.target.value }))} />
+                <label className="form-label">Receptor *</label>
+                <input type="text" className="form-input" required value={form.receptor}
+                  onChange={e => setForm(f => ({ ...f, receptor: e.target.value }))} />
               </div>
-            </div>
-            <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-              <label className="form-label">Descripción</label>
-              <textarea className="form-textarea" rows={3} value={form.descripcion}
-                onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))} />
             </div>
             <button type="submit" className="btn btn-primary">Guardar</button>
           </form>
@@ -153,8 +143,8 @@ export default function Correspondencia({ perfil }) {
         <>
           <div className="col-grid col-3" style={{ marginBottom: '1rem' }}>
             <KpiCard label="Total documentos" value={String(filtered.length)} />
-            <KpiCard label="Entrada" value={String(filtered.filter(r => r.tipo === 'ENTRADA').length)} cardAccent="accent-blue" />
-            <KpiCard label="Salida"  value={String(filtered.filter(r => r.tipo === 'SALIDA').length)}  cardAccent="accent-green" />
+            <KpiCard label="Pendientes"  value={String(filtered.filter(r => r.estado === 'PENDIENTE').length)}  cardAccent="accent-orange" />
+            <KpiCard label="Respondidos" value={String(filtered.filter(r => r.estado === 'RESPONDIDO').length)} cardAccent="accent-green" />
           </div>
 
           {filtered.length === 0
@@ -163,19 +153,21 @@ export default function Correspondencia({ perfil }) {
               <div className="data-table-wrap">
                 <table className="data-table">
                   <thead>
-                    <tr><th>Radicado</th><th>Fecha</th><th>Tipo</th><th>Asunto</th><th>Remitente</th><th>Destinatario</th></tr>
+                    <tr><th>Consecutivo</th><th>Fecha</th><th>Asunto</th><th>Emisor</th><th>Receptor</th><th>Estado</th></tr>
                   </thead>
                   <tbody>
                     {filtered.map((r, i) => (
                       <tr key={r.id || i}>
-                        <td><code style={{ fontSize: '0.8rem' }}>{r.radicado}</code></td>
+                        <td><code style={{ fontSize: '0.8rem' }}>{r.consecutivo}</code></td>
                         <td>{fmtDate(r.fecha)}</td>
-                        <td>
-                          <span className={`badge ${r.tipo === 'ENTRADA' ? 'badge-revisado' : 'badge-aprobado'}`}>{r.tipo}</span>
-                        </td>
                         <td>{r.asunto || '—'}</td>
-                        <td>{r.remitente || '—'}</td>
-                        <td>{r.destinatario || '—'}</td>
+                        <td>{r.emisor || '—'}</td>
+                        <td>{r.receptor || '—'}</td>
+                        <td>
+                          <span className={`badge ${r.estado === 'RESPONDIDO' ? 'badge-aprobado' : r.estado === 'NO APLICA RESPUESTA' ? 'badge-revisado' : 'badge-borrador'}`}>
+                            {r.estado || 'PENDIENTE'}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

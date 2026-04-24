@@ -68,7 +68,7 @@ export default function EstadoActual({ perfil }) {
      new Date(String(contrato.fecha_inicio).slice(0,10))) / 86400000
   ) : 0;
 
-  const valorAdic = adiciones.reduce((s, a) => s + (parseFloat(a.valor) || 0), 0);
+  const valorAdic = adiciones.reduce((s, a) => s + (parseFloat(a.adicion) || 0), 0);
 
   return (
     <div>
@@ -149,10 +149,10 @@ export default function EstadoActual({ perfil }) {
                 {prorrogas.map((p, i) => (
                   <tr key={p.id || i}>
                     <td>{p.numero || i + 1}</td>
-                    <td>{fmtDate(p.fecha)}</td>
-                    <td>{fmtDate(p.nueva_fecha_fin)}</td>
-                    <td>{p.dias_adicionales ?? '—'}</td>
-                    <td>{p.descripcion || '—'}</td>
+                    <td>{fmtDate(p.fecha_firma)}</td>
+                    <td>{fmtDate(p.fecha_fin)}</td>
+                    <td>{p.plazo_dias ?? '—'}</td>
+                    <td>{p.observaciones || '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -181,9 +181,9 @@ export default function EstadoActual({ perfil }) {
               {adiciones.map((a, i) => (
                 <tr key={a.id || i}>
                   <td>{a.numero || i + 1}</td>
-                  <td>{fmtDate(a.fecha)}</td>
-                  <td>{fmtCOP(a.valor)}</td>
-                  <td>{a.descripcion || '—'}</td>
+                  <td>{fmtDate(a.fecha_firma)}</td>
+                  <td>{fmtCOP(a.adicion)}</td>
+                  <td>{a.observaciones || '—'}</td>
                 </tr>
               ))}
             </tbody>

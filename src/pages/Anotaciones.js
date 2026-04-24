@@ -101,6 +101,7 @@ export default function Anotaciones({ perfil }) {
     const now = new Date().toISOString().slice(0, 10);
     await supabase.from('anotaciones_generales').insert({
       contrato_id:     perfil.contrato_id,
+      usuario_id:      perfil.id,
       fecha:           now,
       tramo:           tramo || null,
       civ:             civ   || null,

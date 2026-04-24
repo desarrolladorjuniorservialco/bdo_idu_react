@@ -27,18 +27,18 @@ export default function ComponentePMT({ perfil }) {
       .from('formulario_pmt')
       .select('*')
       .eq('contrato_id', perfil.contrato_id)
-      .order('created_at', { ascending: false });
+      .order('fecha_creacion', { ascending: false });
     setRows(data || []);
     setLoading(false);
     setLoaded(true);
   }, [perfil]);
 
   const filtered = rows.filter(r => {
-    const fecha = String(r.fecha || r.created_at || '').slice(0, 10);
+    const fecha = String(r.inicio_vigencia || r.fecha_creacion || '').slice(0, 10);
     if (fi && fecha < fi) return false;
     if (ff && fecha > ff) return false;
     if (bus) {
-      const txt = [r.folio, r.tramo, r.civ, r.tipo_pmt, r.creado_por_nombre].join(' ').toLowerCase();
+      const txt = [r.folio, r.civ, r.descripcion, r.usuario].join(' ').toLowerCase();
       if (!txt.includes(bus.toLowerCase())) return false;
     }
     return true;
@@ -85,19 +85,19 @@ export default function ComponentePMT({ perfil }) {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Folio</th><th>Fecha</th><th>Tramo</th><th>CIV</th>
-                      <th>Tipo PMT</th><th>Inspector</th>
+                      <th>Folio</th><th>Inicio vigencia</th><th>CIV</th>
+                      <th>Descripción</th><th>Vence</th><th>Inspector</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.map((r, i) => (
                       <tr key={r.folio || i}>
                         <td><code style={{ fontSize: '0.8rem' }}>{r.folio}</code></td>
-                        <td>{fmtDate(r.fecha || r.created_at)}</td>
-                        <td>{r.tramo || '—'}</td>
-                        <td>{r.civ   || '—'}</td>
-                        <td>{r.tipo_pmt || r.tipo || '—'}</td>
-                        <td>{r.creado_por_nombre || '—'}</td>
+                        <td>{fmtDate(r.inicio_vigencia || r.fecha_creacion)}</td>
+                        <td>{r.civ         || '—'}</td>
+                        <td>{r.descripcion || '—'}</td>
+                        <td>{fmtDate(r.fin_vigencia)}</td>
+                        <td>{r.usuario     || '—'}</td>
                       </tr>
                     ))}
                   </tbody>
