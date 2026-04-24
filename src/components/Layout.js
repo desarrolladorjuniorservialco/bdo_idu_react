@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import Sidebar from './Sidebar';
 import { NAV_ACCESS } from '../config/nav';
 import { useAuth } from '../contexts/AuthContext';
 
-import EstadoActual         from '../pages/EstadoActual';
-import Anotaciones          from '../pages/Anotaciones';
-import AnotacionesDiario    from '../pages/AnotacionesDiario';
-import GenerarInforme       from '../pages/GenerarInforme';
-import MapaEjecucion        from '../pages/MapaEjecucion';
-import SeguimientoPresupuesto from '../pages/SeguimientoPresupuesto';
-import Correspondencia      from '../pages/Correspondencia';
-import ReporteCantidades    from '../pages/ReporteCantidades';
-import ComponenteAmbiental  from '../pages/ComponenteAmbiental';
-import ComponenteSocial     from '../pages/ComponenteSocial';
-import ComponentePMT        from '../pages/ComponentePMT';
-import SeguimientoPMTs      from '../pages/SeguimientoPMTs';
+const EstadoActual         = lazy(() => import('../pages/EstadoActual'));
+const Anotaciones          = lazy(() => import('../pages/Anotaciones'));
+const AnotacionesDiario    = lazy(() => import('../pages/AnotacionesDiario'));
+const GenerarInforme       = lazy(() => import('../pages/GenerarInforme'));
+const MapaEjecucion        = lazy(() => import('../pages/MapaEjecucion'));
+const SeguimientoPresupuesto = lazy(() => import('../pages/SeguimientoPresupuesto'));
+const Correspondencia      = lazy(() => import('../pages/Correspondencia'));
+const ReporteCantidades    = lazy(() => import('../pages/ReporteCantidades'));
+const ComponenteAmbiental  = lazy(() => import('../pages/ComponenteAmbiental'));
+const ComponenteSocial     = lazy(() => import('../pages/ComponenteSocial'));
+const ComponentePMT        = lazy(() => import('../pages/ComponentePMT'));
+const SeguimientoPMTs      = lazy(() => import('../pages/SeguimientoPMTs'));
 
 const PAGE_COMPONENTS = {
   'Estado Actual':              EstadoActual,
@@ -30,6 +30,14 @@ const PAGE_COMPONENTS = {
   'Componente PMT':             ComponentePMT,
   'Seguimiento PMTs':           SeguimientoPMTs,
 };
+
+function PageLoader() {
+  return (
+    <div className="loading-wrap">
+      <span>Cargando...</span>
+    </div>
+  );
+}
 
 export default function Layout() {
   const { perfil } = useAuth();
@@ -51,7 +59,9 @@ export default function Layout() {
         {!allowed ? (
           <div className="error-wrap">No tienes permiso para acceder a esta sección.</div>
         ) : PageComponent ? (
-          <PageComponent perfil={perfil} />
+          <Suspense fallback={<PageLoader />}>
+            <PageComponent perfil={perfil} />
+          </Suspense>
         ) : (
           <div className="error-wrap">Página no disponible.</div>
         )}

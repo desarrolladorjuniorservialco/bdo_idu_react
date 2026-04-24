@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
-
 :root {
   --idu-blue:        #002D57;
   --idu-blue-dark:   #001A33;
@@ -11,14 +9,14 @@
   --idu-green:       #6D8E2D;
   --idu-green-lt:    #e2e8d5;
 
-  --bg-app:          #F3F5F7;
+  --bg-app:          #F0F2F5;
   --bg-card:         #FFFFFF;
   --bg-card-hover:   #F8F9FA;
   --bg-sidebar:      #2A303C;
   --bg-sidebar-item: rgba(255,255,255,0.05);
   --bg-inset:        #E9ECEF;
 
-  --border:          #ADB5BD;
+  --border:          #E2E5EA;
   --border-strong:   #ADB5BD;
 
   --text-primary:    #1C2129;
@@ -51,7 +49,7 @@
   --nav-active-bg:    rgba(255,210,0,0.15);
   --nav-active-border:#FFD200;
   --nav-active-text:  #ffffff;
-  --nav-idle-text:    #E6EDF3;
+  --nav-idle-text:    #C9D3DE;
 
   --badge-borrador-bg:  #E9ECEF; --badge-borrador-fg: #5D6A7F;
   --badge-revisado-bg:  #E6F0F9; --badge-revisado-fg: #002D57;
@@ -72,7 +70,24 @@
   --btn-filter-fg:    #ffffff;
   --btn-filter-border:#567023;
 
-  --sidebar-width: 260px;
+  --sidebar-width: 256px;
+
+  /* Shadows */
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-card:    0 2px 8px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-md:      0 6px 16px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06);
+  --shadow-lg:      0 12px 28px rgba(0,0,0,0.13), 0 4px 8px rgba(0,0,0,0.07);
+  --shadow-sidebar: 3px 0 16px rgba(0,0,0,0.22);
+
+  /* Radius */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-card: 14px;
+  --radius-lg:   20px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-std:  0.22s ease;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -147,5 +162,11 @@
     --btn-filter-bg:    #8DB147;
     --btn-filter-fg:    #0B1117;
     --btn-filter-border:#678531;
+
+    --shadow-sm:      0 1px 3px rgba(0,0,0,0.3);
+    --shadow-card:    0 2px 8px rgba(0,0,0,0.35);
+    --shadow-md:      0 6px 16px rgba(0,0,0,0.4);
+    --shadow-lg:      0 12px 28px rgba(0,0,0,0.5);
+    --shadow-sidebar: 3px 0 16px rgba(0,0,0,0.5);
   }
 }
