@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useTransition } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ROL_LABELS, NAV_ACCESS, NAV_CATEGORIES, PAGE_ICON } from '../config/nav';
+import { ROL_LABELS, NAV_ACCESS, NAV_CATEGORIES, PAGE_PATH, PATH_PAGE, PAGE_ICON, PRELOAD_MAP } from '../config/nav';
 import { supabase } from '../lib/supabase';
 
 function NavIcon({ d }) {
@@ -57,11 +58,28 @@ function StatChips({ contratoId }) {
   );
 }
 
-export default function Sidebar({ currentPage, onPageChange }) {
+export default function Sidebar() {
   const { perfil, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [, startTransition] = useTransition();
+
   if (!perfil) return null;
 
-  const rol = perfil.rol;
+  const rol         = perfil.rol;
+  const currentPage = PATH_PAGE[location.pathname] || 'Estado Actual';
+
+  function handlePageChange(page) {
+    if (!(NAV_ACCESS[page] || []).includes(rol)) return;
+    startTransition(() => {
+      navigate(PAGE_PATH[page]);
+    });
+  }
+
+  function handlePrefetch(page) {
+    const path = PAGE_PATH[page];
+    if (path && PRELOAD_MAP[path]) PRELOAD_MAP[path]();
+  }
 
   return (
     <aside className="sidebar">
@@ -99,7 +117,9 @@ export default function Sidebar({ currentPage, onPageChange }) {
                   <button
                     key={page}
                     className="nav-item-btn"
-                    onClick={() => onPageChange(page)}
+                    onClick={() => handlePageChange(page)}
+                    onMouseEnter={() => handlePrefetch(page)}
+                    onFocus={() => handlePrefetch(page)}
                   >
                     <NavIcon d={PAGE_ICON[page]} />
                     {page}

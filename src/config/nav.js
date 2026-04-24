@@ -105,6 +105,40 @@ export const APROBACION_CONFIG = {
 
 export const ROLES_VALIDOS = new Set(['operativo', 'obra', 'interventoria', 'supervision', 'admin']);
 
+export const PAGE_PATH = {
+  'Estado Actual':              '/estado-actual',
+  'Mapa Ejecución':             '/mapa-ejecucion',
+  'Seguimiento Presupuesto':    '/seguimiento-presupuesto',
+  'Correspondencia':            '/correspondencia',
+  'Anotaciones':                '/anotaciones',
+  'Anotaciones Diario':         '/anotaciones-diario',
+  'Reporte Cantidades':         '/reporte-cantidades',
+  'Componente Ambiental - SST': '/componente-ambiental',
+  'Componente Social':          '/componente-social',
+  'Componente PMT':             '/componente-pmt',
+  'Seguimiento PMTs':           '/seguimiento-pmts',
+  'Generar Informe':            '/generar-informe',
+};
+
+export const PATH_PAGE = Object.fromEntries(
+  Object.entries(PAGE_PATH).map(([name, path]) => [path, name])
+);
+
+export const PRELOAD_MAP = {
+  '/estado-actual':            () => import('../pages/EstadoActual'),
+  '/mapa-ejecucion':           () => import('../pages/MapaEjecucion'),
+  '/seguimiento-presupuesto':  () => import('../pages/SeguimientoPresupuesto'),
+  '/correspondencia':          () => import('../pages/Correspondencia'),
+  '/anotaciones':              () => import('../pages/Anotaciones'),
+  '/anotaciones-diario':       () => import('../pages/AnotacionesDiario'),
+  '/reporte-cantidades':       () => import('../pages/ReporteCantidades'),
+  '/componente-ambiental':     () => import('../pages/ComponenteAmbiental'),
+  '/componente-social':        () => import('../pages/ComponenteSocial'),
+  '/componente-pmt':           () => import('../pages/ComponentePMT'),
+  '/seguimiento-pmts':         () => import('../pages/SeguimientoPMTs'),
+  '/generar-informe':          () => import('../pages/GenerarInforme'),
+};
+
 export const PAGE_ICON = {
   'Estado Actual':              'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10',
   'Mapa Ejecución':             'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
