@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useTransition } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { ROL_LABELS, NAV_ACCESS, NAV_CATEGORIES, PAGE_PATH, PATH_PAGE, PAGE_ICON, PRELOAD_MAP } from '../config/nav';
+import { ROL_LABELS, NAV_ACCESS, NAV_CATEGORIES, PAGE_PATH, PAGE_ICON, PRELOAD_MAP } from '../config/nav';
 import { supabase } from '../lib/supabase';
 
 function NavIcon({ d }) {
@@ -58,23 +57,12 @@ function StatChips({ contratoId }) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ currentPage, onPageChange }) {
   const { perfil, logout } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [, startTransition] = useTransition();
 
   if (!perfil) return null;
 
-  const rol         = perfil.rol;
-  const currentPage = PATH_PAGE[location.pathname] || 'Estado Actual';
-
-  function handlePageChange(page) {
-    if (!(NAV_ACCESS[page] || []).includes(rol)) return;
-    startTransition(() => {
-      navigate(PAGE_PATH[page]);
-    });
-  }
+  const rol = perfil.rol;
 
   function handlePrefetch(page) {
     const path = PAGE_PATH[page];
@@ -117,7 +105,7 @@ export default function Sidebar() {
                   <button
                     key={page}
                     className="nav-item-btn"
-                    onClick={() => handlePageChange(page)}
+                    onClick={() => onPageChange(page)}
                     onMouseEnter={() => handlePrefetch(page)}
                     onFocus={() => handlePrefetch(page)}
                   >
