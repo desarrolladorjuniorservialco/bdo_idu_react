@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --idu-blue:        #002D57;
+  --idu-blue-dark:   #001A33;
+  --idu-blue-lt:     #E6F0F9;
+  --idu-red:         #ED1C24;
+  --idu-red-lt:      #fde8e9;
+  --idu-yellow:      #FFD200;
+  --idu-yellow-lt:   #fff9d6;
+  --idu-green:       #6D8E2D;
+  --idu-green-lt:    #e2e8d5;
+
+  --bg-app:          #F3F5F7;
+  --bg-card:         #FFFFFF;
+  --bg-card-hover:   #F8F9FA;
+  --bg-sidebar:      #2A303C;
+  --bg-sidebar-item: rgba(255,255,255,0.05);
+  --bg-inset:        #E9ECEF;
+
+  --border:          #ADB5BD;
+  --border-strong:   #ADB5BD;
+
+  --text-primary:    #1C2129;
+  --text-secondary:  #5D6A7F;
+  --text-muted:      #8B949E;
+  --text-sidebar:    #FFFFFF;
+  --text-sidebar-muted: #ADB5BD;
+
+  --accent-blue:     #002D57;
+  --accent-blue-lt:  #E6F0F9;
+  --accent-green:    #6D8E2D;
+  --accent-green-lt: #e2e8d5;
+  --accent-red:      #ED1C24;
+  --accent-red-lt:   #fde8e9;
+  --accent-orange:   #FD7E14;
+  --accent-orange-lt:#ffe5d0;
+  --accent-purple:   #6f42c1;
+  --accent-purple-lt:#e8dcf8;
+  --accent-teal:     #0076B0;
+  --accent-teal-lt:  #cce7f5;
+
+  --exec-completado: #6D8E2D;
+  --exec-progreso:   #FFD200;
+  --exec-atrasado:   #FD7E14;
+  --exec-critico:    #ED1C24;
+  --exec-planeacion: #ADB5BD;
+
+  --nav-cat-color:    #ADB5BD;
+  --nav-cat-hi-color: #FFD200;
+  --nav-active-bg:    rgba(255,210,0,0.15);
+  --nav-active-border:#FFD200;
+  --nav-active-text:  #ffffff;
+  --nav-idle-text:    #E6EDF3;
+
+  --badge-borrador-bg:  #E9ECEF; --badge-borrador-fg: #5D6A7F;
+  --badge-revisado-bg:  #E6F0F9; --badge-revisado-fg: #002D57;
+  --badge-aprobado-bg:  #e2e8d5; --badge-aprobado-fg: #2a3d11;
+  --badge-devuelto-bg:  #fde8e9; --badge-devuelto-fg: #ED1C24;
+  --badge-amarillo-bg:  #FFD200; --badge-amarillo-fg: #3d2800;
+
+  --kpi-value-color:  #1C2129;
+
+  --btn-approve-bg:   #6D8E2D;
+  --btn-approve-fg:   #ffffff;
+  --btn-return-bg:    #ED1C24;
+  --btn-return-fg:    #ffffff;
+  --btn-cta-bg:       #ED1C24;
+  --btn-cta-fg:       #ffffff;
+  --btn-cta-border:   #B01A1F;
+  --btn-filter-bg:    #6D8E2D;
+  --btn-filter-fg:    #ffffff;
+  --btn-filter-border:#567023;
+
+  --sidebar-width: 260px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --idu-blue:        #1F6FEB;
+    --idu-blue-dark:   #0D2B4D;
+    --idu-blue-lt:     #0d2f3f;
+    --idu-red:         #FF5252;
+    --idu-red-lt:      #3d1010;
+    --idu-yellow:      #FFD200;
+    --idu-yellow-lt:   #3d2800;
+    --idu-green:       #8DB147;
+    --idu-green-lt:    #1a240b;
+
+    --bg-app:          #0B1117;
+    --bg-card:         #161B22;
+    --bg-card-hover:   #21262D;
+    --bg-sidebar:      #161B22;
+    --bg-sidebar-item: rgba(255,255,255,0.05);
+    --bg-inset:        #21262D;
+
+    --border:          #30363D;
+    --border-strong:   #444C56;
+
+    --text-primary:    #E6EDF3;
+    --text-secondary:  #8B949E;
+    --text-muted:      #8B949E;
+    --text-sidebar:    #E6EDF3;
+    --text-sidebar-muted: #8B949E;
+
+    --accent-blue:     #1F6FEB;
+    --accent-blue-lt:  #0d2f3f;
+    --accent-green:    #8DB147;
+    --accent-green-lt: #1a240b;
+    --accent-red:      #FF5252;
+    --accent-red-lt:   #3d1010;
+    --accent-orange:   #FFD54F;
+    --accent-orange-lt:#3d2800;
+    --accent-purple:   #bc8cff;
+    --accent-purple-lt:#2d1f60;
+    --accent-teal:     #1F6FEB;
+    --accent-teal-lt:  #0d2f3f;
+
+    --exec-completado: #8DB147;
+    --exec-progreso:   #FFD200;
+    --exec-atrasado:   #FD7E14;
+    --exec-critico:    #FF5252;
+    --exec-planeacion: #444C56;
+
+    --nav-cat-color:    #8B949E;
+    --nav-cat-hi-color: #FFD200;
+    --nav-active-bg:    rgba(255,210,0,0.15);
+    --nav-active-border:#FFD200;
+    --nav-active-text:  #E6EDF3;
+    --nav-idle-text:    #8B949E;
+
+    --badge-borrador-bg:  #21262D; --badge-borrador-fg: #8B949E;
+    --badge-revisado-bg:  #0D2B4D; --badge-revisado-fg: #7dd4f5;
+    --badge-aprobado-bg:  #1a240b; --badge-aprobado-fg: #8DB147;
+    --badge-devuelto-bg:  #3d1010; --badge-devuelto-fg: #FF5252;
+    --badge-amarillo-bg:  #3d2800; --badge-amarillo-fg: #FFD200;
+
+    --kpi-value-color:  #E6EDF3;
+
+    --btn-approve-bg:   #8DB147;
+    --btn-approve-fg:   #0B1117;
+    --btn-return-bg:    #FF5252;
+    --btn-return-fg:    #0B1117;
+    --btn-cta-bg:       #FF5252;
+    --btn-cta-fg:       #ffffff;
+    --btn-cta-border:   #e03030;
+    --btn-filter-bg:    #8DB147;
+    --btn-filter-fg:    #0B1117;
+    --btn-filter-border:#678531;
+  }
+}
