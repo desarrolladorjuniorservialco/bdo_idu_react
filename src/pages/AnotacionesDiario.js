@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { APROBACION_CONFIG } from '../config/nav';
 import SectionBadge from '../components/SectionBadge';

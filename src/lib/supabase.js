@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const url = process.env.REACT_APP_SUPABASE_URL;
-const anonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const url = import.meta.env.VITE_SUPABASE_URL;
+const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!url || !anonKey) {
-  console.error('Faltan variables de entorno REACT_APP_SUPABASE_URL o REACT_APP_SUPABASE_ANON_KEY');
+  console.error('Faltan variables de entorno VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY');
 }
 
 export const supabase = createClient(url, anonKey);
