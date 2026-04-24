@@ -3,13 +3,13 @@
 
 html, body, #root {
   height: 100%;
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: 'Nunito Sans';
   color: var(--text-primary);
   background: var(--bg-app);
 }
 
 h1, h2, h3 {
-  font-family: 'Montserrat', 'IBM Plex Sans', sans-serif;
+  font-family: 'Nunito Sans', 'IBM Plex Sans', sans-serif;
   font-weight: 700;
   color: var(--idu-blue);
 }
