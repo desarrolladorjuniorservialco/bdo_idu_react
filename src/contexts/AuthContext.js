@@ -54,13 +54,18 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const p = await loadPerfil(session.user);
-        if (p) { setUser(session.user); setPerfil(p); }
+    async function init() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const p = await loadPerfil(session.user);
+          if (p) { setUser(session.user); setPerfil(p); }
+        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    }
+    init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
