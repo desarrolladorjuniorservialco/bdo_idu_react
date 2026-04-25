@@ -1,4 +1,0 @@
-/* Reset mínimo — el diseño principal está en styles/global.css */
-*, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-code { font-family: 'IBM Plex Mono', 'Courier New', monospace; }
