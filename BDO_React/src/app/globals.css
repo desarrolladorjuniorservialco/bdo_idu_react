@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+/* ── Paleta IDU ─────────────────────────────────────────── */
+@theme {
+  --color-idu-blue:   #002D57;
+  --color-idu-red:    #ED1C24;
+  --color-idu-yellow: #FFD200;
+  --color-idu-green:  #6D8E2D;
+  --color-idu-orange: #E07B39;
+
+  --color-bg-app:     #F3F5F7;
+  --color-bg-sidebar: #1E2535;
+  --color-bg-card:    #FFFFFF;
+
+  --color-accent-blue:   #1E6FD9;
+  --color-accent-green:  #3B8A3E;
+  --color-accent-red:    #C0392B;
+  --color-accent-orange: #E07B39;
+  --color-accent-purple: #7C3AED;
+  --color-accent-teal:   #0D9488;
+
+  --color-text-primary: #1A202C;
+  --color-text-muted:   #6B7280;
+  --color-border:       #E2E8F0;
+
+  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+}
+
+/* ── Variables CSS para componentes ─────────────────────── */
+:root {
+  --idu-blue:   #002D57;
+  --idu-red:    #ED1C24;
+  --idu-yellow: #FFD200;
+  --idu-green:  #6D8E2D;
+  --idu-orange: #E07B39;
+
+  --bg-app:     #F3F5F7;
+  --bg-sidebar: #1E2535;
+  --bg-card:    #FFFFFF;
+
+  --accent-blue:   #1E6FD9;
+  --accent-green:  #3B8A3E;
+  --accent-red:    #C0392B;
+  --accent-orange: #E07B39;
+  --accent-purple: #7C3AED;
+  --accent-teal:   #0D9488;
+
+  --text-primary: #1A202C;
+  --text-muted:   #6B7280;
+  --border:       #E2E8F0;
+  --card:         #FFFFFF;
+  --card-foreground: #1A202C;
+  --background:   #F3F5F7;
+  --foreground:   #1A202C;
+  --muted:        #F1F5F9;
+  --muted-foreground: #6B7280;
+  --destructive:  #ED1C24;
+  --primary:      #002D57;
+  --primary-foreground: #FFFFFF;
+  --secondary:    #F1F5F9;
+  --secondary-foreground: #1A202C;
+  --input:        #E2E8F0;
+  --ring:         #002D57;
+  --radius:       0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-app:     #111827;
+    --bg-card:    #1F2937;
+    --bg-sidebar: #111827;
+    --text-primary: #F9FAFB;
+    --text-muted:   #9CA3AF;
+    --border:       #374151;
+    --card:         #1F2937;
+    --card-foreground: #F9FAFB;
+    --background:   #111827;
+    --foreground:   #F9FAFB;
+    --muted:        #1F2937;
+    --muted-foreground: #9CA3AF;
+    --primary:      #3B82F6;
+    --primary-foreground: #FFFFFF;
+    --secondary:    #1F2937;
+    --secondary-foreground: #F9FAFB;
+    --input:        #374151;
+  }
+}
+
+/* ── Base ───────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-sans, 'IBM Plex Sans', system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+
+/* ── Scrollbar personalizada ────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
