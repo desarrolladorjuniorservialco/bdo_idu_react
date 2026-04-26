@@ -10,9 +10,9 @@
   --color-corp-green-lt: #f0fdf4; /* Verde muy claro (badges activos) */
 
   /* --- Compatibilidad IDU --- */
-  --color-idu-blue: #002d57;
-  --color-idu-blue-dark: #001a33;
-  --color-idu-blue-lt: #e6f0f9;
+  --color-idu-blue: #ffffff;
+  --color-idu-blue-dark: #ffffff;
+  --color-idu-blue-lt: #e6f0f9; /* color del título principal "BDO · IDU-1556-2025"*/
   --color-idu-red: #ed1c24;
   --color-idu-red-lt: #fde8e9;
   --color-idu-yellow: #ffd200;
@@ -22,7 +22,7 @@
   --color-idu-orange: #e07b39;
 
   /* --- Layout --- */
-  --color-bg-app: #f1f5f9; /* Gris muy claro slate-50 */
+  --color-bg-app: #ededed; /* Gris muy claro slate-50 */
   --color-bg-sidebar: #2d3748; /* Sidebar oscuro slate-700 */
   --color-bg-card: #ffffff;
 
