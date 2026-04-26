@@ -61,23 +61,34 @@ export function Sidebar({ perfil }: SidebarProps) {
 
   return (
     <aside
-      className="flex flex-col w-60 min-h-screen shrink-0 border-r"
-      style={{ background: 'var(--bg-sidebar)', borderColor: 'var(--border)' }}
+      className="flex flex-col w-60 min-h-screen shrink-0"
+      style={{
+        background: 'var(--bg-sidebar)',
+        borderRight: '1px solid rgba(0,0,0,0.25)',
+      }}
     >
       {/* Cabecera institucional */}
-      <div className="px-4 py-4 shrink-0" style={{ background: 'var(--idu-blue)' }}>
+      <div className="px-4 py-4 shrink-0" style={{ background: 'var(--sidebar-header-bg)' }}>
         <p
           className="text-[9px] font-mono tracking-[0.2em] uppercase mb-1"
-          style={{ color: 'rgba(255,255,255,0.55)' }}
+          style={{ color: 'rgba(255,255,255,0.45)' }}
         >
           BOB · Sistema Bitácora
         </p>
-        <p className="text-white font-bold text-[15px] leading-tight tracking-tight">
+        <p
+          className="font-bold text-[15px] leading-tight tracking-tight"
+          style={{ color: '#FFFFFF' }}
+        >
           BDO · IDU-1556-2025
         </p>
-        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.60)' }}>
+        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.50)' }}>
           Contrato Grupo 4
         </p>
+        {/* Borde inferior dorado como acento visual */}
+        <div
+          className="mt-3 h-[2px] rounded-full"
+          style={{ background: 'linear-gradient(to right, var(--corp-gold), transparent)' }}
+        />
       </div>
 
       {/* Navegación */}
@@ -91,12 +102,15 @@ export function Sidebar({ perfil }: SidebarProps) {
 
           return (
             <div key={cat.label}>
+              {/* Header de sección en mayúsculas gris claro */}
               <p
                 className="text-[10px] font-mono tracking-widest uppercase px-2 mb-1.5"
-                style={{ color: 'var(--text-muted)' }}
+                style={{ color: 'var(--sidebar-text-muted)' }}
               >
                 {cat.label}
               </p>
+              {/* Divisor sutil */}
+              <div className="mb-2 mx-2 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
 
               <div className="space-y-0.5">
                 {pages.map((page) => {
@@ -110,32 +124,32 @@ export function Sidebar({ perfil }: SidebarProps) {
                       href={page.href}
                       className={cn(
                         'relative flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] transition-colors duration-150',
-                        !isActive && 'hover:bg-[var(--muted)]',
+                        !isActive && 'hover:bg-white/[0.07]',
                       )}
                       style={
                         isActive
                           ? {
-                              background: 'var(--idu-blue-lt)',
-                              color: 'var(--idu-blue)',
-                              borderLeft: '3px solid var(--idu-blue)',
+                              background: 'var(--sidebar-active-bg)',
+                              color: '#FFFFFF',
+                              borderLeft: '3px solid var(--sidebar-active-border)',
                               paddingLeft: '9px',
                               fontWeight: 500,
                             }
-                          : { color: 'var(--text-muted)' }
+                          : { color: 'var(--sidebar-text)' }
                       }
                     >
                       {isActive && (
                         <motion.span
                           layoutId="active-nav"
                           className="absolute inset-0 rounded-md"
-                          style={{ background: 'var(--idu-blue-lt)', zIndex: -1 }}
+                          style={{ background: 'var(--sidebar-active-bg)', zIndex: -1 }}
                           transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                         />
                       )}
                       {Icon && (
                         <Icon
                           size={14}
-                          color={isActive ? 'var(--idu-blue)' : 'var(--text-muted)'}
+                          color={isActive ? '#D4A843' : 'var(--sidebar-text-muted)'}
                           className="shrink-0"
                         />
                       )}
@@ -151,20 +165,23 @@ export function Sidebar({ perfil }: SidebarProps) {
 
       {/* Footer perfil */}
       <div
-        className="px-3 py-3 border-t flex items-center gap-2.5"
-        style={{ borderColor: 'var(--border)', background: 'var(--muted)' }}
+        className="px-3 py-3 flex items-center gap-2.5"
+        style={{
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          background: 'var(--sidebar-footer-bg)',
+        }}
       >
         <div
           className="flex-none w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
-          style={{ background: 'var(--idu-blue)', color: '#ffffff' }}
+          style={{ background: 'var(--corp-gold)', color: '#1A2535' }}
         >
           {initials}
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+          <p className="text-xs font-medium truncate" style={{ color: '#FFFFFF' }}>
             {perfil.nombre}
           </p>
-          <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[11px] truncate" style={{ color: 'var(--sidebar-text-muted)' }}>
             {ROL_LABELS[perfil.rol]}
           </p>
         </div>
