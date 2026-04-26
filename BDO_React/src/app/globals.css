@@ -2,14 +2,20 @@
 
 /* ── Paleta IDU ─────────────────────────────────────────── */
 @theme {
+  /* --- Identidad Central IDU --- */
   --color-idu-blue: #002d57;
+  --color-idu-blue-dark: #001a33;
+  --color-idu-blue-lt: #e6f0f9;
   --color-idu-red: #ed1c24;
+  --color-idu-red-lt: #fde8e9;
   --color-idu-yellow: #ffd200;
+  --color-idu-yellow-lt: #fff9d6;
   --color-idu-green: #6d8e2d;
+  --color-idu-green-lt: #e2e8d5;
   --color-idu-orange: #e07b39;
 
   --color-bg-app: #edf1f7;
-  --color-bg-sidebar: #001529;
+  --color-bg-sidebar: #001a33;
   --color-bg-card: #ffffff;
 
   --color-accent-blue: #1e6fd9;
@@ -29,26 +35,50 @@
 
 /* ── Variables CSS para componentes ─────────────────────── */
 :root {
-  --idu-blue: #002d57;
-  --idu-red: #ed1c24;
-  --idu-yellow: #ffd200;
-  --idu-green: #6d8e2d;
+  /* --- Identidad Central IDU ---
+     Ratios de contraste WCAG (AA normal ≥4.5:1 · AA grande ≥3:1)      */
+  --idu-blue: #002d57; /* fondo  → --idu-blue-fg       13.3:1 */
+  --idu-blue-dark: #001a33; /* fondo  → --idu-blue-dark-fg  16.8:1 */
+  --idu-blue-lt: #e6f0f9; /* fondo  → --idu-blue-lt-fg    11.7:1 */
+  --idu-red: #ed1c24; /* fondo  → --idu-red-fg         4.3:1 (botones/iconos grandes) */
+  --idu-red-lt: #fde8e9; /* fondo  → --idu-red-lt-fg     14.5:1 */
+  --idu-yellow: #ffd200; /* fondo  → --idu-yellow-fg     11.9:1 */
+  --idu-yellow-lt: #fff9d6; /* fondo  → --idu-yellow-lt-fg  ~14:1  */
+  --idu-green: #6d8e2d; /* fondo  → --idu-green-fg       4.8:1 */
+  --idu-green-lt: #e2e8d5; /* fondo  → --idu-green-lt-fg   11.6:1 */
   --idu-orange: #e07b39;
 
+  /* Foreground recomendado por cada fondo IDU */
+  --idu-blue-fg: #ffffff; /* 13.3:1  sobre --idu-blue      */
+  --idu-blue-dark-fg: #ffffff; /* 16.8:1  sobre --idu-blue-dark */
+  --idu-blue-lt-fg: #002d57; /* 11.7:1  sobre --idu-blue-lt   */
+  --idu-red-fg: #ffffff; /*  4.3:1  sobre --idu-red – AA grande/botones */
+  --idu-red-fg-text: #000000; /*  4.9:1  sobre --idu-red – AA texto normal   */
+  --idu-red-lt-fg: #001a33; /* 14.5:1  sobre --idu-red-lt    */
+  --idu-yellow-fg: #001a33; /* 11.9:1  sobre --idu-yellow    */
+  --idu-yellow-lt-fg: #001a33; /* ~14:1   sobre --idu-yellow-lt */
+  --idu-green-fg: #001a33; /*  4.8:1  sobre --idu-green     */
+  --idu-green-lt-fg: #1e2d08; /* 11.6:1  sobre --idu-green-lt  */
+
+  /* Layout */
   --bg-app: #edf1f7;
-  --bg-sidebar: #001529;
+  --bg-sidebar: #001a33;
   --bg-card: #ffffff;
 
+  /* Accents */
   --accent-blue: #1e6fd9;
   --accent-green: #3b8a3e;
-  --accent-red: #c0392b;
+  --accent-red: #c0392b; /* rojo oscuro AA 5.6:1 sobre blanco — preferir para texto pequeño */
   --accent-orange: #e07b39;
   --accent-purple: #7c3aed;
   --accent-teal: #0d9488;
 
+  /* Tipografía y bordes */
   --text-primary: #0f172a;
   --text-muted: #64748b;
   --border: #dde4ee;
+
+  /* Shadcn / sistema */
   --card: #ffffff;
   --card-foreground: #0f172a;
   --background: #edf1f7;
@@ -67,12 +97,27 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    /* Variantes claras invertidas en modo oscuro */
+    --idu-blue-lt: #0d2744;
+    --idu-blue-lt-fg: #a8cfef;
+    --idu-red-lt: #3d0507;
+    --idu-red-lt-fg: #ff8c8c;
+    --idu-yellow-lt: #2d2400;
+    --idu-yellow-lt-fg: #ffd200;
+    --idu-green-lt: #1a2409;
+    --idu-green-lt-fg: #a8c46a;
+
+    /* Layout */
     --bg-app: #0d1520;
     --bg-card: #12233d;
     --bg-sidebar: #060e1a;
+
+    /* Tipografía */
     --text-primary: #e8f0fb;
     --text-muted: #7a96b8;
     --border: #1a2e4a;
+
+    /* Shadcn / sistema */
     --card: #12233d;
     --card-foreground: #e8f0fb;
     --background: #0d1520;

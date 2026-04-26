@@ -1,3 +1,6 @@
 {
-  "rootDirectory": "BDO_React"
+  "framework": "nextjs",
+  "installCommand": "cd BDO_React && npm install",
+  "buildCommand": "cd BDO_React && npm run build",
+  "outputDirectory": "BDO_React/.next"
 }
