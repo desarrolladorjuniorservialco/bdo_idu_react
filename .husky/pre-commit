@@ -1,0 +1,1 @@
+cd BDO_React && npx lint-staged
