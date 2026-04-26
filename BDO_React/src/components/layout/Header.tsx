@@ -1,23 +1,23 @@
 'use client';
-import { useRouter } from 'next/navigation';
-import { LogOut, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ROL_LABELS } from '@/lib/config';
+import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotifStore } from '@/stores/notifStore';
-import { createClient } from '@/lib/supabase/client';
-import { ROL_LABELS } from '@/lib/config';
 import type { Perfil } from '@/types/database';
+import { Bell, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   perfil: Perfil;
 }
 
 export function Header({ perfil }: HeaderProps) {
-  const router   = useRouter();
+  const router = useRouter();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const clearNotifs = useNotifStore((s) => s.clearNotifs);
-  const notifs   = useNotifStore((s) => s.notifs);
-  const unread   = notifs.filter((n) => !n.leida).length;
+  const notifs = useNotifStore((s) => s.notifs);
+  const unread = notifs.filter((n) => !n.leida).length;
 
   async function handleLogout() {
     const supabase = createClient();
