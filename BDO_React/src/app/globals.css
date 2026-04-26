@@ -2,105 +2,158 @@
 
 /* ── Paleta IDU ─────────────────────────────────────────── */
 @theme {
-  --color-idu-blue:   #002D57;
-  --color-idu-red:    #ED1C24;
-  --color-idu-yellow: #FFD200;
-  --color-idu-green:  #6D8E2D;
-  --color-idu-orange: #E07B39;
+  --color-idu-blue: #002d57;
+  --color-idu-red: #ed1c24;
+  --color-idu-yellow: #ffd200;
+  --color-idu-green: #6d8e2d;
+  --color-idu-orange: #e07b39;
 
-  --color-bg-app:     #F3F5F7;
-  --color-bg-sidebar: #1E2535;
-  --color-bg-card:    #FFFFFF;
+  --color-bg-app: #edf1f7;
+  --color-bg-sidebar: #001529;
+  --color-bg-card: #ffffff;
 
-  --color-accent-blue:   #1E6FD9;
-  --color-accent-green:  #3B8A3E;
-  --color-accent-red:    #C0392B;
-  --color-accent-orange: #E07B39;
-  --color-accent-purple: #7C3AED;
-  --color-accent-teal:   #0D9488;
+  --color-accent-blue: #1e6fd9;
+  --color-accent-green: #3b8a3e;
+  --color-accent-red: #c0392b;
+  --color-accent-orange: #e07b39;
+  --color-accent-purple: #7c3aed;
+  --color-accent-teal: #0d9488;
 
-  --color-text-primary: #1A202C;
-  --color-text-muted:   #6B7280;
-  --color-border:       #E2E8F0;
+  --color-text-primary: #0f172a;
+  --color-text-muted: #64748b;
+  --color-border: #dde4ee;
 
-  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
 }
 
 /* ── Variables CSS para componentes ─────────────────────── */
 :root {
-  --idu-blue:   #002D57;
-  --idu-red:    #ED1C24;
-  --idu-yellow: #FFD200;
-  --idu-green:  #6D8E2D;
-  --idu-orange: #E07B39;
+  --idu-blue: #002d57;
+  --idu-red: #ed1c24;
+  --idu-yellow: #ffd200;
+  --idu-green: #6d8e2d;
+  --idu-orange: #e07b39;
 
-  --bg-app:     #F3F5F7;
-  --bg-sidebar: #1E2535;
-  --bg-card:    #FFFFFF;
+  --bg-app: #edf1f7;
+  --bg-sidebar: #001529;
+  --bg-card: #ffffff;
 
-  --accent-blue:   #1E6FD9;
-  --accent-green:  #3B8A3E;
-  --accent-red:    #C0392B;
-  --accent-orange: #E07B39;
-  --accent-purple: #7C3AED;
-  --accent-teal:   #0D9488;
+  --accent-blue: #1e6fd9;
+  --accent-green: #3b8a3e;
+  --accent-red: #c0392b;
+  --accent-orange: #e07b39;
+  --accent-purple: #7c3aed;
+  --accent-teal: #0d9488;
 
-  --text-primary: #1A202C;
-  --text-muted:   #6B7280;
-  --border:       #E2E8F0;
-  --card:         #FFFFFF;
-  --card-foreground: #1A202C;
-  --background:   #F3F5F7;
-  --foreground:   #1A202C;
-  --muted:        #F1F5F9;
-  --muted-foreground: #6B7280;
-  --destructive:  #ED1C24;
-  --primary:      #002D57;
-  --primary-foreground: #FFFFFF;
-  --secondary:    #F1F5F9;
-  --secondary-foreground: #1A202C;
-  --input:        #E2E8F0;
-  --ring:         #002D57;
-  --radius:       0.5rem;
+  --text-primary: #0f172a;
+  --text-muted: #64748b;
+  --border: #dde4ee;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --background: #edf1f7;
+  --foreground: #0f172a;
+  --muted: #f0f4f9;
+  --muted-foreground: #64748b;
+  --destructive: #ed1c24;
+  --primary: #002d57;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f4f9;
+  --secondary-foreground: #0f172a;
+  --input: #dde4ee;
+  --ring: #ffd200;
+  --radius: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-app:     #111827;
-    --bg-card:    #1F2937;
-    --bg-sidebar: #111827;
-    --text-primary: #F9FAFB;
-    --text-muted:   #9CA3AF;
-    --border:       #374151;
-    --card:         #1F2937;
-    --card-foreground: #F9FAFB;
-    --background:   #111827;
-    --foreground:   #F9FAFB;
-    --muted:        #1F2937;
-    --muted-foreground: #9CA3AF;
-    --primary:      #3B82F6;
-    --primary-foreground: #FFFFFF;
-    --secondary:    #1F2937;
-    --secondary-foreground: #F9FAFB;
-    --input:        #374151;
+    --bg-app: #0d1520;
+    --bg-card: #12233d;
+    --bg-sidebar: #060e1a;
+    --text-primary: #e8f0fb;
+    --text-muted: #7a96b8;
+    --border: #1a2e4a;
+    --card: #12233d;
+    --card-foreground: #e8f0fb;
+    --background: #0d1520;
+    --foreground: #e8f0fb;
+    --muted: #12233d;
+    --muted-foreground: #7a96b8;
+    --primary: #ffd200;
+    --primary-foreground: #002d57;
+    --secondary: #12233d;
+    --secondary-foreground: #e8f0fb;
+    --input: #1a2e4a;
+    --ring: #ffd200;
   }
 }
 
 /* ── Base ───────────────────────────────────────────────── */
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   background: var(--bg-app);
   color: var(--text-primary);
-  font-family: var(--font-sans, 'IBM Plex Sans', system-ui, sans-serif);
+  font-family: var(--font-sans, "IBM Plex Sans", system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 /* ── Scrollbar personalizada ────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ── Animaciones ─────────────────────────────────────────── */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% center;
+  }
+  to {
+    background-position: 200% center;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out both;
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out both;
+}
