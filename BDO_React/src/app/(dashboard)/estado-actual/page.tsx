@@ -5,7 +5,6 @@ import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import { createClient } from '@/lib/supabase/server';
 import { formatCOP, formatDateDMY } from '@/lib/utils';
 import type { Adicion, Contrato, Prorroga } from '@/types/database';
-import { redirect } from 'next/navigation';
 
 export const revalidate = 60;
 
@@ -60,7 +59,7 @@ function TimelineBar({
 
 export default async function EstadoActualPage() {
   const user = await getCachedUser();
-  if (!user) redirect('/login');
+  if (!user) return null;
   const perfil = await getCachedPerfil(user.id);
   const contratoId = perfil?.contrato_id;
   if (!contratoId) {
