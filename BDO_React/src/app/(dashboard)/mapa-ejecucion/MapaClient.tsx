@@ -547,7 +547,7 @@ export default function MapaClient({
                 className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
                 style={{
                   background: activeTab === t.key ? 'var(--accent-teal)' : 'var(--muted)',
-                  color:      activeTab === t.key ? '#fff' : 'var(--text-muted)',
+                  color:      activeTab === t.key ? '#1c3277' : 'var(--text-muted)',
                 }}
               >
                 {t.count}

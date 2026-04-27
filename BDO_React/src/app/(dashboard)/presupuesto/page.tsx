@@ -8,6 +8,6 @@ export default async function Page() {
   const user = await getCachedUser();
   const perfil = await getCachedPerfil(user!.id);
 
-  const { items } = await fetchPresupuesto(perfil!.contrato_id);
-  return <PresupuestoClient items={items} rol={perfil!.rol} />;
+  const { items, tramos } = await fetchPresupuesto(perfil!.contrato_id);
+  return <PresupuestoClient items={items} tramos={tramos} rol={perfil!.rol} />;
 }
