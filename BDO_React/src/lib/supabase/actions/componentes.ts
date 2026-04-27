@@ -22,6 +22,15 @@ export async function fetchFotosComponentes(registroIds: string[]) {
   return data ?? [];
 }
 
+export async function fetchFotosComponentesByContrato(contratoId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('rf_componentes')
+    .select('registro_id, url, descripcion')
+    .eq('contrato_id', contratoId);
+  return data ?? [];
+}
+
 export async function fetchFormularioPmt(contratoId: string) {
   const supabase = await createClient();
   const { data } = await supabase

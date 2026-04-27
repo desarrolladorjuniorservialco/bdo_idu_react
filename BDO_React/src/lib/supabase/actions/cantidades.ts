@@ -20,3 +20,12 @@ export async function fetchFotosCantidades(registroIds: string[]) {
     .in('registro_id', registroIds);
   return data ?? [];
 }
+
+export async function fetchFotosCantidadesByContrato(contratoId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('rf_cantidades')
+    .select('registro_id, url, descripcion')
+    .eq('contrato_id', contratoId);
+  return data ?? [];
+}

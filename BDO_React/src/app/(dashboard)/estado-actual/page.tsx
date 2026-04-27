@@ -1,40 +1,35 @@
-import { createClient } from '@/lib/supabase/server';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { SectionBadge } from '@/components/shared/SectionBadge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { formatDate, formatCOP } from '@/lib/utils';
+import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
+import { createClient } from '@/lib/supabase/server';
+import { formatCOP, formatDate } from '@/lib/utils';
 
 export const revalidate = 60;
 
 export default async function EstadoActualPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  const { data: perfil } = await supabase
-    .from('perfiles')
-    .select('contrato_id')
-    .eq('id', user!.id)
-    .single();
-
+  const user = await getCachedUser();
+  const perfil = await getCachedPerfil(user!.id);
   const contratoId = perfil?.contrato_id;
 
+  const supabase = await createClient();
   const [contratoRes, prorrogasRes, adicionesRes] = await Promise.all([
     supabase.from('contratos').select('*').eq('id', contratoId).single(),
     supabase.from('contratos_prorrogas').select('*').eq('contrato_id', contratoId).order('numero'),
     supabase.from('contratos_adiciones').select('*').eq('contrato_id', contratoId).order('numero'),
   ]);
 
-  const contrato  = contratoRes.data;
+  const contrato = contratoRes.data;
   const prorrogas = prorrogasRes.data ?? [];
   const adiciones = adicionesRes.data ?? [];
 
-  const valorActual = (contrato?.valor_inicial ?? 0) +
-    adiciones.reduce((a: number, ad: any) => a + (ad.valor ?? 0), 0);
+  const valorActual =
+    (contrato?.valor_inicial ?? 0) + adiciones.reduce((a: number, ad) => a + (ad.valor ?? 0), 0);
 
-  const today   = new Date();
-  const inicio  = contrato?.fecha_inicio ? new Date(contrato.fecha_inicio) : null;
-  const fin     = contrato?.fecha_fin    ? new Date(contrato.fecha_fin)    : null;
-  const total   = inicio && fin ? fin.getTime() - inicio.getTime() : 1;
+  const today = new Date();
+  const inicio = contrato?.fecha_inicio ? new Date(contrato.fecha_inicio) : null;
+  const fin = contrato?.fecha_fin ? new Date(contrato.fecha_fin) : null;
+  const total = inicio && fin ? fin.getTime() - inicio.getTime() : 1;
   const elapsed = inicio ? Math.min(today.getTime() - inicio.getTime(), total) : 0;
   const pctTime = total > 0 ? Math.max(0, Math.min(100, (elapsed / total) * 100)) : 0;
 
@@ -82,21 +77,13 @@ export default async function EstadoActualPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard
-          label="Valor inicial"
-          value={formatCOP(contrato?.valor_inicial)}
-          accent="blue"
-        />
+        <KpiCard label="Valor inicial" value={formatCOP(contrato?.valor_inicial)} accent="blue" />
         <KpiCard
           label="Adiciones"
-          value={formatCOP(adiciones.reduce((a: number, ad: any) => a + (ad.valor ?? 0), 0))}
+          value={formatCOP(adiciones.reduce((a: number, ad) => a + (ad.valor ?? 0), 0))}
           accent="orange"
         />
-        <KpiCard
-          label="Valor actual"
-          value={formatCOP(valorActual)}
-          accent="green"
-        />
+        <KpiCard label="Valor actual" value={formatCOP(valorActual)} accent="green" />
         <KpiCard
           label="Plazo (meses)"
           value={contrato?.plazo_meses ?? '—'}
@@ -124,7 +111,7 @@ export default async function EstadoActualPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)]">
-                {prorrogas.map((p: any) => (
+                {prorrogas.map((p) => (
                   <tr key={p.id}>
                     <td className="py-2">{p.numero}</td>
                     <td className="py-2 font-mono">{p.plazo_meses}</td>
@@ -145,7 +132,9 @@ export default async function EstadoActualPage() {
           className="rounded-xl p-4"
           style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
         >
-          <h3 className="text-sm font-semibold mb-3 text-[var(--text-primary)]">Adiciones Presupuestales</h3>
+          <h3 className="text-sm font-semibold mb-3 text-[var(--text-primary)]">
+            Adiciones Presupuestales
+          </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
@@ -157,7 +146,7 @@ export default async function EstadoActualPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)]">
-                {adiciones.map((ad: any) => (
+                {adiciones.map((ad) => (
                   <tr key={ad.id}>
                     <td className="py-2">{ad.numero}</td>
                     <td className="py-2 font-mono tabular-nums">{formatCOP(ad.valor)}</td>

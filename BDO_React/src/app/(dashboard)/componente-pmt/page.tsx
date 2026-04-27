@@ -1,17 +1,21 @@
-import { createClient } from '@/lib/supabase/server';
-import { fetchComponentes, fetchFotosComponentes } from '@/lib/supabase/actions/componentes';
 import ComponentePage from '@/components/pages/ComponentePage';
+import {
+  fetchComponentes,
+  fetchFotosComponentesByContrato,
+} from '@/lib/supabase/actions/componentes';
+import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 
 export const revalidate = 0;
 
 export default async function Page() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const { data: perfil } = await supabase
-    .from('perfiles').select('rol, contrato_id').eq('id', user!.id).single();
+  const user = await getCachedUser();
+  const perfil = await getCachedPerfil(user!.id);
+  const contratoId = perfil!.contrato_id;
 
-  const registros = await fetchComponentes(perfil!.contrato_id, 'pmt');
-  const fotos = await fetchFotosComponentes(registros.map((r: any) => r.id));
+  const [registros, fotos] = await Promise.all([
+    fetchComponentes(contratoId, 'pmt'),
+    fetchFotosComponentesByContrato(contratoId),
+  ]);
 
   return (
     <ComponentePage

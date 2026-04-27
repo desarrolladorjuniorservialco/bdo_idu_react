@@ -1,27 +1,21 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { PageWrapper } from '@/components/layout/PageWrapper';
-import { AuthInitializer } from './AuthInitializer';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { getCachedPerfil, getCachedSession, getCachedUser } from '@/lib/supabase/cached-queries';
 import type { Perfil } from '@/types/database';
+import { redirect } from 'next/navigation';
+import { AuthInitializer } from './AuthInitializer';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCachedUser();
 
   if (!user) redirect('/login');
 
-  const { data: perfil } = await supabase
-    .from('perfiles')
-    .select('id, nombre, rol, empresa, contrato_id')
-    .eq('id', user.id)
-    .single();
+  const [perfil, session] = await Promise.all([getCachedPerfil(user.id), getCachedSession()]);
 
   if (!perfil) redirect('/login');
 
-  const { data: session } = await supabase.auth.getSession();
-  const accessToken = session.session?.access_token ?? '';
+  const accessToken = session?.access_token ?? '';
 
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--bg-app)' }}>
