@@ -10,15 +10,18 @@ export interface Perfil {
 }
 
 export interface Contrato {
-  id: string;
-  numero: string;
-  objeto: string;
+  id: string;            // número de contrato (PK), ej. "IDU-1556-2025"
+  nombre: string;        // descripción/objeto del contrato
   contratista: string;
-  valor_total: number;
-  valor_inicial: number;
-  fecha_inicio: string;
-  fecha_fin: string;
-  plazo_meses: number;
+  intrventoria: string;  // typo preservado del Excel/BD
+  supervisor_idu: string;
+  fecha_inicio: string;  // ISO date
+  fecha_fin: string;     // fecha fin original, ISO date
+  plazo_actual: string | null;  // fecha fin vigente (se actualiza con prórrogas), ISO date
+  valor_contrato: number;
+  valor_actual: number;
+  prorrogas: number;     // contador
+  adiciones: number;     // contador
   estado: string;
 }
 
@@ -26,19 +29,24 @@ export interface Prorroga {
   id: string;
   contrato_id: string;
   numero: number;
-  plazo_meses: number;
-  fecha_inicio: string;
-  fecha_fin: string;
-  observacion?: string;
+  plazo_dias: number;    // días adicionados
+  fecha_fin: string;     // nueva fecha fin vigente
+  fecha_firma: string;
+  acta?: string;
+  objeto?: string;
+  observaciones?: string;
 }
 
 export interface Adicion {
   id: string;
   contrato_id: string;
   numero: number;
-  valor: number;
-  fecha: string;
-  observacion?: string;
+  adicion: number;       // valor de esta adición
+  valor_actual: number;  // valor acumulado del contrato
+  fecha_firma: string;
+  acta?: string;
+  objeto?: string;
+  observaciones?: string;
 }
 
 export interface RegistroCantidad {

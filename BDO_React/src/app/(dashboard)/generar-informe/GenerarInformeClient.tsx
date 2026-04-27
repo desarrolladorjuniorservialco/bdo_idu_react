@@ -33,9 +33,9 @@ export default function GenerarInformeClient({ data }: { data: any }) {
              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
           <h3 className="text-sm font-semibold">Datos del contrato</h3>
           <div className="grid grid-cols-2 gap-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-            <span><b>Número:</b> {data.contrato.numero}</span>
+            <span><b>Número:</b> {data.contrato.id}</span>
             <span><b>Contratista:</b> {data.contrato.contratista}</span>
-            <span><b>Valor:</b> {formatCOP(data.contrato.valor_total)}</span>
+            <span><b>Valor:</b> {formatCOP(data.contrato.valor_actual)}</span>
             <span><b>Fin:</b> {data.contrato.fecha_fin?.slice(0, 10) ?? '—'}</span>
           </div>
         </div>
