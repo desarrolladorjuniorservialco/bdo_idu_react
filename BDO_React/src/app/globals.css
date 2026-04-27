@@ -1,47 +1,6 @@
 @import "tailwindcss";
 
-/* ── Paleta Corporativa BDO · IDU-1556-2025 ─────────────────── */
-@theme {
-  /* --- Identidad Corporativa Principal --- */
-  --color-corp-primary: #6b8e23; /* Verde musgo corporativo */
-  --color-corp-dark: #4a5d23; /* Verde profundo */
-  --color-corp-gold: #d4a843; /* Dorado/ámbar acento */
-  --color-corp-gold-lt: #fffbeb; /* Dorado muy claro (badges alerta) */
-  --color-corp-green-lt: #f0fdf4; /* Verde muy claro (badges activos) */
 
-  /* --- Compatibilidad IDU --- */
-  --color-idu-blue: #ffffff;
-  --color-idu-blue-dark: #ffffff;
-  --color-idu-blue-lt: #e6f0f9; /* color del título principal "BDO · IDU-1556-2025"*/
-  --color-idu-red: #ed1c24;
-  --color-idu-red-lt: #fde8e9;
-  --color-idu-yellow: #ffd200;
-  --color-idu-yellow-lt: #fff9d6;
-  --color-idu-green: #6b8e23;
-  --color-idu-green-lt: #f0fdf4;
-  --color-idu-orange: #e07b39;
-
-  /* --- Layout --- */
-  --color-bg-app: #ededed; /* Gris muy claro slate-50 */
-  --color-bg-sidebar: #2d3748; /* Sidebar oscuro slate-700 */
-  --color-bg-card: #ffffff;
-
-  /* --- Accents semánticos --- */
-  --color-accent-blue: #1e6fd9;
-  --color-accent-green: #6b8e23;
-  --color-accent-red: #c0392b;
-  --color-accent-orange: #e07b39;
-  --color-accent-purple: #7c3aed;
-  --color-accent-teal: #0d9488;
-
-  /* --- Tipografía --- */
-  --color-text-primary: #1f2937;
-  --color-text-muted: #6b7280;
-  --color-border: #e5e7eb;
-
-  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", "Courier New", monospace;
-}
 
 /* ── Variables CSS para componentes ─────────────────────────── */
 :root {
@@ -148,7 +107,7 @@
     --sidebar-footer-bg: #060e1a;
 
     --text-primary: #e8f0fb;
-    --text-muted: #7a96b8;
+    --text-muted: #699bd8;
     --border: #1a2e4a;
 
     --card: #12233d;
