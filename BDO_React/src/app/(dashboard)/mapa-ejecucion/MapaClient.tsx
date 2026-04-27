@@ -448,11 +448,7 @@ export default function MapaClient({
                 onChange={e => set({ [key]: e.target.checked })}
                 style={{ accentColor: color, width: 14, height: 14 }}
               />
-              <span className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--text-primary)' }}>
-                <span
-                  className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0"
-                  style={{ background: color }}
-                />
+              <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
                 {label}
               </span>
             </label>
