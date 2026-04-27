@@ -26,7 +26,7 @@ function TimelineBar({
   fechaIni: string;
   fechaFin: string;
 }) {
-  const color =
+ const color =
     pct > 85 ? 'var(--accent-red)' : pct > 60 ? 'var(--accent-orange)' : '#198754';
   const barText = pct >= 20 ? `${pct.toFixed(1)}% transcurrido` : `${pct.toFixed(1)}%`;
 
@@ -38,7 +38,9 @@ function TimelineBar({
           {pct.toFixed(1)}%
         </span>
       </div>
-      <div className="h-5 rounded-full overflow-hidden" style={{ background: 'var(--muted)' }}>
+      
+      {/* Modificación aquí: Se quitó el style y se agregó bg-gray-200 */}
+      <div className="h-5 rounded-full overflow-hidden bg-gray-200">
         <div
           className="h-5 rounded-full flex items-center px-2 transition-all"
           style={{ width: `${Math.max(pct, 3)}%`, background: color }}
@@ -46,6 +48,7 @@ function TimelineBar({
           <span className="text-white text-[10px] font-semibold whitespace-nowrap">{barText}</span>
         </div>
       </div>
+
       <div className="flex justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
         <span>Inicio: {fechaIni}</span>
         <span className="font-semibold" style={{ color }}>
