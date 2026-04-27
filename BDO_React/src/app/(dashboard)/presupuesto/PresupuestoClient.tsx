@@ -1,8 +1,8 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback, useRef } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, Cell,
+  Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import { SectionBadge } from '@/components/shared/SectionBadge';
 import { KpiCard } from '@/components/shared/KpiCard';
@@ -16,19 +16,55 @@ import {
 import { formatCOP } from '@/lib/utils';
 import type { Rol } from '@/types/database';
 
-// ─── Paleta IDU ─────────────────────────────────────────────
+// ─── Paleta IDU ──────────────────────────────────────────────
 const IDU_BLUE  = '#002D57';
 const IDU_GREEN = '#6D8E2D';
 const IDU_TEAL  = '#0076B0';
 const IDU_GOLD  = '#E6BC00';
 
-const TIPOS: Record<string, { nombre: string; und: string; colorMeta: string; colorEjec: string; accent: 'blue' | 'green' | 'teal' | 'gold' }> = {
-  MV: { nombre: 'Malla Vial',     und: 'ml',  colorMeta: IDU_BLUE,  colorEjec: IDU_TEAL,  accent: 'teal'  },
-  EP: { nombre: 'Espacio Público', und: 'm²', colorMeta: IDU_BLUE,  colorEjec: IDU_GREEN, accent: 'green' },
-  CI: { nombre: 'Ciclorruta',     und: 'km',  colorMeta: IDU_BLUE,  colorEjec: IDU_GOLD,  accent: 'blue'  },
+const TIPOS: Record<string, {
+  nombre: string; und: string;
+  colorMeta: string; colorEjec: string;
+  accent: 'blue' | 'green' | 'teal' | 'gold';
+}> = {
+  MV: { nombre: 'Malla Vial',      und: 'ml', colorMeta: IDU_BLUE, colorEjec: IDU_TEAL,  accent: 'teal'  },
+  EP: { nombre: 'Espacio Público', und: 'm²', colorMeta: IDU_BLUE, colorEjec: IDU_GREEN, accent: 'green' },
+  CI: { nombre: 'Ciclorruta',      und: 'km', colorMeta: IDU_BLUE, colorEjec: IDU_GOLD,  accent: 'blue'  },
 };
 
-// ─── Helpers ────────────────────────────────────────────────
+// ─── Anchos por defecto de la tabla presupuestal ─────────────
+const DEFAULT_COL_WIDTHS = [110, 220, 55, 95, 110, 120, 95, 120, 130];
+const COL_HEADERS = [
+  'Capítulo', 'Actividad', 'Und',
+  'Cant. Prog.', 'V. Unitario', 'V. Programado',
+  'Cant. Ejec.', 'V. Ejecutado', 'Ejecución',
+];
+
+// ─── Hook redimensionamiento de columnas ──────────────────────
+function useColumnResize(defaults: number[]) {
+  const [widths, setWidths] = useState<number[]>(defaults);
+
+  const startResize = useCallback((colIdx: number) => (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const startX     = e.clientX;
+    const startWidth = widths[colIdx];
+
+    const onMove = (ev: PointerEvent) => {
+      const next = Math.max(50, startWidth + ev.clientX - startX);
+      setWidths(prev => { const a = [...prev]; a[colIdx] = next; return a; });
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup',   onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup',   onUp);
+  }, [widths]);
+
+  return { widths, startResize };
+}
+
+// ─── Helpers ─────────────────────────────────────────────────
 function pctColor(pct: number) {
   if (pct >= 70) return IDU_GREEN;
   if (pct >= 40) return '#FD7E14';
@@ -48,11 +84,9 @@ function GlobalProgressBar({ label, pct, ejecutado, pendiente, total }: {
       <div className="h-5 rounded-full overflow-hidden" style={{ background: 'var(--muted)' }}>
         <div
           className="h-full rounded-full flex items-center justify-end pr-2 transition-all duration-700"
-          style={{ width: `${Math.min(pct, 100)}%`, background: fill, minWidth: pct > 5 ? undefined : '0' }}
+          style={{ width: `${Math.min(pct, 100)}%`, background: fill }}
         >
-          {pct > 8 && (
-            <span className="text-[10px] font-bold text-white">{pct.toFixed(1)}%</span>
-          )}
+          {pct > 8 && <span className="text-[10px] font-bold text-white">{pct.toFixed(1)}%</span>}
         </div>
       </div>
       <div className="flex justify-between mt-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>
@@ -69,10 +103,7 @@ function InlineProgressBar({ pct }: { pct: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'var(--muted)' }}>
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${Math.min(pct, 100)}%`, background: fill }}
-        />
+        <div className="h-full rounded-full" style={{ width: `${Math.min(pct, 100)}%`, background: fill }} />
       </div>
       <span className="text-[10px] font-mono tabular-nums w-10 text-right" style={{ color: fill }}>
         {pct.toFixed(1)}%
@@ -90,17 +121,13 @@ function TypeProgressBar({ pct, label }: { pct: number; label?: string }) {
         <span className="text-[11px] font-bold ml-auto" style={{ color: fill }}>{pct.toFixed(1)}%</span>
       </div>
       <div className="h-3 rounded-full overflow-hidden" style={{ background: 'var(--muted)' }}>
-        <div
-          className="h-full rounded-full transition-all duration-700"
-          style={{ width: `${Math.min(pct, 100)}%`, background: fill }}
-        />
+        <div className="h-full rounded-full" style={{ width: `${Math.min(pct, 100)}%`, background: fill }} />
       </div>
     </div>
   );
 }
 
-// ─── Tabs ────────────────────────────────────────────────────
-function Tabs({ tabs, active, onChange }: { tabs: string[]; active: string; onChange: (t: string) => void }) {
+function TabBar({ tabs, active, onChange }: { tabs: string[]; active: string; onChange: (t: string) => void }) {
   return (
     <div className="flex gap-1 rounded-lg p-1" style={{ background: 'var(--muted)' }}>
       {tabs.map(t => (
@@ -108,11 +135,7 @@ function Tabs({ tabs, active, onChange }: { tabs: string[]; active: string; onCh
           key={t}
           onClick={() => onChange(t)}
           className="flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-all"
-          style={
-            active === t
-              ? { background: IDU_BLUE, color: '#fff' }
-              : { color: 'var(--text-muted)' }
-          }
+          style={active === t ? { background: IDU_BLUE, color: '#fff' } : { color: 'var(--text-muted)' }}
         >
           {t}
         </button>
@@ -121,14 +144,14 @@ function Tabs({ tabs, active, onChange }: { tabs: string[]; active: string; onCh
   );
 }
 
-// ─── Componente principal ────────────────────────────────────
+// ─── Componente principal ─────────────────────────────────────
 export default function PresupuestoClient({
   items, tramos, rol,
 }: { items: any[]; tramos: any[]; rol: Rol }) {
 
-  // ── Filtros ────────────────────────────────────────────────
+  // ── Filtros ───────────────────────────────────────────────
   const [compFilter, setCompFilter] = useState<string>('Todos');
-  const [buscar, setBuscar]         = useState('');
+  const [buscar,     setBuscar]     = useState('');
 
   const capitulos = useMemo(() => {
     const set = new Set<string>();
@@ -157,7 +180,7 @@ export default function PresupuestoClient({
     return list;
   }, [items, compFilter, buscar]);
 
-  // ── KPIs financieros ───────────────────────────────────────
+  // ── KPIs financieros ──────────────────────────────────────
   const kpis = useMemo(() => {
     const total     = itemsFiltrados.reduce((a, i) => a + (Number(i.valor_total ?? 0) || (i.cantidad ?? 0) * (i.precio_unitario ?? 0)), 0);
     const ejecutado = itemsFiltrados.reduce((a, i) => a + (Number(i.valor_ejecutado ?? 0) || (i.cantidad_ejecutada ?? 0) * (i.precio_unitario ?? 0)), 0);
@@ -165,7 +188,7 @@ export default function PresupuestoClient({
     return { total, ejecutado, pendiente: Math.max(total - ejecutado, 0), pct };
   }, [itemsFiltrados]);
 
-  // ── Gráfica por capítulo ───────────────────────────────────
+  // ── Gráfica por capítulo ──────────────────────────────────
   const chartDataCap = useMemo(() => {
     const by: Record<string, { presupuestado: number; ejecutado: number }> = {};
     for (const i of itemsFiltrados) {
@@ -177,21 +200,28 @@ export default function PresupuestoClient({
     return Object.entries(by).map(([name, v]) => ({ name, ...v }));
   }, [itemsFiltrados]);
 
-  // ── Meta física ────────────────────────────────────────────
+  // ── Redimensionamiento de columnas ────────────────────────
+  const { widths, startResize } = useColumnResize(DEFAULT_COL_WIDTHS);
+  const totalTableWidth = widths.reduce((a, b) => a + b, 0);
+
+  // ── Meta física ───────────────────────────────────────────
   const tramosData = useMemo(() => {
-    return tramos
-      .filter(t => Number(t.meta_fisica ?? t.cicloruta_km ?? t.esp_publico_m2 ?? 0) > 0)
-      .map(t => {
-        const infra = t.infraestructura ?? '';
-        const meta = Number(
-          t.meta_fisica ??
-          (infra === 'CI' ? t.cicloruta_km : t.esp_publico_m2) ??
-          0
-        );
-        const ejec = Number(t.ejecutado ?? t.avance_pct ?? 0);
-        const pct  = meta > 0 ? Math.min((ejec / meta) * 100, 100) : 0;
-        return { ...t, _meta: meta, _ejec: ejec, _pct: pct, _infra: infra };
-      });
+    return tramos.map(t => {
+      const infra = String(t.infraestructura ?? '').toUpperCase();
+      // meta: preferir meta_fisica, luego derivar por tipo
+      const meta = Number(
+        t.meta_fisica ??
+        (infra === 'CI' ? t.cicloruta_km : infra === 'EP' ? t.esp_publico_m2 : null) ??
+        0
+      );
+      // ejecutado puede ser numérico (cantidad) o booleano legacy
+      const ejecRaw = t.ejecutado;
+      const ejec = typeof ejecRaw === 'boolean'
+        ? (ejecRaw ? meta : 0)
+        : Number(ejecRaw ?? t.avance_pct ?? 0);
+      const pct = meta > 0 ? Math.min((ejec / meta) * 100, 100) : 0;
+      return { ...t, _meta: meta, _ejec: ejec, _pct: pct, _infra: infra };
+    }).filter(t => t._meta > 0);
   }, [tramos]);
 
   const metaKpis = useMemo(() => {
@@ -209,23 +239,21 @@ export default function PresupuestoClient({
     return result;
   }, [tramosData]);
 
-  // ── Tab de meta física ─────────────────────────────────────
-  const tabLabels = Object.values(TIPOS).map(t => t.nombre);
+  const tabLabels     = Object.values(TIPOS).map(t => t.nombre);
   const [activeTab, setActiveTab] = useState(tabLabels[0]);
-  const activeCodigo = Object.entries(TIPOS).find(([, v]) => v.nombre === activeTab)?.[0] ?? 'MV';
+  const activeCodigo  = Object.entries(TIPOS).find(([, v]) => v.nombre === activeTab)?.[0] ?? 'MV';
 
   const chartDataTramo = useMemo(() => {
-    const info = TIPOS[activeCodigo];
     return tramosData
       .filter(t => t._infra === activeCodigo)
       .map(t => ({
-        name: String(t.id_tramo ?? t.nombre ?? t.id ?? '—'),
-        meta: t._meta,
+        name:      String(t.id_tramo ?? t.nombre ?? t.id ?? '—'),
+        meta:      t._meta,
         ejecutado: t._ejec,
-        und: info.und,
       }));
   }, [tramosData, activeCodigo]);
 
+  // ─────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
       <SectionBadge label="Seguimiento Presupuestal" page="presupuesto" />
@@ -261,7 +289,7 @@ export default function PresupuestoClient({
 
       {/* ── KPIs financieros ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard label="Valor total contrato" value={formatCOP(kpis.total)}    accent="blue"   sublabel={`$${kpis.total.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`} />
+        <KpiCard label="Valor total contrato" value={formatCOP(kpis.total)}     accent="blue"   sublabel={`$${kpis.total.toLocaleString('es-CO', { maximumFractionDigits: 0 })}`} />
         <KpiCard label="Valor ejecutado"       value={formatCOP(kpis.ejecutado)} accent="green"  sublabel={`${kpis.pct.toFixed(1)}% del contrato`} />
         <KpiCard label="Valor pendiente"       value={formatCOP(kpis.pendiente)} accent="orange" sublabel={`${(100 - kpis.pct).toFixed(1)}% por ejecutar`} />
         <KpiCard
@@ -272,7 +300,7 @@ export default function PresupuestoClient({
         />
       </div>
 
-      {/* ── Barra global de ejecución ── */}
+      {/* ── Barra de ejecución global ── */}
       <GlobalProgressBar
         label="Ejecución global del presupuesto"
         pct={kpis.pct}
@@ -281,7 +309,7 @@ export default function PresupuestoClient({
         total={formatCOP(kpis.total)}
       />
 
-      {/* ── Gráfica presupuesto por capítulo ── */}
+      {/* ── Gráfica por capítulo ── */}
       {chartDataCap.length > 0 && (
         <div className="rounded-xl p-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
           <p className="text-sm font-semibold mb-3">Presupuesto vs Ejecutado por capítulo</p>
@@ -291,7 +319,10 @@ export default function PresupuestoClient({
               <XAxis dataKey="name" tick={{ fontSize: 10 }} />
               <YAxis tickFormatter={v => `$${(v / 1_000_000).toFixed(0)}M`} tick={{ fontSize: 10 }} />
               <Tooltip
-                formatter={(v: number, name: string) => [`$${(v / 1_000_000).toFixed(1)} M`, name === 'presupuestado' ? 'Presupuestado' : 'Ejecutado']}
+                formatter={(v: number, name: string) => [
+                  `$${(v / 1_000_000).toFixed(1)} M`,
+                  name === 'presupuestado' ? 'Presupuestado' : 'Ejecutado',
+                ]}
                 contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid var(--border)' }}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -302,94 +333,161 @@ export default function PresupuestoClient({
         </div>
       )}
 
-      {/* ── Tabla presupuestal ── */}
+      {/* ── Tabla presupuestal con columnas redimensionables ── */}
       <div>
         <div className="flex justify-between items-center mb-2">
           <p className="text-sm font-semibold">Tabla presupuestal</p>
           <ExportCsvButton data={itemsFiltrados} filename="presupuesto" />
         </div>
-        <div
-          className="rounded-xl overflow-hidden"
-          style={{ border: '1px solid var(--border)' }}
-        >
-          {/* scroll: 10 filas visibles × ~40px ≈ 440px */}
-          <div className="overflow-x-auto">
-            <div style={{ maxHeight: 440, overflowY: 'auto' }}>
-              <table className="w-full text-xs min-w-[900px]">
-                <thead
-                  className="sticky top-0 z-10"
-                  style={{ background: 'var(--muted)' }}
-                >
+
+        <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+          {/* contenedor con scroll horizontal + vertical (~10 filas × 38px) */}
+          <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 420 }}>
+            <table
+              style={{
+                tableLayout: 'fixed',
+                width: totalTableWidth,
+                fontSize: 12,
+                borderCollapse: 'collapse',
+              }}
+            >
+              <colgroup>
+                {widths.map((w, i) => <col key={i} style={{ width: w }} />)}
+              </colgroup>
+
+              <thead className="sticky top-0 z-10" style={{ background: 'var(--muted)' }}>
+                <tr>
+                  {COL_HEADERS.map((h, i) => (
+                    <th
+                      key={h}
+                      className="text-left font-semibold select-none"
+                      style={{
+                        padding: '8px 10px',
+                        color: 'var(--text-muted)',
+                        position: 'relative',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {h}
+                      {/* Manija de redimensionamiento */}
+                      <div
+                        onPointerDown={startResize(i)}
+                        style={{
+                          position: 'absolute',
+                          right: 0, top: 0, bottom: 0,
+                          width: 5,
+                          cursor: 'col-resize',
+                          background: 'transparent',
+                          borderRight: '2px solid var(--border)',
+                          zIndex: 1,
+                        }}
+                      />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {itemsFiltrados.length === 0 ? (
                   <tr>
-                    {['Capítulo', 'Actividad', 'Und', 'Cant. Prog.', 'V. Unitario', 'V. Programado', 'Cant. Ejec.', 'V. Ejecutado', 'Ejecución'].map(h => (
-                      <th key={h} className="p-2 text-left font-semibold whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{h}</th>
-                    ))}
+                    <td colSpan={9} style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+                      Sin resultados para los filtros aplicados.
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {itemsFiltrados.length === 0 ? (
-                    <tr>
-                      <td colSpan={9} className="p-6 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
-                        Sin resultados para los filtros aplicados.
-                      </td>
-                    </tr>
-                  ) : (
-                    itemsFiltrados.map((i: any, idx: number) => {
-                      const cantProg = i.cantidad ?? i.cantidad_contrato ?? 0;
-                      const pu       = i.precio_unitario ?? i.valor_unitario ?? 0;
-                      const vProg    = Number(i.valor_total ?? 0) || cantProg * pu;
-                      const cantEjec = i.cantidad_ejecutada ?? 0;
-                      const vEjec    = Number(i.valor_ejecutado ?? 0) || cantEjec * pu;
-                      const pct      = vProg > 0 ? (vEjec / vProg) * 100 : 0;
-                      return (
-                        <tr
-                          key={i.id ?? idx}
-                          className="border-t hover:bg-[var(--muted)]/40 transition-colors"
-                          style={{ borderColor: 'var(--border)' }}
-                        >
-                          <td className="p-2 whitespace-nowrap">{i.capitulo ?? i.componente ?? i.compenente ?? '—'}</td>
-                          <td className="p-2 max-w-[200px] truncate" title={i.actividad ?? i.descripcion}>{i.actividad ?? i.descripcion ?? '—'}</td>
-                          <td className="p-2 font-mono">{i.unidad ?? i.und ?? '—'}</td>
-                          <td className="p-2 text-right font-mono tabular-nums">{(cantProg as number).toLocaleString('es-CO', { maximumFractionDigits: 3 })}</td>
-                          <td className="p-2 text-right font-mono tabular-nums">{formatCOP(pu)}</td>
-                          <td className="p-2 text-right font-mono tabular-nums">{formatCOP(vProg)}</td>
-                          <td className="p-2 text-right font-mono tabular-nums">{(cantEjec as number).toLocaleString('es-CO', { maximumFractionDigits: 3 })}</td>
-                          <td className="p-2 text-right font-mono tabular-nums">{formatCOP(vEjec)}</td>
-                          <td className="p-2 min-w-[120px]">
-                            <InlineProgressBar pct={pct} />
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                ) : (
+                  itemsFiltrados.map((item: any, idx: number) => {
+                    const cantProg = item.cantidad     ?? item.cantidad_contrato ?? 0;
+                    const pu       = item.precio_unitario ?? item.valor_unitario ?? 0;
+                    const vProg    = Number(item.valor_total    ?? 0) || cantProg * pu;
+                    const cantEjec = item.cantidad_ejecutada ?? 0;
+                    const vEjec    = Number(item.valor_ejecutado ?? 0) || cantEjec * pu;
+                    const pct      = vProg > 0 ? (vEjec / vProg) * 100 : 0;
+
+                    const cellStyle: React.CSSProperties = {
+                      padding: '7px 10px',
+                      borderTop: '1px solid var(--border)',
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis',
+                    };
+
+                    return (
+                      <tr
+                        key={item.id ?? idx}
+                        style={{ background: idx % 2 === 0 ? 'transparent' : 'var(--muted)' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'color-mix(in srgb, var(--muted) 60%, transparent)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = idx % 2 === 0 ? 'transparent' : 'var(--muted)')}
+                      >
+                        <td style={cellStyle} title={item.capitulo ?? item.componente ?? ''}>
+                          {item.capitulo ?? item.componente ?? item.compenente ?? '—'}
+                        </td>
+                        <td style={cellStyle} title={item.actividad ?? item.descripcion ?? ''}>
+                          {item.actividad ?? item.descripcion ?? '—'}
+                        </td>
+                        <td style={{ ...cellStyle, fontFamily: 'monospace' }}>
+                          {item.unidad ?? item.und ?? '—'}
+                        </td>
+                        <td style={{ ...cellStyle, textAlign: 'right', fontFamily: 'monospace' }}>
+                          {Number(cantProg).toLocaleString('es-CO', { maximumFractionDigits: 3 })}
+                        </td>
+                        <td style={{ ...cellStyle, textAlign: 'right', fontFamily: 'monospace' }}>
+                          {formatCOP(pu)}
+                        </td>
+                        <td style={{ ...cellStyle, textAlign: 'right', fontFamily: 'monospace' }}>
+                          {formatCOP(vProg)}
+                        </td>
+                        <td style={{ ...cellStyle, textAlign: 'right', fontFamily: 'monospace' }}>
+                          {Number(cantEjec).toLocaleString('es-CO', { maximumFractionDigits: 3 })}
+                        </td>
+                        <td style={{ ...cellStyle, textAlign: 'right', fontFamily: 'monospace' }}>
+                          {formatCOP(vEjec)}
+                        </td>
+                        <td style={{ ...cellStyle, minWidth: 0 }}>
+                          <InlineProgressBar pct={pct} />
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
+
         <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-muted)' }}>
-          {itemsFiltrados.length} ítems · desplaza para ver más
+          {itemsFiltrados.length} ítems · arrastra el borde de la columna para redimensionar · desplaza verticalmente para ver más
         </p>
       </div>
 
-      {/* ══ SECCIÓN META FÍSICA ══════════════════════════════════ */}
-      {tramosData.length > 0 && (
-        <>
-          <div className="pt-2">
-            <SectionBadge label="Seguimiento Avance Meta Física General" page="presupuesto" />
-          </div>
+      {/* ══════════════════════════════════════════════════════
+          SECCIÓN META FÍSICA — siempre visible
+          ══════════════════════════════════════════════════ */}
+      <div className="pt-2">
+        <SectionBadge label="Seguimiento Avance Meta Física General" page="presupuesto" />
+      </div>
 
-          {/* ── KPIs por tipo + barra ── */}
+      {tramos.length === 0 ? (
+        <div className="rounded-xl p-6 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Sin datos de meta física. Verifica la tabla <code>tramos_bd</code> en Supabase.
+          </p>
+        </div>
+      ) : tramosData.length === 0 ? (
+        <div className="rounded-xl p-6 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Ningún tramo tiene meta física registrada (<code>meta_fisica</code>, <code>cicloruta_km</code> o <code>esp_publico_m2</code>).
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* ── KPIs acumulados por tipo ── */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {Object.entries(TIPOS).map(([codigo, info]) => {
               const k = metaKpis[codigo] ?? { meta: 0, ejec: 0, pct: 0, count: 0 };
               if (k.meta === 0) return null;
               return (
-                <div
-                  key={codigo}
-                  className="rounded-xl p-4 space-y-2"
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-                >
+                <div key={codigo} className="rounded-xl p-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
                   <KpiCard
                     label={info.nombre}
                     value={`${k.ejec.toLocaleString('es-CO', { maximumFractionDigits: 1 })} / ${k.meta.toLocaleString('es-CO', { maximumFractionDigits: 1 })} ${info.und}`}
@@ -402,27 +500,32 @@ export default function PresupuestoClient({
             })}
           </div>
 
-          {/* ── Dashboard detalle por tramo con tabs ── */}
-          <div>
+          {/* ── Dashboard por tramo con tabs ── */}
+          <div className="pt-1">
             <SectionBadge label="Seguimiento Avance Meta Física por Tramo" page="presupuesto" />
           </div>
 
           <div className="rounded-xl p-4 space-y-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-            <Tabs tabs={tabLabels} active={activeTab} onChange={setActiveTab} />
+            <TabBar tabs={tabLabels} active={activeTab} onChange={setActiveTab} />
 
             {chartDataTramo.length === 0 ? (
               <p className="text-xs py-4 text-center" style={{ color: 'var(--text-muted)' }}>
-                Sin tramos registrados para {activeTab}.
+                Sin tramos registrados para <b>{activeTab}</b>.
               </p>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                {/* Gráfica */}
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 pt-2">
+
+                {/* Gráfica barras */}
                 <div className="lg:col-span-3">
-                  <p className="text-xs font-semibold mb-3">
+                  <p className="text-xs font-semibold mb-3" style={{ color: 'var(--text-muted)' }}>
                     Meta física vs Ejecutado — {activeTab} ({TIPOS[activeCodigo].und})
                   </p>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartDataTramo} margin={{ top: 5, right: 16, left: 8, bottom: 30 }} barCategoryGap="30%">
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart
+                      data={chartDataTramo}
+                      margin={{ top: 8, right: 16, left: 8, bottom: 40 }}
+                      barCategoryGap="28%"
+                    >
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                       <XAxis
                         dataKey="name"
@@ -430,30 +533,53 @@ export default function PresupuestoClient({
                         angle={-35}
                         textAnchor="end"
                         interval={0}
+                        height={50}
                       />
-                      <YAxis tick={{ fontSize: 10 }} />
+                      <YAxis
+                        tick={{ fontSize: 10 }}
+                        tickFormatter={v => v.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
+                        label={{ value: TIPOS[activeCodigo].und, angle: -90, position: 'insideLeft', fontSize: 10, dy: 20 }}
+                      />
                       <Tooltip
                         contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid var(--border)' }}
-                        formatter={(v: number) => [v.toLocaleString('es-CO', { maximumFractionDigits: 2 }), '']}
+                        formatter={(v: number, name: string) => [
+                          `${v.toLocaleString('es-CO', { maximumFractionDigits: 2 })} ${TIPOS[activeCodigo].und}`,
+                          name === 'meta' ? 'Meta física' : 'Ejecutado',
+                        ]}
                       />
-                      <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Bar dataKey="meta"      name="Meta física"  fill={TIPOS[activeCodigo].colorMeta} radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="ejecutado" name="Ejecutado"    fill={TIPOS[activeCodigo].colorEjec} radius={[4, 4, 0, 0]} />
+                      <Legend
+                        wrapperStyle={{ fontSize: 11 }}
+                        formatter={v => v === 'meta' ? 'Meta física' : 'Ejecutado'}
+                      />
+                      <Bar dataKey="meta"      name="meta"      fill={TIPOS[activeCodigo].colorMeta} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="ejecutado" name="ejecutado" fill={TIPOS[activeCodigo].colorEjec} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
 
-                {/* Tabla resumen por tramo */}
+                {/* Tabla de detalle por tramo */}
                 <div className="lg:col-span-2">
-                  <p className="text-xs font-semibold mb-3">Detalle por tramo</p>
-                  <div style={{ maxHeight: 340, overflowY: 'auto' }}>
-                    <table className="w-full text-xs">
+                  <p className="text-xs font-semibold mb-3" style={{ color: 'var(--text-muted)' }}>
+                    Detalle por tramo
+                  </p>
+                  <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+                    <table className="w-full" style={{ fontSize: 12, borderCollapse: 'collapse' }}>
                       <thead className="sticky top-0" style={{ background: 'var(--muted)' }}>
                         <tr>
-                          <th className="p-2 text-left font-semibold" style={{ color: 'var(--text-muted)' }}>Tramo</th>
-                          <th className="p-2 text-right font-semibold" style={{ color: 'var(--text-muted)' }}>Meta</th>
-                          <th className="p-2 text-right font-semibold" style={{ color: 'var(--text-muted)' }}>Ejec.</th>
-                          <th className="p-2 min-w-[90px]" style={{ color: 'var(--text-muted)' }}>Avance</th>
+                          {['Tramo', `Meta (${TIPOS[activeCodigo].und})`, `Ejec. (${TIPOS[activeCodigo].und})`, 'Avance'].map(h => (
+                            <th
+                              key={h}
+                              style={{
+                                padding: '6px 8px',
+                                textAlign: h === 'Tramo' ? 'left' : 'right',
+                                fontWeight: 600,
+                                color: 'var(--text-muted)',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {h}
+                            </th>
+                          ))}
                         </tr>
                       </thead>
                       <tbody>
@@ -462,13 +588,18 @@ export default function PresupuestoClient({
                           .map((t, idx) => (
                             <tr
                               key={t.id_tramo ?? t.id ?? idx}
-                              className="border-t"
-                              style={{ borderColor: 'var(--border)' }}
+                              style={{ borderTop: '1px solid var(--border)' }}
                             >
-                              <td className="p-2 font-mono">{t.id_tramo ?? t.nombre ?? t.id ?? '—'}</td>
-                              <td className="p-2 text-right tabular-nums">{t._meta.toLocaleString('es-CO', { maximumFractionDigits: 2 })}</td>
-                              <td className="p-2 text-right tabular-nums">{t._ejec.toLocaleString('es-CO', { maximumFractionDigits: 2 })}</td>
-                              <td className="p-2">
+                              <td style={{ padding: '6px 8px', fontFamily: 'monospace', fontSize: 11 }}>
+                                {t.id_tramo ?? t.nombre ?? t.id ?? '—'}
+                              </td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>
+                                {t._meta.toLocaleString('es-CO', { maximumFractionDigits: 2 })}
+                              </td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>
+                                {t._ejec.toLocaleString('es-CO', { maximumFractionDigits: 2 })}
+                              </td>
+                              <td style={{ padding: '6px 8px', minWidth: 100 }}>
                                 <InlineProgressBar pct={t._pct} />
                               </td>
                             </tr>
