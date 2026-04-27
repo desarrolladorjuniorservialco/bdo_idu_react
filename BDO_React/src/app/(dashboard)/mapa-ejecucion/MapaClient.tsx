@@ -179,7 +179,7 @@ function RecordTable({
       className="overflow-x-auto rounded-lg border"
       style={{ borderColor: 'var(--border)' }}
     >
-      <table className="w-full text-xs border-collapse">
+      <table className="w-full text-sm border-collapse">
         <thead>
           <tr style={{ background: 'var(--muted, #f8f9fa)' }}>
             {available.map(c => (
@@ -210,7 +210,7 @@ function RecordTable({
                   {c === 'estado' ? (
                     <StatusBadge estado={String(r[c] ?? '')} />
                   ) : (
-                    <span className="font-mono text-[11px] whitespace-nowrap">
+                    <span className="font-mono text-[13px] whitespace-nowrap">
                       {String(r[c] ?? '—')}
                     </span>
                   )}

@@ -64,7 +64,7 @@ function PointLayer({ records, label }: { records: any[]; label: string }) {
           <CircleMarker
             key={`${label}-${i}`}
             center={ll}
-            radius={8}
+            radius={4}
             fillColor={color}
             color="#fff"
             weight={1.5}
