@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 interface ExportCsvButtonProps {
   data:     object[];
   filename: string;
+  label?:   string;
 }
 
-export function ExportCsvButton({ data, filename }: ExportCsvButtonProps) {
+export function ExportCsvButton({ data, filename, label = 'Exportar CSV' }: ExportCsvButtonProps) {
   function handleExport() {
     if (!data.length) return;
     const keys = Object.keys(data[0]);
@@ -32,7 +33,7 @@ export function ExportCsvButton({ data, filename }: ExportCsvButtonProps) {
   return (
     <Button variant="outline" size="sm" onClick={handleExport} disabled={!data.length}>
       <Download className="h-3.5 w-3.5 mr-1" />
-      Exportar CSV
+      {label}
     </Button>
   );
 }
