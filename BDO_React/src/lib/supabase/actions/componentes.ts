@@ -5,7 +5,11 @@ export async function fetchComponentes(contratoId: string, componente: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('registros_componentes')
-    .select('*')
+    .select(`
+      *,
+      residente:perfiles!aprobado_residente(nombre),
+      interventor:perfiles!aprobado_interventor(nombre)
+    `)
     .eq('contrato_id', contratoId)
     .eq('componente', componente)
     .order('fecha_creacion', { ascending: false });

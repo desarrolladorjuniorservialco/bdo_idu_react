@@ -13,7 +13,7 @@ export default async function Page() {
   const contratoId = perfil!.contrato_id;
 
   const [registros, fotos] = await Promise.all([
-    fetchComponentes(contratoId, 'ambiental'),
+    fetchComponentes(contratoId, 'Ambiental-SST'),
     fetchFotosComponentesByContrato(contratoId),
   ]);
 
