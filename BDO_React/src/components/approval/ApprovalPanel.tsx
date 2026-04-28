@@ -1,57 +1,75 @@
 'use client';
-import { useTransition } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { APROBACION_CONFIG } from '@/lib/config';
-import { aprobacionSchema, devolucionSchema } from '@/lib/validators/approval.schema';
-import type { AprobacionInput, DevolucionInput } from '@/lib/validators/approval.schema';
-import { aprobar, devolver } from '@/lib/supabase/actions/approval';
-import { ApprovalHistory } from './ApprovalHistory';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import type { Rol, Estado } from '@/types/database';
+import { Textarea } from '@/components/ui/textarea';
+import { APROBACION_CONFIG } from '@/lib/config';
+import { aprobar, devolver } from '@/lib/supabase/actions/approval';
+import { aprobacionSchema, devolucionSchema } from '@/lib/validators/approval.schema';
+import type { AprobacionInput, DevolucionInput } from '@/lib/validators/approval.schema';
+import type { Rol } from '@/types/database';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useState, useTransition } from 'react';
+import { useForm } from 'react-hook-form';
+import { ApprovalHistory } from './ApprovalHistory';
 
 interface ApprovalPanelProps {
-  registro:      any;
-  rol:           Rol;
-  tabla:         string;
+  // biome-ignore lint/suspicious/noExplicitAny: registro puede ser cualquier tabla de aprobación
+  registro: any;
+  rol: Rol;
+  tabla: string;
   rutaRevalidar: string;
 }
 
 export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalPanelProps) {
   const [isPending, startTransition] = useTransition();
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
+
   const config = APROBACION_CONFIG[rol];
 
-  const puedeAccionar =
-    config &&
-    (config.estadosAccion as string[]).includes(registro.estado);
+  const puedeAccionar = config && (config.estadosAccion as string[]).includes(registro.estado);
+
+  const cantidadDefault =
+    (config ? (registro[config.campos.campo_cant] ?? null) : null) ?? registro.cantidad ?? 0;
 
   const aprForm = useForm<AprobacionInput>({
     resolver: zodResolver(aprobacionSchema),
-    defaultValues: { cantidad_validada: registro.cantidad ?? 0 },
+    defaultValues: { cantidad_validada: Number(cantidadDefault) },
   });
   const devForm = useForm<DevolucionInput>({
     resolver: zodResolver(devolucionSchema),
   });
 
   function handleAprobar(data: AprobacionInput) {
+    setFeedbackError(null);
+    setFeedbackSuccess(null);
     startTransition(async () => {
       try {
-        await aprobar(registro.id, tabla, rol, data.cantidad_validada, data.observacion, rutaRevalidar);
+        await aprobar(
+          registro.id,
+          tabla,
+          rol,
+          data.cantidad_validada,
+          data.observacion,
+          rutaRevalidar,
+        );
+        setFeedbackSuccess('Registro aprobado correctamente.');
       } catch (e) {
-        console.error(e);
+        setFeedbackError(e instanceof Error ? e.message : 'No fue posible aprobar el registro.');
       }
     });
   }
 
   function handleDevolver(data: DevolucionInput) {
+    setFeedbackError(null);
+    setFeedbackSuccess(null);
     startTransition(async () => {
       try {
         await devolver(registro.id, tabla, rol, data.observacion, rutaRevalidar);
+        setFeedbackSuccess('Registro devuelto.');
       } catch (e) {
-        console.error(e);
+        setFeedbackError(e instanceof Error ? e.message : 'No fue posible devolver el registro.');
       }
     });
   }
@@ -79,8 +97,9 @@ export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalP
               Aprobar registro
             </p>
             <div>
-              <Label>Cantidad validada</Label>
+              <Label htmlFor={`cant-${registro.id}`}>Cantidad validada</Label>
               <Input
+                id={`cant-${registro.id}`}
                 type="number"
                 step="any"
                 {...aprForm.register('cantidad_validada')}
@@ -105,33 +124,48 @@ export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalP
             </Button>
           </form>
 
-          {/* Formulario Devolver */}
-          <form
-            onSubmit={devForm.handleSubmit(handleDevolver)}
-            className="rounded-md p-3 space-y-3"
-            style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}
-          >
-            <p className="text-xs font-semibold" style={{ color: '#991B1B' }}>
-              Devolver registro
-            </p>
-            <div>
-              <Label>Observación de devolución *</Label>
-              <Textarea rows={2} {...devForm.register('observacion')} />
-              {devForm.formState.errors.observacion && (
-                <p className="text-xs text-red-600 mt-0.5">
-                  {devForm.formState.errors.observacion.message}
-                </p>
-              )}
-            </div>
-            <Button
-              type="submit"
-              size="sm"
-              variant="destructive"
-              disabled={isPending}
+          {/* Formulario Devolver — solo para roles con puedeDevolver */}
+          {config?.puedeDevolver && (
+            <form
+              onSubmit={devForm.handleSubmit(handleDevolver)}
+              className="rounded-md p-3 space-y-3"
+              style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}
             >
-              {isPending ? 'Guardando…' : 'Devolver'}
-            </Button>
-          </form>
+              <p className="text-xs font-semibold" style={{ color: '#991B1B' }}>
+                Devolver registro
+              </p>
+              <div>
+                <Label>Observación de devolución *</Label>
+                <Textarea rows={2} {...devForm.register('observacion')} />
+                {devForm.formState.errors.observacion && (
+                  <p className="text-xs text-red-600 mt-0.5">
+                    {devForm.formState.errors.observacion.message}
+                  </p>
+                )}
+              </div>
+              <Button type="submit" size="sm" variant="destructive" disabled={isPending}>
+                {isPending ? 'Guardando…' : 'Devolver'}
+              </Button>
+            </form>
+          )}
+
+          {/* Feedback inline */}
+          {feedbackError && (
+            <p
+              className="text-xs rounded-md px-3 py-2"
+              style={{ background: '#FEF2F2', color: '#991B1B', border: '1px solid #FECACA' }}
+            >
+              {feedbackError}
+            </p>
+          )}
+          {feedbackSuccess && (
+            <p
+              className="text-xs rounded-md px-3 py-2"
+              style={{ background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0' }}
+            >
+              {feedbackSuccess}
+            </p>
+          )}
         </div>
       )}
     </div>
