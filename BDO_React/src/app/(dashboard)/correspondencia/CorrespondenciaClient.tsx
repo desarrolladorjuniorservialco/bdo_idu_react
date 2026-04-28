@@ -1,5 +1,5 @@
 'use client';
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition, useMemo, useRef, useEffect } from 'react';
 import { SectionBadge } from '@/components/shared/SectionBadge';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
@@ -15,6 +15,22 @@ const ESTADOS = ['PENDIENTE', 'RESPONDIDO', 'NO APLICA RESPUESTA'] as const;
 const COMPONENTES = ['Ambiental - SST', 'Social', 'PMT', 'Técnico', 'Jurídico', 'Financiero', 'General'];
 const PUEDE_EDITAR: Rol[] = ['obra', 'admin'];
 const TODAY = new Date().toISOString().slice(0, 10);
+
+// Column definitions with default widths in px
+const COL_DEFS = [
+  { key: 'consecutivo', label: 'Consecutivo',    defaultW: 130 },
+  { key: 'fecha',       label: 'Fecha',           defaultW: 100 },
+  { key: 'emisor',      label: 'Emisor',           defaultW: 155 },
+  { key: 'receptor',    label: 'Receptor',         defaultW: 155 },
+  { key: 'componente',  label: 'Componente',       defaultW: 135 },
+  { key: 'asunto',      label: 'Asunto',           defaultW: 215 },
+  { key: 'plazo_resp',  label: 'Plazo Resp.',      defaultW: 108 },
+  { key: 'estado',      label: 'Estado',           defaultW: 130 },
+  { key: 'consec_resp', label: 'Consec. Resp.',    defaultW: 130 },
+  { key: 'fecha_resp',  label: 'Fecha Resp.',      defaultW: 100 },
+  { key: 'link',        label: 'Link',             defaultW: 78  },
+  { key: 'acciones',    label: 'Acciones',         defaultW: 85  },
+];
 
 function isVencida(r: any): boolean {
   return (
@@ -32,20 +48,142 @@ function formatDate(val: string | null | undefined): string {
   return `${day}/${m}/${y}`;
 }
 
-// ─── Filter Panel ───────────────────────────────────────────────────────────
+// ─── Multi-select dropdown ───────────────────────────────────────────────────
+function MultiSelect({
+  options, selected, onChange, placeholder,
+}: {
+  options: ReadonlyArray<string>;
+  selected: string[];
+  onChange: (v: string[]) => void;
+  placeholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onOutside(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, []);
+
+  function toggle(v: string) {
+    onChange(selected.includes(v) ? selected.filter(x => x !== v) : [...selected, v]);
+  }
+
+  const label =
+    selected.length === 0 ? placeholder :
+    selected.length === 1 ? selected[0] :
+    `${selected.length} seleccionados`;
+
+  return (
+    <div ref={wrapRef} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(p => !p)}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '8px',
+          padding: '7px 11px',
+          border: `1px solid ${open ? 'var(--accent-teal)' : 'var(--border)'}`,
+          borderRadius: 'var(--radius)',
+          background: 'var(--background)',
+          color: selected.length ? 'var(--text-primary)' : 'var(--text-muted)',
+          fontSize: '15px',
+          cursor: 'pointer',
+          textAlign: 'left',
+          outline: open ? '2px solid rgba(13,148,136,0.25)' : 'none',
+          outlineOffset: '2px',
+        }}
+      >
+        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {label}
+        </span>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', flexShrink: 0 }}>
+          {open ? '▲' : '▼'}
+        </span>
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 4px)',
+          left: 0,
+          right: 0,
+          minWidth: '100%',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius)',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+          zIndex: 50,
+          overflow: 'hidden',
+        }}>
+          {options.map((opt, i) => (
+            <label
+              key={opt}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '9px 12px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                color: 'var(--text-primary)',
+                background: selected.includes(opt) ? 'rgba(13,148,136,0.08)' : 'transparent',
+                borderBottom: i < options.length - 1 ? '1px solid var(--border)' : 'none',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={selected.includes(opt)}
+                onChange={() => toggle(opt)}
+                style={{ accentColor: 'var(--accent-teal)', width: '14px', height: '14px', cursor: 'pointer', flexShrink: 0 }}
+              />
+              {opt}
+            </label>
+          ))}
+          {selected.length > 0 && (
+            <div style={{ padding: '7px 12px', borderTop: '1px solid var(--border)' }}>
+              <button
+                type="button"
+                onClick={() => { onChange([]); setOpen(false); }}
+                style={{
+                  fontSize: '13px',
+                  color: 'var(--accent-red)',
+                  cursor: 'pointer',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                }}
+              >
+                ✕ Limpiar selección
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Filter Panel ────────────────────────────────────────────────────────────
 interface FilterPanelProps {
-  fEmisor: string; setFEmisor: (v: string) => void;
-  fReceptor: string; setFReceptor: (v: string) => void;
-  fEstados: string[]; toggleEstado: (e: string) => void;
-  fComponentes: string[]; toggleComponente: (c: string) => void;
-  fFechaIni: string; setFFechaIni: (v: string) => void;
-  fFechaFin: string; setFFechaFin: (v: string) => void;
+  fEmisor: string;     setFEmisor: (v: string) => void;
+  fReceptor: string;   setFReceptor: (v: string) => void;
+  fEstados: string[];  setFEstados: (v: string[]) => void;
+  fComponentes: string[]; setFComponentes: (v: string[]) => void;
+  fFechaIni: string;   setFFechaIni: (v: string) => void;
+  fFechaFin: string;   setFFechaFin: (v: string) => void;
   activeCount: number; onClear: () => void;
 }
 
 function FilterPanel({
   fEmisor, setFEmisor, fReceptor, setFReceptor,
-  fEstados, toggleEstado, fComponentes, toggleComponente,
+  fEstados, setFEstados, fComponentes, setFComponentes,
   fFechaIni, setFFechaIni, fFechaFin, setFFechaFin,
   activeCount, onClear,
 }: FilterPanelProps) {
@@ -54,61 +192,39 @@ function FilterPanel({
     background: 'var(--background)',
     color: 'var(--text-primary)',
     borderRadius: 'var(--radius)',
-    padding: '6px 10px',
-    fontSize: '13px',
+    padding: '7px 11px',
+    fontSize: '15px',
     width: '100%',
     outline: 'none',
   };
 
-  const chipActive: React.CSSProperties = {
-    background: 'var(--accent-teal)',
-    color: '#fff',
-    border: '1px solid var(--accent-teal)',
-    borderRadius: '9999px',
-    padding: '3px 12px',
-    fontSize: '11px',
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontSize: '13px',
     fontWeight: 600,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-  };
-
-  const chipInactive: React.CSSProperties = {
-    background: 'transparent',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
     color: 'var(--text-muted)',
-    border: '1px solid var(--border)',
-    borderRadius: '9999px',
-    padding: '3px 12px',
-    fontSize: '11px',
-    fontWeight: 500,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
+    marginBottom: '5px',
   };
 
   return (
     <div className="p-4 space-y-4">
-      {/* Text search row */}
+      {/* Row 1: Text search */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-1">
-          <label className="text-[11px] font-semibold uppercase tracking-wide"
-                 style={{ color: 'var(--text-muted)' }}>
-            Emisor
-          </label>
+        <div>
+          <label style={labelStyle}>Emisor</label>
           <input
-            type="text"
-            value={fEmisor}
+            type="text" value={fEmisor}
             onChange={e => setFEmisor(e.target.value)}
             placeholder="Buscar por emisor…"
             style={inputStyle}
           />
         </div>
-        <div className="space-y-1">
-          <label className="text-[11px] font-semibold uppercase tracking-wide"
-                 style={{ color: 'var(--text-muted)' }}>
-            Receptor
-          </label>
+        <div>
+          <label style={labelStyle}>Receptor</label>
           <input
-            type="text"
-            value={fReceptor}
+            type="text" value={fReceptor}
             onChange={e => setFReceptor(e.target.value)}
             placeholder="Buscar por receptor…"
             style={inputStyle}
@@ -116,69 +232,53 @@ function FilterPanel({
         </div>
       </div>
 
-      {/* Estado chips */}
-      <div className="space-y-1.5">
-        <label className="text-[11px] font-semibold uppercase tracking-wide"
-               style={{ color: 'var(--text-muted)' }}>
-          Estado
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {ESTADOS.map(e => (
-            <button key={e} type="button" onClick={() => toggleEstado(e)}
-                    style={fEstados.includes(e) ? chipActive : chipInactive}>
-              {e}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Componente chips */}
-      <div className="space-y-1.5">
-        <label className="text-[11px] font-semibold uppercase tracking-wide"
-               style={{ color: 'var(--text-muted)' }}>
-          Componente
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {COMPONENTES.map(c => (
-            <button key={c} type="button" onClick={() => toggleComponente(c)}
-                    style={fComponentes.includes(c) ? chipActive : chipInactive}>
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Date range */}
+      {/* Row 2: Multi-select dropdowns */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-1">
-          <label className="text-[11px] font-semibold uppercase tracking-wide"
-                 style={{ color: 'var(--text-muted)' }}>
-            Fecha desde
-          </label>
-          <input type="date" value={fFechaIni} onChange={e => setFFechaIni(e.target.value)}
-                 style={inputStyle} />
+        <div>
+          <label style={labelStyle}>Estado</label>
+          <MultiSelect
+            options={ESTADOS}
+            selected={fEstados}
+            onChange={setFEstados}
+            placeholder="Todos los estados"
+          />
         </div>
-        <div className="space-y-1">
-          <label className="text-[11px] font-semibold uppercase tracking-wide"
-                 style={{ color: 'var(--text-muted)' }}>
-            Fecha hasta
-          </label>
-          <input type="date" value={fFechaFin} onChange={e => setFFechaFin(e.target.value)}
-                 style={inputStyle} />
+        <div>
+          <label style={labelStyle}>Componente</label>
+          <MultiSelect
+            options={COMPONENTES}
+            selected={fComponentes}
+            onChange={setFComponentes}
+            placeholder="Todos los componentes"
+          />
         </div>
       </div>
 
-      {/* Clear button */}
+      {/* Row 3: Date range */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label style={labelStyle}>Fecha desde</label>
+          <input type="date" value={fFechaIni} onChange={e => setFFechaIni(e.target.value)} style={inputStyle} />
+        </div>
+        <div>
+          <label style={labelStyle}>Fecha hasta</label>
+          <input type="date" value={fFechaFin} onChange={e => setFFechaFin(e.target.value)} style={inputStyle} />
+        </div>
+      </div>
+
       {activeCount > 0 && (
         <div className="flex justify-end pt-1">
           <button
             type="button"
             onClick={onClear}
-            className="text-xs px-3 py-1.5 rounded-md font-medium"
             style={{
+              fontSize: '14px',
+              fontWeight: 500,
               color: 'var(--accent-red)',
               border: '1px solid var(--accent-red)',
               background: 'transparent',
+              borderRadius: 'var(--radius)',
+              padding: '5px 14px',
               cursor: 'pointer',
             }}
           >
@@ -190,33 +290,58 @@ function FilterPanel({
   );
 }
 
-// ─── Main Component ─────────────────────────────────────────────────────────
+// ─── Main Component ──────────────────────────────────────────────────────────
 export default function CorrespondenciaClient({
   registros, rol, contratoId,
 }: { registros: any[]; rol: Rol; contratoId: string }) {
   const [openNueva, setOpenNueva] = useState(false);
-  const [editando, setEditando] = useState<any | null>(null);
+  const [editando, setEditando]   = useState<any | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Filter state
   const [showFilters, setShowFilters] = useState(true);
-  const [fEmisor, setFEmisor] = useState('');
-  const [fReceptor, setFReceptor] = useState('');
-  const [fEstados, setFEstados] = useState<string[]>([]);
+  const [fEmisor,     setFEmisor]     = useState('');
+  const [fReceptor,   setFReceptor]   = useState('');
+  const [fEstados,    setFEstados]    = useState<string[]>([]);
   const [fComponentes, setFComponentes] = useState<string[]>([]);
-  const [fFechaIni, setFFechaIni] = useState('');
-  const [fFechaFin, setFFechaFin] = useState('');
+  const [fFechaIni,   setFFechaIni]   = useState('');
+  const [fFechaFin,   setFFechaFin]   = useState('');
+
+  // Column resize state — one width per COL_DEFS entry
+  const [colWidths, setColWidths] = useState<number[]>(() => COL_DEFS.map(c => c.defaultW));
+  const resizing = useRef<{ idx: number; startX: number; startW: number } | null>(null);
 
   const canEdit = PUEDE_EDITAR.includes(rol);
 
-  function toggleEstado(e: string) {
-    setFEstados(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
+  const visibleCols = useMemo(
+    () => canEdit ? COL_DEFS : COL_DEFS.slice(0, -1),
+    [canEdit],
+  );
+
+  // ── Resize handlers ────────────────────────────────────────────────────────
+  function startResize(e: React.MouseEvent, idx: number) {
+    e.preventDefault();
+    resizing.current = { idx, startX: e.clientX, startW: colWidths[idx] };
+
+    function onMove(ev: MouseEvent) {
+      if (!resizing.current) return;
+      const newW = Math.max(50, resizing.current.startW + (ev.clientX - resizing.current.startX));
+      setColWidths(prev => {
+        const next = [...prev];
+        next[resizing.current!.idx] = newW;
+        return next;
+      });
+    }
+    function onUp() {
+      resizing.current = null;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
   }
 
-  function toggleComponente(c: string) {
-    setFComponentes(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
-  }
-
+  // ── Filter logic ───────────────────────────────────────────────────────────
   function clearFilters() {
     setFEmisor(''); setFReceptor('');
     setFEstados([]); setFComponentes([]);
@@ -239,7 +364,7 @@ export default function CorrespondenciaClient({
       const q = fReceptor.toLowerCase();
       result = result.filter(r => String(r.receptor ?? '').toLowerCase().includes(q));
     }
-    if (fEstados.length) result = result.filter(r => fEstados.includes(r.estado));
+    if (fEstados.length)    result = result.filter(r => fEstados.includes(r.estado));
     if (fComponentes.length) result = result.filter(r => fComponentes.includes(r.componente));
     if (fFechaIni) result = result.filter(r => String(r.fecha ?? '').slice(0, 10) >= fFechaIni);
     if (fFechaFin) result = result.filter(r => String(r.fecha ?? '').slice(0, 10) <= fFechaFin);
@@ -255,6 +380,7 @@ export default function CorrespondenciaClient({
 
   const nVencidasVisible = filtered.filter(isVencida).length;
 
+  // ── CRUD handlers ──────────────────────────────────────────────────────────
   function handleInsert(data: CorrespondenciaInput) {
     return new Promise<void>((resolve) => {
       startTransition(async () => {
@@ -276,25 +402,33 @@ export default function CorrespondenciaClient({
     });
   }
 
+  // ── Shared cell style ──────────────────────────────────────────────────────
+  const cellBase: React.CSSProperties = {
+    padding: '9px 12px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: '14px',
+  };
+
   return (
     <div className="space-y-4">
       <SectionBadge label="Correspondencia" page="correspondencia" />
 
-      {/* KPI Cards — 4 metrics including overdue */}
+      {/* ── KPI Cards ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <KpiCard label="Total"       value={kpis.total}       accent="teal" />
         <KpiCard label="Pendientes"  value={kpis.pendientes}  accent="red" />
         <KpiCard label="Respondidos" value={kpis.respondidos} accent="green" />
-        <KpiCard label="Vencidas"    value={kpis.vencidas}    accent="orange"
-                 sublabel="Plazo superado" />
+        <KpiCard label="Vencidas"    value={kpis.vencidas}    accent="orange" sublabel="Plazo superado" />
       </div>
 
-      {/* Collapsible Filter Panel */}
+      {/* ── Collapsible Filter Panel ────────────────────────────────────────── */}
       <div style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius)',
-        overflow: 'hidden',
+        overflow: 'visible',
       }}>
         <button
           type="button"
@@ -304,47 +438,44 @@ export default function CorrespondenciaClient({
             background: showFilters ? 'var(--muted)' : 'transparent',
             borderBottom: showFilters ? '1px solid var(--border)' : 'none',
             cursor: 'pointer',
+            borderRadius: showFilters ? `var(--radius) var(--radius) 0 0` : 'var(--radius)',
           }}
         >
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
               Filtros
             </span>
             {activeFilterCount > 0 && (
               <span style={{
-                background: 'var(--accent-teal)',
-                color: '#fff',
-                borderRadius: '9999px',
-                padding: '1px 8px',
-                fontSize: '11px',
-                fontWeight: 700,
-                lineHeight: '18px',
+                background: 'var(--accent-teal)', color: '#fff',
+                borderRadius: '9999px', padding: '1px 9px',
+                fontSize: '13px', fontWeight: 700, lineHeight: '20px',
               }}>
                 {activeFilterCount} activo{activeFilterCount > 1 ? 's' : ''}
               </span>
             )}
           </div>
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
             {showFilters ? '▲ Ocultar' : '▼ Mostrar'}
           </span>
         </button>
 
         {showFilters && (
           <FilterPanel
-            fEmisor={fEmisor} setFEmisor={setFEmisor}
-            fReceptor={fReceptor} setFReceptor={setFReceptor}
-            fEstados={fEstados} toggleEstado={toggleEstado}
-            fComponentes={fComponentes} toggleComponente={toggleComponente}
-            fFechaIni={fFechaIni} setFFechaIni={setFFechaIni}
-            fFechaFin={fFechaFin} setFFechaFin={setFFechaFin}
+            fEmisor={fEmisor}         setFEmisor={setFEmisor}
+            fReceptor={fReceptor}     setFReceptor={setFReceptor}
+            fEstados={fEstados}       setFEstados={setFEstados}
+            fComponentes={fComponentes} setFComponentes={setFComponentes}
+            fFechaIni={fFechaIni}     setFFechaIni={setFFechaIni}
+            fFechaFin={fFechaFin}     setFFechaFin={setFFechaFin}
             activeCount={activeFilterCount} onClear={clearFilters}
           />
         )}
       </div>
 
-      {/* Toolbar: results count + export + new record */}
+      {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
           {filtered.length === registros.length
             ? `${registros.length} registro${registros.length !== 1 ? 's' : ''}`
             : `${filtered.length} de ${registros.length} registros`}
@@ -354,9 +485,10 @@ export default function CorrespondenciaClient({
           {canEdit && (
             <Dialog open={openNueva} onOpenChange={setOpenNueva}>
               <DialogTrigger asChild>
-                <Button className="h-8 px-3 text-xs">+ Nueva correspondencia</Button>
+                {/* max-w-2xl (42rem) × 1.20 = 50.4rem → max-w-[50rem] */}
+                <Button className="h-8 px-3 text-[14px]">+ Nueva correspondencia</Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-[50rem]">
                 <DialogHeader>
                   <DialogTitle>Nueva correspondencia</DialogTitle>
                 </DialogHeader>
@@ -371,161 +503,206 @@ export default function CorrespondenciaClient({
         </div>
       </div>
 
-      {/* Full-column Table */}
+      {/* ── Resizable Table ──────────────────────────────────────────────────── */}
       <div className="rounded-xl overflow-x-auto" style={{ border: '1px solid var(--border)' }}>
-        <table className="w-full text-xs" style={{ minWidth: '1160px' }}>
+        <table
+          className="table-fixed"
+          style={{
+            width: `${visibleCols.reduce((sum, _, i) => sum + colWidths[i], 0)}px`,
+            minWidth: '100%',
+            borderCollapse: 'collapse',
+            fontSize: '14px',
+          }}
+        >
+          <colgroup>
+            {visibleCols.map((col, i) => (
+              <col key={col.key} style={{ width: `${colWidths[i]}px` }} />
+            ))}
+          </colgroup>
+
           <thead style={{ background: 'var(--muted)' }}>
             <tr>
-              {[
-                'Consecutivo', 'Fecha', 'Emisor', 'Receptor',
-                'Componente', 'Asunto', 'Plazo Resp.', 'Estado',
-                'Consec. Resp.', 'Fecha Resp.', 'Link',
-                ...(canEdit ? ['Acciones'] : []),
-              ].map(h => (
-                <th key={h}
-                    className="px-3 py-2 text-left font-semibold whitespace-nowrap"
-                    style={{ color: 'var(--text-muted)', fontSize: '11px', letterSpacing: '0.03em' }}>
-                  {h}
+              {visibleCols.map((col, i) => (
+                <th
+                  key={col.key}
+                  style={{
+                    position: 'relative',
+                    width: `${colWidths[i]}px`,
+                    padding: '9px 12px',
+                    textAlign: 'left',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    letterSpacing: '0.03em',
+                    color: 'var(--text-muted)',
+                    whiteSpace: 'nowrap',
+                    userSelect: 'none',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {col.label}
+                  {/* Drag-to-resize handle */}
+                  <span
+                    onMouseDown={e => startResize(e, i)}
+                    title="Arrastrar para redimensionar"
+                    style={{
+                      position: 'absolute',
+                      right: 0, top: '15%', bottom: '15%',
+                      width: '4px',
+                      cursor: 'col-resize',
+                      background: 'var(--border)',
+                      borderRadius: '2px',
+                      opacity: 0.5,
+                      transition: 'opacity 0.15s, background 0.15s',
+                    }}
+                    onMouseEnter={e => {
+                      const el = e.currentTarget as HTMLElement;
+                      el.style.opacity = '1';
+                      el.style.background = 'var(--accent-teal)';
+                    }}
+                    onMouseLeave={e => {
+                      const el = e.currentTarget as HTMLElement;
+                      el.style.opacity = '0.5';
+                      el.style.background = 'var(--border)';
+                    }}
+                  />
                 </th>
               ))}
             </tr>
           </thead>
+
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={canEdit ? 12 : 11}
-                    className="px-3 py-8 text-center"
-                    style={{ color: 'var(--text-muted)' }}>
+                <td
+                  colSpan={visibleCols.length}
+                  style={{ padding: '32px 12px', textAlign: 'center', fontSize: '14px', color: 'var(--text-muted)' }}
+                >
                   {registros.length === 0
                     ? 'Sin registros de correspondencia.'
                     : 'No hay registros que coincidan con los filtros aplicados.'}
                 </td>
               </tr>
-            ) : (
-              filtered.map(r => {
-                const vencida = isVencida(r);
-                return (
-                  <tr
-                    key={r.id}
-                    className="border-t"
-                    style={{
-                      borderColor: 'var(--border)',
-                      background: vencida ? 'rgba(255,210,0,0.13)' : undefined,
-                    }}
-                  >
-                    {/* Consecutivo */}
-                    <td className="px-3 py-2 font-mono font-medium whitespace-nowrap"
-                        style={{ color: 'var(--text-primary)' }}>
-                      {r.consecutivo}
-                    </td>
+            ) : filtered.map(r => {
+              const vencida = isVencida(r);
+              return (
+                <tr
+                  key={r.id}
+                  style={{
+                    borderTop: '1px solid var(--border)',
+                    background: vencida ? 'rgba(255,210,0,0.13)' : undefined,
+                  }}
+                >
+                  {/* Consecutivo */}
+                  <td style={{ ...cellBase, fontFamily: 'monospace', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    {r.consecutivo}
+                  </td>
 
-                    {/* Fecha */}
-                    <td className="px-3 py-2 whitespace-nowrap tabular-nums">
-                      {formatDate(r.fecha)}
-                    </td>
+                  {/* Fecha */}
+                  <td style={{ ...cellBase, fontVariantNumeric: 'tabular-nums' }}>
+                    {formatDate(r.fecha)}
+                  </td>
 
-                    {/* Emisor */}
-                    <td className="px-3 py-2 max-w-[130px] truncate" title={r.emisor}>
-                      {r.emisor}
-                    </td>
+                  {/* Emisor */}
+                  <td style={cellBase} title={r.emisor}>{r.emisor}</td>
 
-                    {/* Receptor */}
-                    <td className="px-3 py-2 max-w-[130px] truncate" title={r.receptor}>
-                      {r.receptor}
-                    </td>
+                  {/* Receptor */}
+                  <td style={cellBase} title={r.receptor}>{r.receptor}</td>
 
-                    {/* Componente */}
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      {r.componente ? (
-                        <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-medium"
-                              style={{ background: 'var(--idu-blue-lt)', color: 'var(--idu-blue)' }}>
-                          {r.componente}
-                        </span>
-                      ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
+                  {/* Componente */}
+                  <td style={cellBase}>
+                    {r.componente ? (
+                      <span style={{
+                        display: 'inline-flex', padding: '2px 8px', borderRadius: '4px',
+                        fontSize: '12px', fontWeight: 500,
+                        background: 'var(--idu-blue-lt)', color: 'var(--idu-blue)',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {r.componente}
+                      </span>
+                    ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                  </td>
 
-                    {/* Asunto */}
-                    <td className="px-3 py-2 max-w-[200px] truncate" title={r.asunto}>
-                      {r.asunto}
-                    </td>
+                  {/* Asunto */}
+                  <td style={cellBase} title={r.asunto}>{r.asunto}</td>
 
-                    {/* Plazo respuesta — red + bold when overdue */}
-                    <td className="px-3 py-2 whitespace-nowrap tabular-nums">
-                      {r.plazo_respuesta ? (
-                        <span style={{
-                          color: vencida ? 'var(--accent-red)' : 'var(--text-primary)',
-                          fontWeight: vencida ? 700 : 400,
-                        }}>
-                          {formatDate(r.plazo_respuesta)}
-                          {vencida && <span className="ml-1 text-[10px]">⚠</span>}
-                        </span>
-                      ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
+                  {/* Plazo respuesta */}
+                  <td style={{ ...cellBase, fontVariantNumeric: 'tabular-nums' }}>
+                    {r.plazo_respuesta ? (
+                      <span style={{
+                        color: vencida ? 'var(--accent-red)' : 'var(--text-primary)',
+                        fontWeight: vencida ? 700 : 400,
+                      }}>
+                        {formatDate(r.plazo_respuesta)}
+                        {vencida && <span style={{ marginLeft: '4px', fontSize: '12px' }}>⚠</span>}
+                      </span>
+                    ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                  </td>
 
-                    {/* Estado */}
-                    <td className="px-3 py-2">
-                      <StatusBadge estado={r.estado} />
-                    </td>
+                  {/* Estado */}
+                  <td style={cellBase}><StatusBadge estado={r.estado} /></td>
 
-                    {/* Consecutivo Respuesta */}
-                    <td className="px-3 py-2 font-mono">
-                      {r.consecutivo_respuesta || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
+                  {/* Consecutivo Respuesta */}
+                  <td style={{ ...cellBase, fontFamily: 'monospace' }}>
+                    {r.consecutivo_respuesta || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                  </td>
 
-                    {/* Fecha Respuesta */}
-                    <td className="px-3 py-2 whitespace-nowrap tabular-nums">
-                      {r.fecha_respuesta
-                        ? formatDate(r.fecha_respuesta)
-                        : <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
+                  {/* Fecha Respuesta */}
+                  <td style={{ ...cellBase, fontVariantNumeric: 'tabular-nums' }}>
+                    {r.fecha_respuesta
+                      ? formatDate(r.fecha_respuesta)
+                      : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                  </td>
 
-                    {/* Link */}
-                    <td className="px-3 py-2">
-                      {r.link ? (
-                        <a href={r.link} target="_blank" rel="noopener noreferrer"
-                           className="inline-flex items-center gap-0.5 text-xs underline underline-offset-2"
-                           style={{ color: 'var(--accent-teal)' }}>
-                          Ver ↗
-                        </a>
-                      ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
+                  {/* Link */}
+                  <td style={cellBase}>
+                    {r.link ? (
+                      <a href={r.link} target="_blank" rel="noopener noreferrer"
+                         style={{ color: 'var(--accent-teal)', textDecoration: 'underline', textUnderlineOffset: '2px', fontSize: '14px' }}>
+                        Ver ↗
+                      </a>
+                    ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                  </td>
 
-                    {/* Acciones */}
-                    {canEdit && (
-                      <td className="px-3 py-2">
-                        <Button variant="ghost"
-                                onClick={() => setEditando(r)}
-                                className="h-6 px-2 text-xs">
-                          Editar
-                        </Button>
-                      </td>
-                    )}
-                  </tr>
-                );
-              })
-            )}
+                  {/* Acciones */}
+                  {canEdit && (
+                    <td style={{ ...cellBase, padding: '6px 8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setEditando(r)}
+                        style={{
+                          height: '28px', padding: '0 8px', fontSize: '13px',
+                          cursor: 'pointer', border: 'none', borderRadius: 'var(--radius)',
+                          background: 'transparent', color: 'var(--text-muted)',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--muted)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                      >
+                        Editar
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
-      {/* Overdue legend */}
+      {/* ── Overdue legend ──────────────────────────────────────────────────── */}
       {nVencidasVisible > 0 && (
-        <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-muted)' }}>
           <span style={{
-            display: 'inline-block',
-            width: '14px', height: '14px',
-            background: 'rgba(255,210,0,0.35)',
-            border: '1px solid #c8a800',
-            borderRadius: '3px',
-            flexShrink: 0,
+            display: 'inline-block', width: '16px', height: '16px',
+            background: 'rgba(255,210,0,0.35)', border: '1px solid #c8a800',
+            borderRadius: '3px', flexShrink: 0,
           }} />
           {nVencidasVisible} registro{nVencidasVisible > 1 ? 's' : ''} PENDIENTE{nVencidasVisible > 1 ? 'S' : ''} con plazo de respuesta vencido
         </div>
       )}
 
-      {/* Edit Dialog */}
+      {/* ── Edit Dialog ─────────────────────────────────────────────────────── */}
       {editando && (
-        <Dialog open={!!editando} onOpenChange={v => !v && setEditando(null)}>
+        <Dialog open={!!editando} onOpenChange={(v: boolean) => !v && setEditando(null)}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Editar correspondencia · {editando.consecutivo}</DialogTitle>
