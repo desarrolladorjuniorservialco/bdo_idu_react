@@ -5,7 +5,11 @@ export async function fetchReporteDiario(contratoId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('registros_reporte_diario')
-    .select('*')
+    .select(`
+      *,
+      residente:perfiles!aprobado_residente(nombre),
+      interventor:perfiles!aprobado_interventor(nombre)
+    `)
     .eq('contrato_id', contratoId)
     .order('fecha', { ascending: false });
   return data ?? [];
