@@ -148,25 +148,25 @@ export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalP
               </Button>
             </form>
           )}
-
-          {/* Feedback inline */}
-          {feedbackError && (
-            <p
-              className="text-xs rounded-md px-3 py-2"
-              style={{ background: '#FEF2F2', color: '#991B1B', border: '1px solid #FECACA' }}
-            >
-              {feedbackError}
-            </p>
-          )}
-          {feedbackSuccess && (
-            <p
-              className="text-xs rounded-md px-3 py-2"
-              style={{ background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0' }}
-            >
-              {feedbackSuccess}
-            </p>
-          )}
         </div>
+      )}
+
+      {/* Feedback inline — FUERA de puedeAccionar para sobrevivir re-renders */}
+      {feedbackError && (
+        <p
+          className="text-xs rounded-md px-3 py-2"
+          style={{ background: '#FEF2F2', color: '#991B1B', border: '1px solid #FECACA' }}
+        >
+          {feedbackError}
+        </p>
+      )}
+      {feedbackSuccess && (
+        <p
+          className="text-xs rounded-md px-3 py-2"
+          style={{ background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0' }}
+        >
+          {feedbackSuccess}
+        </p>
       )}
     </div>
   );
