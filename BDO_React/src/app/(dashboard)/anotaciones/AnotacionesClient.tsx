@@ -21,7 +21,7 @@ import {
   Tag,
   X,
 } from 'lucide-react';
-import { useMemo, useReducer } from 'react';
+import { useMemo, useReducer, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 const ROL_COLOR: Record<string, string> = {
@@ -79,6 +79,8 @@ export default function AnotacionesClient({
   contratoId: string;
 }) {
   const [filters, dispatch] = useReducer(reducer, FILTERS_INIT);
+  const [anotacionesState, setAnotacionesState] = useState(anotaciones);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const today = new Date().toISOString().slice(0, 10);
 
   const {
@@ -92,11 +94,23 @@ export default function AnotacionesClient({
   });
 
   async function onSubmit(data: AnotacionInput) {
-    await insertarAnotacion(contratoId, data);
-    reset({ fecha: today });
+    setSubmitError(null);
+    try {
+      const result = await insertarAnotacion(contratoId, data);
+      if (result?.anotacion) {
+        setAnotacionesState((prev) => [...prev, result.anotacion]);
+      }
+      reset({ fecha: today });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No fue posible guardar la anotacion.';
+      setSubmitError(message);
+    }
   }
 
-  const filtered = useMemo(() => applyFilters(anotaciones, filters), [anotaciones, filters]);
+  const filtered = useMemo(
+    () => applyFilters(anotacionesState, filters),
+    [anotacionesState, filters],
+  );
   const hasFilters = Object.values(filters).some(Boolean);
 
   function set(key: keyof FiltersState) {
@@ -317,6 +331,7 @@ export default function AnotacionesClient({
             {isSubmitting ? 'Guardando…' : 'Registrar anotación'}
           </Button>
         </div>
+        {submitError && <p className="text-xs text-red-600">{submitError}</p>}
       </form>
     </div>
   );
