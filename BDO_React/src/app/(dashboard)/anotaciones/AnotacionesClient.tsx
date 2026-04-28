@@ -1,32 +1,63 @@
 'use client';
-import { useMemo, useReducer } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { anotacionSchema, type AnotacionInput } from '@/lib/validators/anotacion.schema';
-import { insertarAnotacion } from '@/lib/supabase/actions/anotaciones';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
+import { SectionBadge } from '@/components/shared/SectionBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { ROL_LABELS } from '@/lib/config';
+import { insertarAnotacion } from '@/lib/supabase/actions/anotaciones';
+import { type AnotacionInput, anotacionSchema } from '@/lib/validators/anotacion.schema';
 import type { AnotacionGeneral } from '@/types/database';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMemo, useReducer } from 'react';
+import { useForm } from 'react-hook-form';
 
 const ROL_COLOR: Record<string, string> = {
-  operativo:     'var(--idu-blue)',
-  obra:          'var(--accent-green)',
+  operativo: 'var(--idu-blue)',
+  obra: 'var(--accent-green)',
   interventoria: 'var(--accent-purple)',
-  supervision:   'var(--accent-teal)',
-  admin:         'var(--accent-orange)',
+  supervision: 'var(--accent-teal)',
+  admin: 'var(--accent-orange)',
 };
 
-interface State { buscar: string }
-type Action = { type: 'SET_BUSCAR'; v: string };
+export interface FiltersState {
+  buscar: string;
+  usuario: string;
+  tramo: string;
+  civ: string;
+  desde: string;
+  hasta: string;
+}
 
-function reducer(state: State, action: Action): State {
-  if (action.type === 'SET_BUSCAR') return { buscar: action.v };
+const FILTERS_INIT: FiltersState = {
+  buscar: '',
+  usuario: '',
+  tramo: '',
+  civ: '',
+  desde: '',
+  hasta: '',
+};
+
+type Action = { type: 'SET'; key: keyof FiltersState; v: string } | { type: 'RESET' };
+
+function reducer(state: FiltersState, action: Action): FiltersState {
+  if (action.type === 'RESET') return FILTERS_INIT;
+  if (action.type === 'SET') return { ...state, [action.key]: action.v };
   return state;
+}
+
+export function applyFilters(anotaciones: AnotacionGeneral[], f: FiltersState): AnotacionGeneral[] {
+  return anotaciones.filter((a) => {
+    if (f.desde && a.fecha < f.desde) return false;
+    if (f.hasta && a.fecha > f.hasta) return false;
+    if (f.usuario && !a.usuario_nombre.toLowerCase().includes(f.usuario.toLowerCase()))
+      return false;
+    if (f.tramo && !(a.tramo ?? '').toLowerCase().includes(f.tramo.toLowerCase())) return false;
+    if (f.civ && !(a.civ ?? '').toLowerCase().includes(f.civ.toLowerCase())) return false;
+    if (f.buscar && !a.anotacion.toLowerCase().includes(f.buscar.toLowerCase())) return false;
+    return true;
+  });
 }
 
 export default function AnotacionesClient({
@@ -34,32 +65,27 @@ export default function AnotacionesClient({
   contratoId,
 }: {
   anotaciones: AnotacionGeneral[];
-  contratoId:  string;
+  contratoId: string;
 }) {
-  const [state, dispatch] = useReducer(reducer, { buscar: '' });
+  const [filters, dispatch] = useReducer(reducer, FILTERS_INIT);
   const today = new Date().toISOString().slice(0, 10);
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } =
-    useForm<AnotacionInput>({
-      resolver: zodResolver(anotacionSchema),
-      defaultValues: { fecha: today },
-    });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<AnotacionInput>({
+    resolver: zodResolver(anotacionSchema),
+    defaultValues: { fecha: today },
+  });
 
   async function onSubmit(data: AnotacionInput) {
     await insertarAnotacion(contratoId, data);
     reset({ fecha: today });
   }
 
-  const filtered = useMemo(() => {
-    if (!state.buscar) return anotaciones;
-    const q = state.buscar.toLowerCase();
-    return anotaciones.filter(
-      (a) =>
-        a.anotacion.toLowerCase().includes(q) ||
-        (a.tramo ?? '').toLowerCase().includes(q) ||
-        a.usuario_nombre.toLowerCase().includes(q)
-    );
-  }, [anotaciones, state.buscar]);
+  const filtered = useMemo(() => applyFilters(anotaciones, filters), [anotaciones, filters]);
 
   return (
     <div className="space-y-4">
@@ -69,8 +95,8 @@ export default function AnotacionesClient({
           <Input
             placeholder="Buscar…"
             className="w-48"
-            value={state.buscar}
-            onChange={(e) => dispatch({ type: 'SET_BUSCAR', v: e.target.value })}
+            value={filters.buscar}
+            onChange={(e) => dispatch({ type: 'SET', key: 'buscar', v: e.target.value })}
           />
           <ExportCsvButton data={filtered} filename="anotaciones" />
         </div>
@@ -89,10 +115,7 @@ export default function AnotacionesClient({
         {filtered.map((a) => {
           const color = ROL_COLOR[a.usuario_rol] ?? 'var(--text-muted)';
           return (
-            <div
-              key={a.id}
-              className="flex gap-3 text-sm"
-            >
+            <div key={a.id} className="flex gap-3 text-sm">
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5"
                 style={{ background: color }}
