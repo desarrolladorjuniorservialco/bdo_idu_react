@@ -36,7 +36,7 @@ export async function aprobar(
     [config.campos.campo_cant]: parsed.cantidad_validada,
     [config.campos.campo_obs]: parsed.observacion ?? null,
     [config.campos.campo_apr]: user?.email ?? user?.id,
-    [config.campos.campo_estado]: config.estadoResultante,
+    [config.campos.campo_estado]: 'aprobado',
     [config.campos.campo_fecha]: new Date().toISOString().slice(0, 10),
   };
 
@@ -76,7 +76,7 @@ export async function devolver(
     estado: 'DEVUELTO',
     [config.campos.campo_obs]: parsed.observacion,
     [config.campos.campo_apr]: user?.email ?? user?.id,
-    [config.campos.campo_estado]: 'DEVUELTO',
+    [config.campos.campo_estado]: 'devuelto',
     [config.campos.campo_fecha]: new Date().toISOString().slice(0, 10),
   };
 
