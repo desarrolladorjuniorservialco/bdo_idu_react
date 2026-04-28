@@ -10,6 +10,17 @@ import { insertarAnotacion } from '@/lib/supabase/actions/anotaciones';
 import { type AnotacionInput, anotacionSchema } from '@/lib/validators/anotacion.schema';
 import type { AnotacionGeneral } from '@/types/database';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { motion } from 'framer-motion';
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  MessageSquarePlus,
+  Navigation,
+  SlidersHorizontal,
+  Tag,
+  X,
+} from 'lucide-react';
 import { useMemo, useReducer } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -86,79 +97,188 @@ export default function AnotacionesClient({
   }
 
   const filtered = useMemo(() => applyFilters(anotaciones, filters), [anotaciones, filters]);
+  const hasFilters = Object.values(filters).some(Boolean);
+
+  function set(key: keyof FiltersState) {
+    return (e: React.ChangeEvent<HTMLInputElement>) =>
+      dispatch({ type: 'SET', key, v: e.target.value });
+  }
 
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <SectionBadge label="Anotaciones Generales" page="anotaciones" />
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="Buscar…"
-            className="w-48"
-            value={filters.buscar}
-            onChange={(e) => dispatch({ type: 'SET', key: 'buscar', v: e.target.value })}
-          />
-          <ExportCsvButton data={filtered} filename="anotaciones" />
+        <ExportCsvButton data={filtered} filename="anotaciones" />
+      </div>
+
+      {/* Filter panel */}
+      <div
+        className="rounded-xl p-4 space-y-3"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+      >
+        <div className="flex items-center justify-between">
+          <span
+            className="flex items-center gap-1.5 text-xs font-semibold"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <SlidersHorizontal size={13} />
+            Filtros
+          </span>
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={() => dispatch({ type: 'RESET' })}
+              className="flex items-center gap-1 text-xs"
+              style={{ color: 'var(--accent-red)' }}
+            >
+              <X size={12} /> Limpiar
+            </button>
+          )}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div>
+            <Label className="text-xs">Desde</Label>
+            <Input type="date" value={filters.desde} onChange={set('desde')} />
+          </div>
+          <div>
+            <Label className="text-xs">Hasta</Label>
+            <Input type="date" value={filters.hasta} onChange={set('hasta')} />
+          </div>
+          <div>
+            <Label className="text-xs">Usuario</Label>
+            <Input
+              placeholder="Nombre del autor"
+              value={filters.usuario}
+              onChange={set('usuario')}
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Tramo</Label>
+            <Input placeholder="ID de tramo" value={filters.tramo} onChange={set('tramo')} />
+          </div>
+          <div>
+            <Label className="text-xs">CIV</Label>
+            <Input placeholder="Código CIV" value={filters.civ} onChange={set('civ')} />
+          </div>
+          <div>
+            <Label className="text-xs">Buscar en anotación</Label>
+            <Input placeholder="Texto libre" value={filters.buscar} onChange={set('buscar')} />
+          </div>
         </div>
       </div>
 
-      {/* Lista de anotaciones (chat style) */}
+      {/* Count */}
+      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+        {filtered.length} anotación{filtered.length !== 1 ? 'es' : ''}
+      </p>
+
+      {/* Feed */}
       <div
         className="rounded-xl p-4 space-y-3 max-h-[560px] overflow-y-auto"
         style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
       >
         {filtered.length === 0 && (
-          <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>
-            Sin anotaciones.
+          <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>
+            Sin anotaciones para los filtros seleccionados.
           </p>
         )}
-        {filtered.map((a) => {
+        {filtered.map((a, i) => {
           const color = ROL_COLOR[a.usuario_rol] ?? 'var(--text-muted)';
+          const ts = a.created_at
+            ? new Date(a.created_at).toLocaleString('es-CO', {
+                dateStyle: 'short',
+                timeStyle: 'short',
+              })
+            : '';
           return (
-            <div key={a.id} className="flex gap-3 text-sm">
+            <motion.article
+              key={a.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(i * 0.03, 0.18), duration: 0.2 }}
+              className="flex gap-3 p-3 rounded-lg"
+              style={{ background: 'var(--muted)', border: '1px solid var(--border)' }}
+            >
+              {/* Avatar */}
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 mt-0.5"
                 style={{ background: color }}
                 title={a.usuario_nombre}
               >
                 {a.usuario_nombre.charAt(0).toUpperCase()}
               </div>
-              <div className="flex-1 min-w-0">
+
+              {/* Content */}
+              <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="font-semibold text-xs" style={{ color }}>
+                  <span className="font-semibold text-sm" style={{ color }}>
                     {a.usuario_nombre}
                   </span>
-                  <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
                     {ROL_LABELS[a.usuario_rol]} · {a.usuario_empresa}
                   </span>
-                  <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                    {a.fecha}
+                </div>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+                  {a.anotacion}
+                </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
+                  <span
+                    className="flex items-center gap-1 text-[11px]"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    <Calendar size={11} /> {a.fecha}
                   </span>
                   {a.tramo && (
                     <span
-                      className="text-[10px] px-1.5 py-0.5 rounded"
-                      style={{ background: 'var(--muted)', color: 'var(--text-muted)' }}
+                      className="flex items-center gap-1 text-[11px]"
+                      style={{ color: 'var(--text-muted)' }}
                     >
-                      {a.tramo}
+                      <MapPin size={11} /> {a.tramo}
+                    </span>
+                  )}
+                  {a.civ && (
+                    <span
+                      className="flex items-center gap-1 text-[11px]"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      <Tag size={11} /> {a.civ}
+                    </span>
+                  )}
+                  {a.pk && (
+                    <span
+                      className="flex items-center gap-1 text-[11px]"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      <Navigation size={11} /> {a.pk}
+                    </span>
+                  )}
+                  {ts && (
+                    <span
+                      className="flex items-center gap-1 text-[11px]"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      <Clock size={11} /> {ts}
                     </span>
                   )}
                 </div>
-                <p className="mt-0.5" style={{ color: 'var(--text-primary)' }}>
-                  {a.anotacion}
-                </p>
               </div>
-            </div>
+            </motion.article>
           );
         })}
       </div>
 
-      {/* Compositor */}
+      {/* Composer */}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="rounded-xl p-4 space-y-3"
         style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
       >
-        <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <p
+          className="flex items-center gap-1.5 text-xs font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          <MessageSquarePlus size={14} />
           Nueva anotación
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
