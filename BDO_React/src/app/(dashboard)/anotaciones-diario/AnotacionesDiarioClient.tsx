@@ -20,6 +20,10 @@ const toNumber = (value: unknown): number => {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
 };
+const toText = (value: unknown, fallback = ''): string =>
+  value === null || value === undefined ? fallback : String(value);
+const hasValue = (value: unknown): boolean =>
+  value !== null && value !== undefined && String(value).trim() !== '';
 
 const today = new Date().toISOString().slice(0, 10);
 const initial: State = {
@@ -158,11 +162,11 @@ export default function AnotacionesDiarioClient({
         renderHeader={(r) => (
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
-              {String(r.fecha_reporte ?? r.fecha ?? '')}
+              {toText(r.fecha_reporte ?? r.fecha)}
             </span>
-            <span className="text-xs">{r.folio}</span>
+            <span className="text-xs">{toText(r.folio)}</span>
             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              {r.tramo ?? r.id_tramo ?? ''}
+              {toText(r.tramo ?? r.id_tramo)}
             </span>
             <span
               className="text-[10px] px-1.5 py-0.5 rounded-md"
@@ -185,37 +189,37 @@ export default function AnotacionesDiarioClient({
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
                     <span>
-                      <b>Folio:</b> {r.folio ?? '-'}
+                      <b>Folio:</b> {toText(r.folio, '-')}
                     </span>
                     <span>
                       <b>Fecha:</b> {String(r.fecha_reporte ?? r.fecha ?? '-')}
                     </span>
                     <span>
-                      <b>Inspector:</b> {r.usuario_qfield ?? '-'}
+                      <b>Inspector:</b> {toText(r.usuario_qfield, '-')}
                     </span>
                     <span>
-                      <b>Estado:</b> {r.estado ?? '-'}
+                      <b>Estado:</b> {toText(r.estado, '-')}
                     </span>
                     <span>
-                      <b>Tramo:</b> {r.tramo ?? r.id_tramo ?? '-'}
+                      <b>Tramo:</b> {toText(r.tramo ?? r.id_tramo, '-')}
                     </span>
                     <span>
-                      <b>CIV:</b> {r.civ ?? '-'}
+                      <b>CIV:</b> {toText(r.civ, '-')}
                     </span>
                     <span>
-                      <b>PK:</b> {r.pk_id ?? '-'}
+                      <b>PK:</b> {toText(r.pk_id, '-')}
                     </span>
                     <span>
-                      <b>Cantidad:</b> {r.cantidad ?? '-'}
+                      <b>Cantidad:</b> {toText(r.cantidad, '-')}
                     </span>
                     <span>
-                      <b>Unidad:</b> {r.unidad ?? '-'}
+                      <b>Unidad:</b> {toText(r.unidad, '-')}
                     </span>
                   </div>
 
-                  {r.observaciones && (
+                  {hasValue(r.observaciones) && (
                     <div className="rounded-md p-2 text-xs" style={{ background: 'var(--muted)' }}>
-                      <b>Observaciones:</b> {r.observaciones}
+                      <b>Observaciones:</b> {toText(r.observaciones)}
                     </div>
                   )}
 
@@ -245,7 +249,7 @@ export default function AnotacionesDiarioClient({
                           >
                             {String(p.cargo ?? p.tipo ?? 'Personal')}:{' '}
                             <b>{String(p.cantidad ?? '-')}</b>{' '}
-                            {p.empresa ? `- ${String(p.empresa)}` : ''}
+                            {hasValue(p.empresa) ? `- ${String(p.empresa)}` : ''}
                           </li>
                         ))}
                       </ul>
@@ -266,7 +270,7 @@ export default function AnotacionesDiarioClient({
                             key={`${String(m.tipo ?? 'Equipo')}-${String(m.estado ?? '')}-${String(m.cantidad ?? '')}`}
                           >
                             {String(m.tipo ?? 'Equipo')}: <b>{String(m.cantidad ?? '-')}</b>{' '}
-                            {m.estado ? `- ${String(m.estado)}` : ''}
+                            {hasValue(m.estado) ? `- ${String(m.estado)}` : ''}
                           </li>
                         ))}
                       </ul>
