@@ -6,7 +6,7 @@ import { FilterForm } from '@/components/shared/FilterForm';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PhotoGrid } from '@/components/shared/PhotoGrid';
 import { SectionBadge } from '@/components/shared/SectionBadge';
-import type { Rol } from '@/types/database';
+import type { FotoRegistro, Rol } from '@/types/database';
 import { useMemo, useReducer } from 'react';
 
 type Filters = { desde: string; hasta: string; estado: string; buscar: string };
@@ -47,7 +47,7 @@ interface Subtablas {
   clima: SubRegistro[];
   maquinaria: SubRegistro[];
   sst: SubRegistro[];
-  fotos: SubRegistro[];
+  fotos: FotoRegistro[];
 }
 
 export default function AnotacionesDiarioClient({
@@ -68,8 +68,8 @@ export default function AnotacionesDiarioClient({
   }, [registros]);
 
   const maps = useMemo(() => {
-    const toMap = (arr: SubRegistro[]) => {
-      const mapped: Record<string, SubRegistro[]> = {};
+    const toMap = <T extends { registro_id?: string }>(arr: T[]) => {
+      const mapped: Record<string, T[]> = {};
       for (const x of arr) {
         const key = String(x.registro_id ?? '');
         if (!key) continue;
