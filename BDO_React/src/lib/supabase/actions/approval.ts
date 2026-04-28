@@ -21,6 +21,7 @@ export async function aprobar(
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   const { data: current, error: currentError } = await supabase
     .from(tabla)
     .select('estado')
@@ -35,9 +36,9 @@ export async function aprobar(
     estado: config.estadoResultante,
     [config.campos.campo_cant]: parsed.cantidad_validada,
     [config.campos.campo_obs]: parsed.observacion ?? null,
-    [config.campos.campo_apr]: user?.email ?? user?.id,
+    [config.campos.campo_apr]: user?.id,
     [config.campos.campo_estado]: 'aprobado',
-    [config.campos.campo_fecha]: new Date().toISOString().slice(0, 10),
+    [config.campos.campo_fecha]: new Date().toISOString(),
   };
 
   const { error } = await supabase.from(tabla).update(payload).eq('id', registroId);
@@ -57,11 +58,13 @@ export async function devolver(
   const parsed = devolucionSchema.parse({ observacion });
   const config = APROBACION_CONFIG[rol];
   if (!config) throw new Error(`Rol ${rol} no puede devolver`);
+  if (!config.puedeDevolver) throw new Error(`Rol ${rol} no tiene permiso para devolver`);
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   const { data: current, error: currentError } = await supabase
     .from(tabla)
     .select('estado')
@@ -75,9 +78,9 @@ export async function devolver(
   const payload: Record<string, unknown> = {
     estado: 'DEVUELTO',
     [config.campos.campo_obs]: parsed.observacion,
-    [config.campos.campo_apr]: user?.email ?? user?.id,
+    [config.campos.campo_apr]: user?.id,
     [config.campos.campo_estado]: 'devuelto',
-    [config.campos.campo_fecha]: new Date().toISOString().slice(0, 10),
+    [config.campos.campo_fecha]: new Date().toISOString(),
   };
 
   const { error } = await supabase.from(tabla).update(payload).eq('id', registroId);
