@@ -16,6 +16,10 @@ type Action =
   | { type: 'SELECT'; id: string | null };
 type DiarioRegistro = Record<string, unknown> & { id: string };
 type SubRegistro = Record<string, unknown> & { registro_id?: string };
+const toNumber = (value: unknown): number => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
 
 const today = new Date().toISOString().slice(0, 10);
 const initial: State = {
@@ -124,7 +128,7 @@ export default function AnotacionesDiarioClient({
     );
   }, [registros, filters]);
 
-  const totalPersonal = subtablas.personal.reduce((a, p) => a + (p.cantidad ?? 0), 0);
+  const totalPersonal = subtablas.personal.reduce((a, p) => a + toNumber(p.cantidad), 0);
   const totalAprobados = filtered.filter((r) => String(r.estado ?? '') === 'APROBADO').length;
 
   return (
