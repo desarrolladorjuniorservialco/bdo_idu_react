@@ -1,73 +1,168 @@
 ﻿'use client';
-import type { InformeData, InformeOptions } from '@/components/pdf/InformePdf';
+
+import type {
+  InformeAnotacion,
+  InformeCantidad,
+  InformeComponente,
+  InformeData,
+  InformeDiario,
+} from '@/components/pdf/InformePdf';
+import { InformePdfDownload } from '@/components/pdf/InformePdf';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { SectionBadge } from '@/components/shared/SectionBadge';
-import { formatCOP } from '@/lib/utils';
-import { CheckCircle2, FileStack, FileText, Layers3, MailCheck } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
 
-const InformePdfDownload = dynamic(
-  () => import('@/components/pdf/InformePdf').then((m) => m.InformePdfDownload),
-  {
-    ssr: false,
-    loading: () => (
-      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-        Cargando generador de PDF...
-      </p>
-    ),
-  },
-);
+type EstadoFiltro =
+  | 'Todos'
+  | 'Solo Aprobados'
+  | 'Revisados y Aprobados'
+  | 'Solo Borradores'
+  | 'Solo Devueltos';
 
-type InformeBloque = 'portada' | 'contrato' | 'cantidades' | 'correspondencia';
-type SelectedInformeOptions = Required<InformeOptions>;
+type TipoFormulario =
+  | 'Cantidades de Obra'
+  | 'Componentes Transversales'
+  | 'Reporte Diario'
+  | 'Anotaciones';
 
-const BLOQUES: Array<{
-  key: InformeBloque;
-  label: string;
-  hint: string;
-  Icon: typeof FileText;
-}> = [
-  {
-    key: 'portada',
-    label: 'Portada institucional',
-    hint: 'Titulo y fecha de generacion',
-    Icon: FileText,
-  },
-  {
-    key: 'contrato',
-    label: 'Datos del contrato',
-    hint: 'Numero, contratista, valor y fechas',
-    Icon: FileStack,
-  },
-  {
-    key: 'cantidades',
-    label: 'Resumen de cantidades',
-    hint: 'KPI y estado de aprobaciones',
-    Icon: Layers3,
-  },
-  {
-    key: 'correspondencia',
-    label: 'Estado de correspondencia',
-    hint: 'Pendientes y respondidas',
-    Icon: MailCheck,
-  },
+const ESTADO_MAP: Record<EstadoFiltro, string[] | null> = {
+  Todos: null,
+  'Solo Aprobados': ['APROBADO'],
+  'Revisados y Aprobados': ['REVISADO', 'APROBADO'],
+  'Solo Borradores': ['BORRADOR'],
+  'Solo Devueltos': ['DEVUELTO'],
+};
+
+const TIPOS: TipoFormulario[] = [
+  'Cantidades de Obra',
+  'Componentes Transversales',
+  'Reporte Diario',
+  'Anotaciones',
 ];
 
+function asDate(raw: unknown): Date | null {
+  if (!raw) return null;
+  const d = new Date(String(raw));
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function inRange(raw: unknown, fi: string, ff: string): boolean {
+  const d = asDate(raw);
+  if (!d) return false;
+  const from = new Date(`${fi}T00:00:00`);
+  const to = new Date(`${ff}T23:59:59`);
+  return d >= from && d <= to;
+}
+
+function containsInsensitive(raw: unknown, q: string): boolean {
+  if (!q.trim()) return true;
+  return String(raw ?? '')
+    .toLowerCase()
+    .includes(q.trim().toLowerCase());
+}
+
+function byEstado<T extends { estado?: unknown }>(rows: T[], filtro: EstadoFiltro): T[] {
+  const estados = ESTADO_MAP[filtro];
+  if (!estados) return rows;
+  return rows.filter((r) => estados.includes(String(r.estado ?? '').toUpperCase()));
+}
+
 export default function GenerarInformeClient({ data }: { data: InformeData }) {
-  const [options, setOptions] = useState<SelectedInformeOptions>({
-    portada: true,
-    contrato: true,
-    cantidades: true,
-    correspondencia: true,
-  });
+  const today = new Date().toISOString().slice(0, 10);
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
 
-  const aprobadas = (data.cantidades ?? []).filter((r) => r.estado === 'APROBADO').length;
-  const pendientes = (data.correspondencia ?? []).filter((c) => c.estado === 'PENDIENTE').length;
-  const selectedCount = useMemo(() => Object.values(options).filter(Boolean).length, [options]);
+  const [fi, setFi] = useState(weekAgo);
+  const [ff, setFf] = useState(today);
+  const [estado, setEstado] = useState<EstadoFiltro>('Todos');
+  const [tramo, setTramo] = useState('');
+  const [usuario, setUsuario] = useState('');
+  const [tiposSel, setTiposSel] = useState<TipoFormulario[]>(['Cantidades de Obra']);
 
-  function handleToggle(key: InformeBloque) {
-    setOptions((prev) => ({ ...prev, [key]: !prev[key] }));
+  const filtered = useMemo(() => {
+    const cantidadesBase = byEstado(data.cantidades ?? [], estado).filter((r: InformeCantidad) => {
+      const tramoVal = r.id_tramo ?? r.tramo;
+      const userVal = r.usuario_qfield ?? r.usuario_nombre;
+      return (
+        inRange(r.fecha, fi, ff) &&
+        containsInsensitive(tramoVal, tramo) &&
+        containsInsensitive(userVal, usuario)
+      );
+    });
+
+    const componentesBase = byEstado(data.componentes ?? [], estado).filter(
+      (r: InformeComponente) => {
+        const tramoVal = r.id_tramo ?? r.tramo;
+        const userVal = r.usuario_qfield ?? r.usuario_nombre;
+        return (
+          inRange(r.fecha, fi, ff) &&
+          containsInsensitive(tramoVal, tramo) &&
+          containsInsensitive(userVal, usuario)
+        );
+      },
+    );
+
+    const diarioBase = byEstado(data.diario ?? [], estado).filter((r: InformeDiario) => {
+      const tramoVal = r.id_tramo ?? r.tramo;
+      const userVal = r.usuario_qfield ?? r.usuario_nombre;
+      return (
+        inRange(r.fecha_reporte ?? r.fecha, fi, ff) &&
+        containsInsensitive(tramoVal, tramo) &&
+        containsInsensitive(userVal, usuario)
+      );
+    });
+
+    const anotacionesBase = (data.anotaciones ?? []).filter((r: InformeAnotacion) => {
+      return (
+        inRange(r.fecha, fi, ff) &&
+        containsInsensitive(r.tramo ?? r.id_tramo, tramo) &&
+        containsInsensitive(r.usuario_nombre ?? r.usuario_qfield, usuario)
+      );
+    });
+
+    const useType = (tipo: TipoFormulario) => tiposSel.includes(tipo);
+
+    return {
+      ...data,
+      cantidades: useType('Cantidades de Obra') ? cantidadesBase : [],
+      componentes: useType('Componentes Transversales') ? componentesBase : [],
+      diario: useType('Reporte Diario') ? diarioBase : [],
+      anotaciones: useType('Anotaciones') ? anotacionesBase : [],
+      fi,
+      ff,
+    };
+  }, [data, estado, fi, ff, tramo, usuario, tiposSel]);
+
+  const totalRegistros =
+    filtered.cantidades.length +
+    filtered.componentes.length +
+    filtered.diario.length +
+    filtered.anotaciones.length;
+
+  const aprobados = useMemo(() => {
+    const rows = [...filtered.cantidades, ...filtered.componentes, ...filtered.diario] as Array<{
+      estado?: string;
+    }>;
+    return rows.filter((r) => String(r.estado ?? '').toUpperCase() === 'APROBADO').length;
+  }, [filtered]);
+
+  const revisados = useMemo(() => {
+    const rows = [...filtered.cantidades, ...filtered.componentes, ...filtered.diario] as Array<{
+      estado?: string;
+    }>;
+    return rows.filter((r) => String(r.estado ?? '').toUpperCase() === 'REVISADO').length;
+  }, [filtered]);
+
+  const devueltos = useMemo(() => {
+    const rows = [...filtered.cantidades, ...filtered.componentes, ...filtered.diario] as Array<{
+      estado?: string;
+    }>;
+    return rows.filter((r) => String(r.estado ?? '').toUpperCase() === 'DEVUELTO').length;
+  }, [filtered]);
+
+  const borradores = Math.max(totalRegistros - aprobados - revisados - devueltos, 0);
+
+  function toggleTipo(tipo: TipoFormulario) {
+    setTiposSel((prev) => (prev.includes(tipo) ? prev.filter((x) => x !== tipo) : [...prev, tipo]));
   }
 
   return (
@@ -76,120 +171,114 @@ export default function GenerarInformeClient({ data }: { data: InformeData }) {
 
       <div
         className="rounded-2xl border p-5 md:p-6 space-y-4"
-        style={{
-          borderColor: 'var(--border)',
-          background: 'linear-gradient(120deg, #F8FAFC 0%, #EEF6EA 100%)',
-        }}
+        style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}
       >
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <p
-              className="text-[11px] font-semibold tracking-widest uppercase"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              Parametros del PDF
-            </p>
-            <h3 className="text-lg font-semibold mt-1">Seleccion de bloques de informacion</h3>
-            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-              Define que secciones apareceran en el documento impreso.
-            </p>
-          </div>
-          <div
-            className="rounded-xl px-3 py-2 text-xs font-semibold"
-            style={{ background: '#E6F8EB', color: '#1E5B33', border: '1px solid #BEE6CC' }}
-          >
-            {selectedCount} bloque(s) seleccionados
-          </div>
+        <h3 className="text-lg font-semibold">Período y Contenido</h3>
+
+        <div className="grid md:grid-cols-2 gap-3">
+          <label className="text-sm">
+            Desde
+            <input
+              type="date"
+              className="mt-1 w-full rounded-md border px-3 py-2"
+              value={fi}
+              onChange={(e) => setFi(e.target.value)}
+            />
+          </label>
+          <label className="text-sm">
+            Hasta
+            <input
+              type="date"
+              className="mt-1 w-full rounded-md border px-3 py-2"
+              value={ff}
+              onChange={(e) => setFf(e.target.value)}
+            />
+          </label>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          {BLOQUES.map(({ key, label, hint, Icon }) => (
-            <label
-              key={key}
-              htmlFor={`opt-${key}`}
-              className="group rounded-xl border p-3 flex items-start gap-3 cursor-pointer transition-colors"
-              style={{
-                borderColor: options[key] ? '#86EFAC' : 'var(--border)',
-                background: options[key] ? '#F0FDF4' : 'var(--bg-card)',
-              }}
+        <div className="grid md:grid-cols-3 gap-3">
+          <label className="text-sm">
+            Estado de las anotaciones
+            <select
+              className="mt-1 w-full rounded-md border px-3 py-2"
+              value={estado}
+              onChange={(e) => setEstado(e.target.value as EstadoFiltro)}
             >
-              <input
-                id={`opt-${key}`}
-                type="checkbox"
-                checked={options[key]}
-                onChange={() => handleToggle(key)}
-                className="mt-1 h-4 w-4 accent-[var(--corp-primary)]"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <Icon
-                    size={15}
-                    style={{ color: options[key] ? '#166534' : 'var(--text-muted)' }}
-                  />
-                  <p className="text-sm font-semibold">{label}</p>
-                </div>
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                  {hint}
-                </p>
-              </div>
-            </label>
-          ))}
+              {Object.keys(ESTADO_MAP).map((k) => (
+                <option key={k} value={k}>
+                  {k}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm">
+            Filtrar por Tramo
+            <input
+              className="mt-1 w-full rounded-md border px-3 py-2"
+              value={tramo}
+              onChange={(e) => setTramo(e.target.value)}
+              placeholder="Ej: T-01"
+            />
+          </label>
+          <label className="text-sm">
+            Filtrar por Usuario / Inspector
+            <input
+              className="mt-1 w-full rounded-md border px-3 py-2"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
+              placeholder="Nombre"
+            />
+          </label>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Tipos de formulario a incluir</p>
+          <div className="grid md:grid-cols-2 gap-2">
+            {TIPOS.map((tipo) => (
+              <label
+                key={tipo}
+                className="rounded-md border px-3 py-2 text-sm flex items-center gap-2"
+              >
+                <input
+                  type="checkbox"
+                  checked={tiposSel.includes(tipo)}
+                  onChange={() => toggleTipo(tipo)}
+                />
+                {tipo}
+              </label>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <KpiCard label="Registros cantidades" value={data.cantidades?.length ?? 0} accent="blue" />
-        <KpiCard label="Aprobados" value={aprobadas} accent="green" />
-        <KpiCard label="Corresp. pendientes" value={pendientes} accent="red" />
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <KpiCard label="Registros totales" value={totalRegistros} accent="blue" />
+        <KpiCard label="Aprobados" value={aprobados} accent="green" />
+        <KpiCard label="Revisados" value={revisados} accent="blue" />
+        <KpiCard label="Borradores" value={borradores} accent="orange" />
+        <KpiCard label="Devueltos" value={devueltos} accent="red" />
       </div>
-
-      {data.contrato && (
-        <div
-          className="rounded-xl p-4 space-y-2"
-          style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-        >
-          <h3 className="text-sm font-semibold">Datos del contrato</h3>
-          <div className="grid md:grid-cols-2 gap-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-            <span>
-              <b>Numero:</b> {data.contrato.id}
-            </span>
-            <span>
-              <b>Contratista:</b> {data.contrato.contratista}
-            </span>
-            <span>
-              <b>Valor:</b> {formatCOP(data.contrato.valor_actual)}
-            </span>
-            <span>
-              <b>Fin:</b> {data.contrato.fecha_fin?.slice(0, 10) ?? '-'}
-            </span>
-          </div>
-        </div>
-      )}
 
       <div
-        className="rounded-xl p-6 space-y-4"
+        className="rounded-xl p-4 space-y-3"
         style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
       >
-        <p className="text-sm font-semibold">Generar informe PDF</p>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          Se generara el PDF con los bloques seleccionados en el panel superior.
+        <h3 className="text-sm font-semibold">Vista previa</h3>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          Cantidades: {filtered.cantidades.length} · Componentes: {filtered.componentes.length} ·
+          Diario: {filtered.diario.length} · Anotaciones: {filtered.anotaciones.length}
         </p>
-        <div
-          className="flex flex-wrap items-center gap-2 text-xs"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          {BLOQUES.filter(({ key }) => options[key]).map(({ key, label }) => (
-            <span
-              key={key}
-              className="inline-flex items-center gap-1 rounded-full px-2 py-1"
-              style={{ background: '#F1F5F9', border: '1px solid var(--border)' }}
-            >
-              <CheckCircle2 size={12} style={{ color: '#15803D' }} />
-              {label}
-            </span>
-          ))}
-        </div>
-        <InformePdfDownload data={data} options={options} />
+      </div>
+
+      <div
+        className="rounded-xl p-6 space-y-3"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+      >
+        <p className="text-sm font-semibold">Generar Bitácora PDF</p>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          El PDF se genera con el diseño institucional y los filtros seleccionados.
+        </p>
+        <InformePdfDownload data={filtered} disabled={totalRegistros === 0} />
       </div>
     </div>
   );
