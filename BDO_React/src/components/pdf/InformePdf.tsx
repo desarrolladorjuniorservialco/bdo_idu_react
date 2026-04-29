@@ -28,6 +28,7 @@ export interface InformeContrato {
 export interface InformeCantidad extends BaseRow {
   item_pago?: Scalar;
   item_descripcion?: Scalar;
+  tipo_componente?: Scalar;
   tipo_actividad?: Scalar;
   cantidad?: Scalar;
   unidad?: Scalar;
@@ -38,6 +39,8 @@ export interface InformeComponente extends BaseRow {
   tipo_actividad?: Scalar;
   cantidad?: Scalar;
   unidad?: Scalar;
+  item_pago?: Scalar;
+  item_descripcion?: Scalar;
 }
 
 export interface InformeDiario extends BaseRow {}
@@ -118,9 +121,9 @@ const styles = StyleSheet.create({
   },
 });
 
-function dateStr(v?: string) {
+function dateStr(v?: Scalar) {
   if (!v) return '-';
-  const d = new Date(v);
+  const d = new Date(String(v));
   if (Number.isNaN(d.getTime())) return String(v).slice(0, 10);
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
