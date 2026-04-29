@@ -12,6 +12,8 @@ interface BaseRow {
   tramo?: Scalar;
   civ?: Scalar;
   pk?: Scalar;
+  pk_id?: Scalar;
+  codigo_elemento?: Scalar;
   civ_pk?: Scalar;
   usuario_qfield?: Scalar;
   usuario_nombre?: Scalar;
@@ -152,7 +154,7 @@ function rowKey(prefix: string, r: BaseRow): string {
     norm(r.fecha_reporte ?? r.fecha),
     norm(r.id_tramo ?? r.tramo),
     norm(r.civ),
-    norm(r.pk ?? r.civ_pk),
+    norm(r.pk ?? r.pk_id ?? r.codigo_elemento ?? r.civ_pk),
     norm(r.observaciones),
   ].join('__');
 }
@@ -206,7 +208,7 @@ function InformeDoc({ data }: { data: InformeData }) {
 
               {qd.map((r) => (
                 <Text key={rowKey('p', r)} style={styles.para}>
-                  {`PK ${norm(r.pk ?? r.civ_pk)}. ${norm(r.observaciones)}`}
+                  {`PK ${norm(r.pk ?? r.pk_id ?? r.codigo_elemento ?? r.civ_pk)}. ${norm(r.observaciones)}`}
                 </Text>
               ))}
 
@@ -222,7 +224,9 @@ function InformeDoc({ data }: { data: InformeData }) {
                   </View>
                   {q.slice(0, 22).map((r) => (
                     <View key={rowKey('r', r)} style={styles.tr}>
-                      <Text style={[styles.td, { width: '14%' }]}>{norm(r.pk ?? r.civ_pk)}</Text>
+                      <Text style={[styles.td, { width: '14%' }]}>
+                        {norm(r.pk ?? r.pk_id ?? r.codigo_elemento ?? r.civ_pk)}
+                      </Text>
                       <Text style={[styles.td, { width: '13%' }]}>
                         {norm(r.item_pago ?? r.tipo_componente)}
                       </Text>
