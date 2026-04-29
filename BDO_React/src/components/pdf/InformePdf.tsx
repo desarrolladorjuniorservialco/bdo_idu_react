@@ -1,16 +1,4 @@
-﻿import {
-  Circle,
-  Document,
-  Line,
-  PDFDownloadLink,
-  Page,
-  Path,
-  Rect,
-  StyleSheet,
-  Svg,
-  Text,
-  View,
-} from '@react-pdf/renderer';
+﻿import { Document, PDFDownloadLink, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import type { CSSProperties, ReactNode } from 'react';
 
 const COLORS = {
@@ -20,20 +8,19 @@ const COLORS = {
   green: '#5BB85C',
   greenDark: '#3F8E40',
   greenSoft: '#E8F6E9',
+  yellow: '#FACC15',
   ink: '#0F172A',
   text: '#1F2937',
   muted: '#6B7280',
   line: '#E5E7EB',
   bgPage: '#F7F9FC',
   white: '#FFFFFF',
-  warnSoft: '#FFF4E5',
-  warnInk: '#92400E',
 };
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 90, // espacio para header fijo
-    paddingBottom: 70, // espacio para footer fijo
+    paddingTop: 90,
+    paddingBottom: 70,
     paddingHorizontal: 36,
     fontFamily: 'Helvetica',
     fontSize: 9.5,
@@ -41,7 +28,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bgPage,
   },
 
-  /* ---------- HEADER FIJO ---------- */
   header: {
     position: 'absolute',
     top: 0,
@@ -68,25 +54,16 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 8,
-    backgroundColor: COLORS.blue,
+    backgroundColor: COLORS.yellow,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#EAB308',
   },
-  brandMarkTxt: { color: 'white', fontSize: 14, fontWeight: 700 },
+  brandMarkTxt: { color: '#111827', fontSize: 11, fontWeight: 700 },
   brandName: { fontSize: 13, fontWeight: 700, color: COLORS.blueDark, letterSpacing: 0.5 },
   brandSub: { fontSize: 8, color: COLORS.muted, textTransform: 'uppercase', letterSpacing: 1 },
-  headerRight: { marginLeft: 'auto', alignItems: 'flex-end' },
-  docCode: {
-    fontSize: 8,
-    color: COLORS.blueDark,
-    fontWeight: 700,
-    backgroundColor: COLORS.blueSoft,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
 
-  /* ---------- TÍTULO / EYEBROW ---------- */
   eyebrow: {
     fontSize: 8,
     letterSpacing: 2,
@@ -105,7 +82,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
 
-  /* ---------- TARJETAS / MARCOS ---------- */
   card: {
     backgroundColor: COLORS.white,
     borderRadius: 8,
@@ -136,7 +112,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
 
-  /* ---------- INFO GRID (2 columnas) ---------- */
   infoGrid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6 },
   infoItem: { width: '50%', paddingHorizontal: 6, marginBottom: 8 },
   infoLabel: {
@@ -148,52 +123,58 @@ const styles = StyleSheet.create({
   },
   infoValue: { fontSize: 10, color: COLORS.ink, fontWeight: 700 },
 
-  /* ---------- BURBUJAS / PÍLDORAS ---------- */
-  bubbleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 4 },
-  bubble: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-    backgroundColor: COLORS.blueSoft,
-  },
-  bubbleDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.blue },
-  bubbleTxt: { fontSize: 8.5, color: COLORS.blueDark, fontWeight: 700 },
-  bubbleGreen: { backgroundColor: COLORS.greenSoft },
-  bubbleGreenDot: { backgroundColor: COLORS.green },
-  bubbleGreenTxt: { color: COLORS.greenDark },
-  bubbleWarn: { backgroundColor: COLORS.warnSoft },
-  bubbleWarnTxt: { color: COLORS.warnInk },
-
-  /* ---------- TABLA ---------- */
-  table: {
+  groupFrame: {
     borderWidth: 1,
     borderColor: COLORS.line,
     borderRadius: 6,
     overflow: 'hidden',
+    marginBottom: 10,
+    backgroundColor: COLORS.white,
   },
-  tHead: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.blue,
-  },
-  tHeadCell: {
-    flex: 1,
+  groupHeader: {
+    backgroundColor: COLORS.blueSoft,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.line,
     paddingVertical: 7,
-    paddingHorizontal: 8,
-    color: 'white',
-    fontSize: 9,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  groupHeaderText: {
+    fontSize: 8.5,
+    color: COLORS.blueDark,
     fontWeight: 700,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
-  tRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: COLORS.line },
-  tRowAlt: { backgroundColor: COLORS.blueSoft },
-  tCell: { flex: 1, paddingVertical: 6, paddingHorizontal: 8, fontSize: 9, color: COLORS.text },
-  tCellStrong: { fontWeight: 700, color: COLORS.ink },
+  reportItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.line,
+  },
+  reportUser: {
+    fontSize: 8,
+    color: COLORS.muted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 3,
+  },
+  reportText: {
+    fontSize: 9.2,
+    color: COLORS.text,
+    lineHeight: 1.35,
+  },
+  reportMetaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+    marginTop: 4,
+  },
+  reportMeta: { fontSize: 8.2, color: COLORS.blueDark, fontWeight: 700 },
 
-  /* ---------- DIVISORES ---------- */
   sectionDivider: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -210,7 +191,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
 
-  /* ---------- FOOTER FIJO ---------- */
   footer: {
     position: 'absolute',
     left: 0,
@@ -243,15 +223,12 @@ export const Header = () => (
   <View style={styles.header} fixed>
     <View style={styles.brandBlock}>
       <View style={styles.brandMark}>
-        <Text style={styles.brandMarkTxt}>S</Text>
+        <Text style={styles.brandMarkTxt}>BOB</Text>
       </View>
       <View>
-        <Text style={styles.brandName}>SERVIALCO SAS</Text>
+        <Text style={styles.brandName}>BOB - Sistema Bitacora</Text>
         <Text style={styles.brandSub}>Bitácora oficial de obra</Text>
       </View>
-    </View>
-    <View style={styles.headerRight}>
-      <Text style={styles.docCode}>GF-PR-01 · v3</Text>
     </View>
     <View style={styles.headerAccent} />
   </View>
@@ -285,36 +262,6 @@ export const Card = ({
   </View>
 );
 
-export const Bubble = ({
-  children,
-  tone = 'blue',
-}: { children: ReactNode; tone?: 'blue' | 'green' | 'warn' }) => {
-  const isGreen = tone === 'green';
-  const isWarn = tone === 'warn';
-  return (
-    <View
-      style={{
-        ...styles.bubble,
-        ...(isGreen ? styles.bubbleGreen : {}),
-        ...(isWarn ? styles.bubbleWarn : {}),
-      }}
-    >
-      {!isWarn && (
-        <View style={{ ...styles.bubbleDot, ...(isGreen ? styles.bubbleGreenDot : {}) }} />
-      )}
-      <Text
-        style={{
-          ...styles.bubbleTxt,
-          ...(isGreen ? styles.bubbleGreenTxt : {}),
-          ...(isWarn ? styles.bubbleWarnTxt : {}),
-        }}
-      >
-        {children}
-      </Text>
-    </View>
-  );
-};
-
 export const Divider = ({ label }: { label: string }) => (
   <View style={styles.sectionDivider}>
     <View style={styles.dividerLine} />
@@ -322,8 +269,6 @@ export const Divider = ({ label }: { label: string }) => (
     <View style={styles.dividerLine} />
   </View>
 );
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type InformeCantidad = {
   fecha?: unknown;
@@ -340,8 +285,14 @@ export type InformeCantidad = {
 
 export type InformeComponente = {
   fecha?: unknown;
+  civ?: unknown;
+  id_civ?: unknown;
+  civ_id?: unknown;
   id_tramo?: unknown;
   tramo?: unknown;
+  PK_ID?: unknown;
+  pk_id?: unknown;
+  codigo_elemento?: unknown;
   usuario_qfield?: unknown;
   usuario_nombre?: unknown;
   tipo_componente?: unknown;
@@ -354,8 +305,14 @@ export type InformeComponente = {
 export type InformeDiario = {
   fecha?: unknown;
   fecha_reporte?: unknown;
+  civ?: unknown;
+  id_civ?: unknown;
+  civ_id?: unknown;
   id_tramo?: unknown;
   tramo?: unknown;
+  PK_ID?: unknown;
+  pk_id?: unknown;
+  codigo_elemento?: unknown;
   usuario_qfield?: unknown;
   usuario_nombre?: unknown;
   observaciones?: unknown;
@@ -389,8 +346,6 @@ export type InformeData = {
 
 type FilteredData = InformeData & { fi: string; ff: string };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function fmtD(raw: unknown): string {
   if (!raw) return '—';
   const d = new Date(String(raw));
@@ -403,32 +358,100 @@ function str(v: unknown, fallback = '—'): string {
   return !s || s === 'undefined' || s === 'null' ? fallback : s;
 }
 
-// ─── PDF Document ─────────────────────────────────────────────────────────────
+type GroupedItem<T> = { row: T; rowKey: string };
+type GroupedEntry<T> = { groupKey: string; fecha: string; civ: string; items: GroupedItem<T>[] };
+function stableRowKey(row: unknown, scope: string): string {
+  const base = [
+    readField(row, 'id'),
+    readField(row, 'folio'),
+    readField(row, 'registro_id'),
+    readField(row, 'fecha_reporte', 'fecha', 'fecha_creacion', 'created_at'),
+    readField(row, 'usuario_qfield', 'usuario_nombre'),
+    readField(row, 'id_tramo', 'tramo'),
+    readField(row, 'item_pago', 'item_descripcion', 'tipo_actividad', 'anotacion', 'observaciones'),
+  ]
+    .map((v) => str(v, ''))
+    .filter(Boolean)
+    .join('|');
+  return `${scope}:${base || 'sin-clave'}`;
+}
 
-const COL = { flex: 1, paddingVertical: 6, paddingHorizontal: 8, fontSize: 9, color: COLORS.text };
-const COL2 = { ...COL, flex: 2 };
+function groupByFechaCiv<T>(rows: T[], getFecha: (r: T) => unknown, getCiv: (r: T) => unknown) {
+  const map = new Map<string, GroupedEntry<T>>();
+  const repeats = new Map<string, number>();
+  for (const row of rows) {
+    const fecha = fmtD(getFecha(row));
+    const civ = str(getCiv(row));
+    const key = `${fecha}__${civ}`;
+    const prev = map.get(key);
+    const baseRowKey = stableRowKey(row, key);
+    const seen = repeats.get(baseRowKey) ?? 0;
+    repeats.set(baseRowKey, seen + 1);
+    const rowKey = seen === 0 ? baseRowKey : `${baseRowKey}#${seen + 1}`;
+    if (prev) {
+      prev.items.push({ row, rowKey });
+    } else {
+      map.set(key, { groupKey: key, fecha, civ, items: [{ row, rowKey }] });
+    }
+  }
+  return Array.from(map.values());
+}
 
-function THead({ cols }: { cols: string[] }) {
-  return (
-    <View style={styles.tHead}>
-      {cols.map((h) => (
-        <Text key={h} style={styles.tHeadCell}>
-          {h}
-        </Text>
-      ))}
-    </View>
+function readField(row: unknown, ...keys: string[]): unknown {
+  const rec = row as Record<string, unknown>;
+  for (const key of keys) {
+    if (rec[key] !== undefined && rec[key] !== null && String(rec[key]).trim() !== '')
+      return rec[key];
+  }
+  return undefined;
+}
+
+function civFromRow(row: unknown): string {
+  return str(readField(row, 'civ', 'id_civ', 'civ_id', 'civ_codigo'));
+}
+
+function pkFromRow(row: unknown): string {
+  return str(readField(row, 'PK_ID', 'pk_id', 'codigo_elemento', 'codigoElemento'));
+}
+
+function tramoFromRow(row: unknown): string {
+  return str(
+    readField(
+      row,
+      'codigo_tramo',
+      'tramo_codigo',
+      'tramo_id',
+      'id_tramo_codigo',
+      'codigo',
+      'tramo',
+      'nombre_tramo',
+      'id_tramo',
+    ),
   );
 }
 
-function TRow({ cells, alt, wide }: { cells: string[]; alt: boolean; wide?: number }) {
+function GroupFrame({
+  fecha,
+  civ,
+  pk,
+  tramo,
+  children,
+}: {
+  fecha: string;
+  civ: string;
+  pk?: string;
+  tramo?: string;
+  children: ReactNode;
+}) {
   return (
-    <View style={{ ...styles.tRow, ...(alt ? styles.tRowAlt : {}) }}>
-      {cells.map((c, j) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: fixed column order
-        <Text key={j} style={j === wide ? COL2 : COL}>
-          {c}
-        </Text>
-      ))}
+    <View style={styles.groupFrame}>
+      <View style={styles.groupHeader}>
+        <Text style={styles.groupHeaderText}>Fecha: {fecha}</Text>
+        <Text style={styles.groupHeaderText}>CIV: {civ}</Text>
+        {pk ? <Text style={styles.groupHeaderText}>PK: {pk}</Text> : null}
+        {tramo ? <Text style={styles.groupHeaderText}>Tramo: {tramo}</Text> : null}
+      </View>
+      {children}
     </View>
   );
 }
@@ -473,106 +496,124 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
         {(data.cantidades?.length ?? 0) > 0 && (
           <>
             <Divider label="Cantidades de Obra" />
-            <View style={styles.table}>
-              <THead cols={['Fecha', 'Tramo', 'Descripción', 'Cant.', 'Und.', 'Estado']} />
-              {data.cantidades!.map((r, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: pdf rows have no stable ID
-                <TRow
-                  key={i}
-                  alt={i % 2 === 1}
-                  wide={2}
-                  cells={[
-                    fmtD(r.fecha),
-                    str(r.id_tramo ?? r.tramo),
-                    str(r.item_descripcion),
-                    str(r.cantidad),
-                    str(r.unidad),
-                    str(r.estado),
-                  ]}
-                />
-              ))}
-            </View>
+            {groupByFechaCiv(
+              data.cantidades!,
+              (r) => r.fecha,
+              (r) => r.id_tramo ?? r.tramo,
+            ).map((g) => (
+              <GroupFrame key={`cant-group-${g.groupKey}`} fecha={g.fecha} civ={g.civ}>
+                {g.items.map(({ row: r, rowKey }) => (
+                  <View key={`cant-${rowKey}`} style={styles.reportItem}>
+                    <Text style={styles.reportUser}>
+                      Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
+                    </Text>
+                    <Text style={styles.reportText}>{str(r.item_descripcion)}</Text>
+                    <View style={styles.reportMetaRow}>
+                      <Text style={styles.reportMeta}>Cantidad: {str(r.cantidad)}</Text>
+                      <Text style={styles.reportMeta}>Unidad: {str(r.unidad)}</Text>
+                      <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
+                    </View>
+                  </View>
+                ))}
+              </GroupFrame>
+            ))}
           </>
         )}
 
         {(data.componentes?.length ?? 0) > 0 && (
           <>
             <Divider label="Componentes Transversales" />
-            <View style={styles.table}>
-              <THead cols={['Fecha', 'Tramo', 'Componente', 'Actividad', 'Cant.', 'Estado']} />
-              {data.componentes!.map((r, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: pdf rows have no stable ID
-                <TRow
-                  key={i}
-                  alt={i % 2 === 1}
-                  wide={2}
-                  cells={[
-                    fmtD(r.fecha),
-                    str(r.id_tramo ?? r.tramo),
-                    str(r.tipo_componente),
-                    str(r.tipo_actividad),
-                    str(r.cantidad),
-                    str(r.estado),
-                  ]}
-                />
-              ))}
-            </View>
+            {groupByFechaCiv(
+              data.componentes!,
+              (r) => r.fecha,
+              (r) => civFromRow(r),
+            ).map((g) => (
+              <GroupFrame
+                key={`comp-group-${g.groupKey}`}
+                fecha={g.fecha}
+                civ={civFromRow(g.items[0]?.row)}
+                pk={pkFromRow(g.items[0]?.row)}
+                tramo={tramoFromRow(g.items[0]?.row)}
+              >
+                {g.items.map(({ row: r, rowKey }) => (
+                  <View key={`comp-${rowKey}`} style={styles.reportItem}>
+                    <Text style={styles.reportUser}>
+                      Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
+                    </Text>
+                    <Text style={styles.reportText}>
+                      Componente: {str(r.tipo_componente)} | Actividad: {str(r.tipo_actividad)}
+                    </Text>
+                    <View style={styles.reportMetaRow}>
+                      <Text style={styles.reportMeta}>Cantidad: {str(r.cantidad)}</Text>
+                      <Text style={styles.reportMeta}>Unidad: {str(r.unidad)}</Text>
+                      <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
+                    </View>
+                  </View>
+                ))}
+              </GroupFrame>
+            ))}
           </>
         )}
 
         {(data.diario?.length ?? 0) > 0 && (
           <>
             <Divider label="Reporte Diario" />
-            <View style={styles.table}>
-              <THead cols={['Fecha', 'Tramo', 'Inspector', 'Observaciones', 'Estado']} />
-              {data.diario!.map((r, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: pdf rows have no stable ID
-                <TRow
-                  key={i}
-                  alt={i % 2 === 1}
-                  wide={3}
-                  cells={[
-                    fmtD(r.fecha_reporte ?? r.fecha),
-                    str(r.id_tramo ?? r.tramo),
-                    str(r.usuario_qfield ?? r.usuario_nombre),
-                    str(r.observaciones),
-                    str(r.estado),
-                  ]}
-                />
-              ))}
-            </View>
+            {groupByFechaCiv(
+              data.diario!,
+              (r) => r.fecha_reporte ?? r.fecha,
+              (r) => civFromRow(r),
+            ).map((g) => (
+              <GroupFrame
+                key={`diario-group-${g.groupKey}`}
+                fecha={g.fecha}
+                civ={civFromRow(g.items[0]?.row)}
+                pk={pkFromRow(g.items[0]?.row)}
+                tramo={tramoFromRow(g.items[0]?.row)}
+              >
+                {g.items.map(({ row: r, rowKey }) => (
+                  <View key={`diario-${rowKey}`} style={styles.reportItem}>
+                    <Text style={styles.reportUser}>
+                      Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
+                    </Text>
+                    <Text style={styles.reportText}>{str(r.observaciones)}</Text>
+                    <View style={styles.reportMetaRow}>
+                      <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
+                    </View>
+                  </View>
+                ))}
+              </GroupFrame>
+            ))}
           </>
         )}
 
         {(data.anotaciones?.length ?? 0) > 0 && (
           <>
             <Divider label="Anotaciones" />
-            <View style={styles.table}>
-              <THead cols={['Fecha', 'Tramo', 'Usuario', 'Anotación', 'Estado']} />
-              {data.anotaciones!.map((r, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: pdf rows have no stable ID
-                <TRow
-                  key={i}
-                  alt={i % 2 === 1}
-                  wide={3}
-                  cells={[
-                    fmtD(r.fecha),
-                    str(r.tramo ?? r.id_tramo),
-                    str(r.usuario_nombre ?? r.usuario_qfield),
-                    str(r.anotacion),
-                    str(r.estado),
-                  ]}
-                />
-              ))}
-            </View>
+            {groupByFechaCiv(
+              data.anotaciones!,
+              (r) => r.fecha,
+              (r) => r.id_tramo ?? r.tramo,
+            ).map((g) => (
+              <GroupFrame key={`anot-group-${g.groupKey}`} fecha={g.fecha} civ={g.civ}>
+                {g.items.map(({ row: r, rowKey }) => (
+                  <View key={`anot-${rowKey}`} style={styles.reportItem}>
+                    <Text style={styles.reportUser}>
+                      Usuario: {str(r.usuario_nombre ?? r.usuario_qfield)}
+                    </Text>
+                    <Text style={styles.reportText}>{str(r.anotacion)}</Text>
+                    <View style={styles.reportMetaRow}>
+                      <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
+                    </View>
+                  </View>
+                ))}
+              </GroupFrame>
+            ))}
           </>
         )}
       </Page>
     </Document>
   );
 }
-
-// ─── Download Button ──────────────────────────────────────────────────────────
 
 const dlStyle: CSSProperties = {
   display: 'inline-flex',
