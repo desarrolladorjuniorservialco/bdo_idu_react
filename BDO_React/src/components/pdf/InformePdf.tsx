@@ -359,7 +359,13 @@ function str(v: unknown, fallback = '—'): string {
 }
 
 type GroupedItem<T> = { row: T; rowKey: string };
-type GroupedEntry<T> = { groupKey: string; fecha: string; civ: string; items: GroupedItem<T>[] };
+type GroupedEntry<T> = {
+  groupKey: string;
+  fecha: string;
+  civ: string;
+  tramo: string;
+  items: GroupedItem<T>[];
+};
 function stableRowKey(row: unknown, scope: string): string {
   const base = [
     readField(row, 'id'),
@@ -376,13 +382,19 @@ function stableRowKey(row: unknown, scope: string): string {
   return `${scope}:${base || 'sin-clave'}`;
 }
 
-function groupByFechaCiv<T>(rows: T[], getFecha: (r: T) => unknown, getCiv: (r: T) => unknown) {
+function groupByFechaCivTramo<T>(
+  rows: T[],
+  getFecha: (r: T) => unknown,
+  getCiv: (r: T) => unknown,
+  getTramo: (r: T) => unknown,
+) {
   const map = new Map<string, GroupedEntry<T>>();
   const repeats = new Map<string, number>();
   for (const row of rows) {
     const fecha = fmtD(getFecha(row));
     const civ = str(getCiv(row));
-    const key = `${fecha}__${civ}`;
+    const tramo = str(getTramo(row));
+    const key = `${fecha}__${civ}__${tramo}`;
     const prev = map.get(key);
     const baseRowKey = stableRowKey(row, key);
     const seen = repeats.get(baseRowKey) ?? 0;
@@ -391,7 +403,7 @@ function groupByFechaCiv<T>(rows: T[], getFecha: (r: T) => unknown, getCiv: (r: 
     if (prev) {
       prev.items.push({ row, rowKey });
     } else {
-      map.set(key, { groupKey: key, fecha, civ, items: [{ row, rowKey }] });
+      map.set(key, { groupKey: key, fecha, civ, tramo, items: [{ row, rowKey }] });
     }
   }
   return Array.from(map.values());
@@ -433,13 +445,11 @@ function tramoFromRow(row: unknown): string {
 function GroupFrame({
   fecha,
   civ,
-  pk,
   tramo,
   children,
 }: {
   fecha: string;
   civ: string;
-  pk?: string;
   tramo?: string;
   children: ReactNode;
 }) {
@@ -448,7 +458,6 @@ function GroupFrame({
       <View style={styles.groupHeader}>
         <Text style={styles.groupHeaderText}>Fecha: {fecha}</Text>
         <Text style={styles.groupHeaderText}>CIV: {civ}</Text>
-        {pk ? <Text style={styles.groupHeaderText}>PK: {pk}</Text> : null}
         {tramo ? <Text style={styles.groupHeaderText}>Tramo: {tramo}</Text> : null}
       </View>
       {children}
@@ -496,12 +505,18 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
         {(data.cantidades?.length ?? 0) > 0 && (
           <>
             <Divider label="Cantidades de Obra" />
-            {groupByFechaCiv(
+            {groupByFechaCivTramo(
               data.cantidades!,
               (r) => r.fecha,
               (r) => r.id_tramo ?? r.tramo,
+              (r) => r.tramo ?? r.id_tramo,
             ).map((g) => (
-              <GroupFrame key={`cant-group-${g.groupKey}`} fecha={g.fecha} civ={g.civ}>
+              <GroupFrame
+                key={`cant-group-${g.groupKey}`}
+                fecha={g.fecha}
+                civ={g.civ}
+                tramo={g.tramo}
+              >
                 {g.items.map(({ row: r, rowKey }) => (
                   <View key={`cant-${rowKey}`} style={styles.reportItem}>
                     <Text style={styles.reportUser}>
@@ -523,17 +538,17 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
         {(data.componentes?.length ?? 0) > 0 && (
           <>
             <Divider label="Componentes Transversales" />
-            {groupByFechaCiv(
+            {groupByFechaCivTramo(
               data.componentes!,
               (r) => r.fecha,
               (r) => civFromRow(r),
+              (r) => tramoFromRow(r),
             ).map((g) => (
               <GroupFrame
                 key={`comp-group-${g.groupKey}`}
                 fecha={g.fecha}
                 civ={civFromRow(g.items[0]?.row)}
-                pk={pkFromRow(g.items[0]?.row)}
-                tramo={tramoFromRow(g.items[0]?.row)}
+                tramo={g.tramo}
               >
                 {g.items.map(({ row: r, rowKey }) => (
                   <View key={`comp-${rowKey}`} style={styles.reportItem}>
@@ -544,6 +559,7 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
                       Componente: {str(r.tipo_componente)} | Actividad: {str(r.tipo_actividad)}
                     </Text>
                     <View style={styles.reportMetaRow}>
+                      <Text style={styles.reportMeta}>PK: {pkFromRow(r)}</Text>
                       <Text style={styles.reportMeta}>Cantidad: {str(r.cantidad)}</Text>
                       <Text style={styles.reportMeta}>Unidad: {str(r.unidad)}</Text>
                       <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
@@ -558,17 +574,17 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
         {(data.diario?.length ?? 0) > 0 && (
           <>
             <Divider label="Reporte Diario" />
-            {groupByFechaCiv(
+            {groupByFechaCivTramo(
               data.diario!,
               (r) => r.fecha_reporte ?? r.fecha,
               (r) => civFromRow(r),
+              (r) => tramoFromRow(r),
             ).map((g) => (
               <GroupFrame
                 key={`diario-group-${g.groupKey}`}
                 fecha={g.fecha}
                 civ={civFromRow(g.items[0]?.row)}
-                pk={pkFromRow(g.items[0]?.row)}
-                tramo={tramoFromRow(g.items[0]?.row)}
+                tramo={g.tramo}
               >
                 {g.items.map(({ row: r, rowKey }) => (
                   <View key={`diario-${rowKey}`} style={styles.reportItem}>
@@ -577,6 +593,7 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
                     </Text>
                     <Text style={styles.reportText}>{str(r.observaciones)}</Text>
                     <View style={styles.reportMetaRow}>
+                      <Text style={styles.reportMeta}>PK: {pkFromRow(r)}</Text>
                       <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
                     </View>
                   </View>
@@ -589,12 +606,18 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
         {(data.anotaciones?.length ?? 0) > 0 && (
           <>
             <Divider label="Anotaciones" />
-            {groupByFechaCiv(
+            {groupByFechaCivTramo(
               data.anotaciones!,
               (r) => r.fecha,
               (r) => r.id_tramo ?? r.tramo,
+              (r) => r.tramo ?? r.id_tramo,
             ).map((g) => (
-              <GroupFrame key={`anot-group-${g.groupKey}`} fecha={g.fecha} civ={g.civ}>
+              <GroupFrame
+                key={`anot-group-${g.groupKey}`}
+                fecha={g.fecha}
+                civ={g.civ}
+                tramo={g.tramo}
+              >
                 {g.items.map(({ row: r, rowKey }) => (
                   <View key={`anot-${rowKey}`} style={styles.reportItem}>
                     <Text style={styles.reportUser}>
