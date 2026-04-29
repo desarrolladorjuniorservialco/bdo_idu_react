@@ -1,4 +1,4 @@
-import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
+﻿import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import { createClient } from '@/lib/supabase/server';
 import GenerarInformeClient from './GenerarInformeClient';
 
@@ -11,13 +11,26 @@ export default async function Page() {
 
   const supabase = await createClient();
 
-  const [{ data: contrato }, { data: cantidades }, { data: correspondencia }] = await Promise.all([
+  const [
+    { data: contrato },
+    { data: cantidades },
+    { data: componentes },
+    { data: diario },
+    { data: anotaciones },
+    { data: clima },
+    { data: personal },
+    { data: maquinaria },
+    { data: sst },
+  ] = await Promise.all([
     supabase.from('contratos').select('*').eq('id', contratoId).single(),
-    supabase
-      .from('registros_cantidades')
-      .select('id, estado, cantidad, precio_unitario')
-      .eq('contrato_id', contratoId),
-    supabase.from('correspondencia').select('id, estado').eq('contrato_id', contratoId),
+    supabase.from('registros_cantidades').select('*').eq('contrato_id', contratoId),
+    supabase.from('registros_componentes').select('*').eq('contrato_id', contratoId),
+    supabase.from('registros_reporte_diario').select('*').eq('contrato_id', contratoId),
+    supabase.from('anotaciones_generales').select('*').eq('contrato_id', contratoId),
+    supabase.from('bd_condicion_climatica').select('*').eq('contrato_id', contratoId),
+    supabase.from('bd_personal_obra').select('*').eq('contrato_id', contratoId),
+    supabase.from('bd_maquinaria_obra').select('*').eq('contrato_id', contratoId),
+    supabase.from('bd_sst_ambiental').select('*').eq('contrato_id', contratoId),
   ]);
 
   return (
@@ -25,7 +38,13 @@ export default async function Page() {
       data={{
         contrato,
         cantidades: cantidades ?? [],
-        correspondencia: correspondencia ?? [],
+        componentes: componentes ?? [],
+        diario: diario ?? [],
+        anotaciones: anotaciones ?? [],
+        clima: clima ?? [],
+        personal: personal ?? [],
+        maquinaria: maquinaria ?? [],
+        sst: sst ?? [],
         generado_en: new Date().toISOString(),
       }}
     />
