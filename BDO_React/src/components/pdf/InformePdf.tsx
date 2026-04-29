@@ -427,19 +427,17 @@ function pkFromRow(row: unknown): string {
 }
 
 function tramoFromRow(row: unknown): string {
-  return str(
-    readField(
-      row,
-      'codigo_tramo',
-      'tramo_codigo',
-      'tramo_id',
-      'id_tramo_codigo',
-      'codigo',
-      'tramo',
-      'nombre_tramo',
-      'id_tramo',
-    ),
-  );
+  return str(readField(row, 'id_tramo', 'tramo', 'nombre_tramo'));
+}
+
+function fileTimestamp(d = new Date()): string {
+  const yyyy = String(d.getFullYear());
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  return `${yyyy}${mm}${dd}${hh}${mi}${ss}`;
 }
 
 function GroupFrame({
@@ -487,7 +485,7 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Contrato</Text>
-              <Text style={styles.infoValue}>{str(contrato.numero_contrato)}</Text>
+              <Text style={styles.infoValue}>{str(contrato.id)}</Text>
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Contratista</Text>
@@ -672,7 +670,7 @@ export function InformePdfDownload({
   return (
     <PDFDownloadLink
       document={<InformePdfDocument data={data} />}
-      fileName={`bitacora-${data.fi}-${data.ff}.pdf`}
+      fileName={`bitacora-${fileTimestamp()}.pdf`}
       style={dlStyle}
     >
       {({ loading }) => (loading ? 'Generando PDF…' : 'Descargar PDF')}
