@@ -1,7 +1,8 @@
-import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
 import { NAV_ACCESS } from '@/lib/config';
 import type { Rol } from '@/types/database';
+import { createServerClient } from '@supabase/ssr';
+import type { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -14,17 +15,17 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet: { name: string; value: string; options?: object }[]) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
+        setAll(cookiesToSet: { name: string; value: string; options?: Partial<ResponseCookie> }[]) {
+          for (const { name, value } of cookiesToSet) {
+            request.cookies.set(name, value);
+          }
           supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options as any)
-          );
+          for (const { name, value, options } of cookiesToSet) {
+            supabaseResponse.cookies.set(name, value, options);
+          }
         },
       },
-    }
+    },
   );
 
   const {
@@ -33,30 +34,45 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Rutas públicas sin verificación
-  if (pathname.startsWith('/login') || pathname.startsWith('/_next') || pathname.startsWith('/api')) {
+  if (
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api')
+  ) {
     return supabaseResponse;
   }
 
-  // Sin sesión → /login
   if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
-  // Verificar control de acceso por rol
-  const segment = pathname.split('/')[1]; // e.g. "reporte-cantidades"
+  const segment = pathname.split('/')[1];
   const rolesPermitidos = NAV_ACCESS[segment];
 
   if (rolesPermitidos) {
-    const { data: perfil } = await supabase
-      .from('perfiles')
-      .select('rol')
-      .eq('id', user.id)
-      .single();
+    const rolEnCookie = request.cookies.get('bdo-rol')?.value as Rol | undefined;
 
-    const rol = perfil?.rol as Rol | undefined;
+    let rol: Rol | undefined = rolEnCookie;
+
+    if (!rol) {
+      const { data: perfil } = await supabase
+        .from('perfiles')
+        .select('rol')
+        .eq('id', user.id)
+        .single();
+      rol = perfil?.rol as Rol | undefined;
+
+      if (rol) {
+        supabaseResponse.cookies.set('bdo-rol', rol, {
+          httpOnly: true,
+          sameSite: 'lax',
+          maxAge: 3600,
+          path: '/',
+        });
+      }
+    }
 
     if (!rol || !rolesPermitidos.includes(rol)) {
       const url = request.nextUrl.clone();
@@ -69,7 +85,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };

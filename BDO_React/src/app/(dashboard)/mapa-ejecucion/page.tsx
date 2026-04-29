@@ -1,8 +1,8 @@
-import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
+﻿import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import { createClient } from '@/lib/supabase/server';
 import MapaClient from './MapaClient';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 export default async function Page() {
   const user = await getCachedUser();

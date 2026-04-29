@@ -1,8 +1,8 @@
-import { fetchCantidades, fetchFotosCantidadesByContrato } from '@/lib/supabase/actions/cantidades';
+﻿import { fetchCantidades, fetchFotosCantidadesByContrato } from '@/lib/supabase/actions/cantidades';
 import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import ReporteCantidadesClient from './ReporteCantidadesClient';
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 export default async function Page() {
   const user = await getCachedUser();

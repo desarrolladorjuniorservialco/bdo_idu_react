@@ -10,6 +10,7 @@ import type {
 import { InformePdfDownload } from '@/components/pdf/InformePdf';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { SectionBadge } from '@/components/shared/SectionBadge';
+import { createClient } from '@/lib/supabase/client';
 import { type ReactElement, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 type EstadoFiltro =
@@ -172,9 +173,12 @@ function PreviewSection({
   );
 }
 
-export default function GenerarInformeClient({ data }: { data: InformeData }) {
+export default function GenerarInformeClient({ contratoId }: { contratoId: string }) {
   const today = new Date().toISOString().slice(0, 10);
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  const [data, setData] = useState<InformeData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [fi, setFi] = useState(weekAgo);
   const [ff, setFf] = useState(today);
@@ -195,18 +199,92 @@ export default function GenerarInformeClient({ data }: { data: InformeData }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const filtered = useMemo(() => {
-    const cantidadesBase = byEstado(data.cantidades ?? [], estado).filter((r: InformeCantidad) => {
-      const tramoVal = r.id_tramo ?? r.tramo;
-      const userVal = r.usuario_qfield ?? r.usuario_nombre;
-      return (
-        inRange(r.fecha, fi, ff) &&
-        containsInsensitive(tramoVal, tramo) &&
-        containsInsensitive(userVal, usuario)
-      );
-    });
+  useEffect(() => {
+    let active = true;
 
-    const componentesBase = byEstado(data.componentes ?? [], estado).filter(
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      const supabase = createClient();
+      const [
+        { data: contrato, error: contratoError },
+        { data: cantidades, error: cantidadesError },
+        { data: componentes, error: componentesError },
+        { data: diario, error: diarioError },
+        { data: anotaciones, error: anotacionesError },
+        { data: clima, error: climaError },
+        { data: personal, error: personalError },
+        { data: maquinaria, error: maquinariaError },
+        { data: sst, error: sstError },
+      ] = await Promise.all([
+        supabase.from('contratos').select('*').eq('id', contratoId).single(),
+        supabase.from('registros_cantidades').select('*').eq('contrato_id', contratoId),
+        supabase.from('registros_componentes').select('*').eq('contrato_id', contratoId),
+        supabase.from('registros_reporte_diario').select('*').eq('contrato_id', contratoId),
+        supabase.from('anotaciones_generales').select('*').eq('contrato_id', contratoId),
+        supabase.from('bd_condicion_climatica').select('*').eq('contrato_id', contratoId),
+        supabase.from('bd_personal_obra').select('*').eq('contrato_id', contratoId),
+        supabase.from('bd_maquinaria_obra').select('*').eq('contrato_id', contratoId),
+        supabase.from('bd_sst_ambiental').select('*').eq('contrato_id', contratoId),
+      ]);
+
+      const firstError =
+        contratoError ??
+        cantidadesError ??
+        componentesError ??
+        diarioError ??
+        anotacionesError ??
+        climaError ??
+        personalError ??
+        maquinariaError ??
+        sstError;
+
+      if (!active) return;
+
+      if (firstError) {
+        setError(firstError.message);
+        setLoading(false);
+        return;
+      }
+
+      setData({
+        contrato,
+        cantidades: cantidades ?? [],
+        componentes: componentes ?? [],
+        diario: diario ?? [],
+        anotaciones: anotaciones ?? [],
+        clima: clima ?? [],
+        personal: personal ?? [],
+        maquinaria: maquinaria ?? [],
+        sst: sst ?? [],
+        generado_en: new Date().toISOString(),
+      });
+      setLoading(false);
+    };
+
+    fetchData();
+
+    return () => {
+      active = false;
+    };
+  }, [contratoId]);
+
+  const filtered = useMemo(() => {
+    const baseData: InformeData = data ?? {};
+    const cantidadesBase = byEstado(baseData.cantidades ?? [], estado).filter(
+      (r: InformeCantidad) => {
+        const tramoVal = r.id_tramo ?? r.tramo;
+        const userVal = r.usuario_qfield ?? r.usuario_nombre;
+        return (
+          inRange(r.fecha, fi, ff) &&
+          containsInsensitive(tramoVal, tramo) &&
+          containsInsensitive(userVal, usuario)
+        );
+      },
+    );
+
+    const componentesBase = byEstado(baseData.componentes ?? [], estado).filter(
       (r: InformeComponente) => {
         const tramoVal = r.id_tramo ?? r.tramo;
         const userVal = r.usuario_qfield ?? r.usuario_nombre;
@@ -218,7 +296,7 @@ export default function GenerarInformeClient({ data }: { data: InformeData }) {
       },
     );
 
-    const diarioBase = byEstado(data.diario ?? [], estado).filter((r: InformeDiario) => {
+    const diarioBase = byEstado(baseData.diario ?? [], estado).filter((r: InformeDiario) => {
       const tramoVal = r.id_tramo ?? r.tramo;
       const userVal = r.usuario_qfield ?? r.usuario_nombre;
       return (
@@ -228,7 +306,7 @@ export default function GenerarInformeClient({ data }: { data: InformeData }) {
       );
     });
 
-    const anotacionesBase = (data.anotaciones ?? []).filter((r: InformeAnotacion) => {
+    const anotacionesBase = (baseData.anotaciones ?? []).filter((r: InformeAnotacion) => {
       return (
         inRange(r.fecha, fi, ff) &&
         containsInsensitive(r.tramo ?? r.id_tramo, tramo) &&
@@ -239,7 +317,7 @@ export default function GenerarInformeClient({ data }: { data: InformeData }) {
     const useType = (tipo: TipoFormulario) => tiposSel.includes(tipo);
 
     return {
-      ...data,
+      ...baseData,
       cantidades: useType('Cantidades de Obra') ? cantidadesBase : [],
       componentes: useType('Componentes Transversales') ? componentesBase : [],
       diario: useType('Reporte Diario') ? diarioBase : [],
@@ -288,6 +366,28 @@ export default function GenerarInformeClient({ data }: { data: InformeData }) {
       : tiposSel.length === TIPOS.length
         ? 'Todos los tipos'
         : tiposSel.join(', ');
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <SectionBadge label="Generar Informe" page="generar-informe" />
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          Cargando datos del informe...
+        </p>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="space-y-6">
+        <SectionBadge label="Generar Informe" page="generar-informe" />
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          No se pudieron cargar los datos del informe.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

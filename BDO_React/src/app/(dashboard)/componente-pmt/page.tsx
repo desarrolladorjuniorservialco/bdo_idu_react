@@ -1,11 +1,11 @@
-import ComponentePage from '@/components/pages/ComponentePage';
+﻿import ComponentePage from '@/components/pages/ComponentePage';
 import {
   fetchComponentes,
   fetchFotosComponentesByContrato,
 } from '@/lib/supabase/actions/componentes';
 import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 export default async function Page() {
   const user = await getCachedUser();
