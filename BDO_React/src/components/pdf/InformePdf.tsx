@@ -2,6 +2,7 @@
   Circle,
   Document,
   Line,
+  PDFDownloadLink,
   Page,
   Path,
   Rect,
@@ -10,7 +11,7 @@
   Text,
   View,
 } from '@react-pdf/renderer';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 const COLORS = {
   blue: '#1E5BA8',
@@ -321,3 +322,296 @@ export const Divider = ({ label }: { label: string }) => (
     <View style={styles.dividerLine} />
   </View>
 );
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type InformeCantidad = {
+  fecha?: unknown;
+  id_tramo?: unknown;
+  tramo?: unknown;
+  usuario_qfield?: unknown;
+  usuario_nombre?: unknown;
+  item_pago?: unknown;
+  item_descripcion?: unknown;
+  cantidad?: unknown;
+  unidad?: unknown;
+  estado?: unknown;
+};
+
+export type InformeComponente = {
+  fecha?: unknown;
+  id_tramo?: unknown;
+  tramo?: unknown;
+  usuario_qfield?: unknown;
+  usuario_nombre?: unknown;
+  tipo_componente?: unknown;
+  tipo_actividad?: unknown;
+  cantidad?: unknown;
+  unidad?: unknown;
+  estado?: unknown;
+};
+
+export type InformeDiario = {
+  fecha?: unknown;
+  fecha_reporte?: unknown;
+  id_tramo?: unknown;
+  tramo?: unknown;
+  usuario_qfield?: unknown;
+  usuario_nombre?: unknown;
+  observaciones?: unknown;
+  estado?: unknown;
+};
+
+export type InformeAnotacion = {
+  fecha?: unknown;
+  tramo?: unknown;
+  id_tramo?: unknown;
+  usuario_nombre?: unknown;
+  usuario_qfield?: unknown;
+  anotacion?: unknown;
+  estado?: unknown;
+};
+
+export type InformeData = {
+  contrato?: Record<string, unknown> | null;
+  cantidades?: InformeCantidad[];
+  componentes?: InformeComponente[];
+  diario?: InformeDiario[];
+  anotaciones?: InformeAnotacion[];
+  clima?: Record<string, unknown>[];
+  personal?: Record<string, unknown>[];
+  maquinaria?: Record<string, unknown>[];
+  sst?: Record<string, unknown>[];
+  generado_en?: string;
+  fi?: string;
+  ff?: string;
+};
+
+type FilteredData = InformeData & { fi: string; ff: string };
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function fmtD(raw: unknown): string {
+  if (!raw) return '—';
+  const d = new Date(String(raw));
+  if (Number.isNaN(d.getTime())) return String(raw);
+  return d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function str(v: unknown, fallback = '—'): string {
+  const s = String(v ?? '');
+  return !s || s === 'undefined' || s === 'null' ? fallback : s;
+}
+
+// ─── PDF Document ─────────────────────────────────────────────────────────────
+
+const COL = { flex: 1, paddingVertical: 6, paddingHorizontal: 8, fontSize: 9, color: COLORS.text };
+const COL2 = { ...COL, flex: 2 };
+
+function THead({ cols }: { cols: string[] }) {
+  return (
+    <View style={styles.tHead}>
+      {cols.map((h) => (
+        <Text key={h} style={styles.tHeadCell}>
+          {h}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
+function TRow({ cells, alt, wide }: { cells: string[]; alt: boolean; wide?: number }) {
+  return (
+    <View style={{ ...styles.tRow, ...(alt ? styles.tRowAlt : {}) }}>
+      {cells.map((c, j) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: fixed column order
+        <Text key={j} style={j === wide ? COL2 : COL}>
+          {c}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
+function InformePdfDocument({ data }: { data: FilteredData }) {
+  const contrato = data.contrato ?? {};
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <Header />
+        <Footer />
+
+        <Text style={styles.eyebrow}>Bitácora de Obra</Text>
+        <Text style={styles.h1}>{str(contrato.nombre_contrato, 'Informe de Actividades')}</Text>
+        <View style={styles.h1Rule} />
+
+        <Card title="Información General">
+          <View style={styles.infoGrid}>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Período</Text>
+              <Text style={styles.infoValue}>
+                {fmtD(data.fi)} – {fmtD(data.ff)}
+              </Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Contrato</Text>
+              <Text style={styles.infoValue}>{str(contrato.numero_contrato)}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Contratista</Text>
+              <Text style={styles.infoValue}>{str(contrato.contratista)}</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Generado</Text>
+              <Text style={styles.infoValue}>
+                {fmtD(data.generado_en ?? new Date().toISOString())}
+              </Text>
+            </View>
+          </View>
+        </Card>
+
+        {(data.cantidades?.length ?? 0) > 0 && (
+          <>
+            <Divider label="Cantidades de Obra" />
+            <View style={styles.table}>
+              <THead cols={['Fecha', 'Tramo', 'Descripción', 'Cant.', 'Und.', 'Estado']} />
+              {data.cantidades!.map((r, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: pdf rows have no stable ID
+                <TRow
+                  key={i}
+                  alt={i % 2 === 1}
+                  wide={2}
+                  cells={[
+                    fmtD(r.fecha),
+                    str(r.id_tramo ?? r.tramo),
+                    str(r.item_descripcion),
+                    str(r.cantidad),
+                    str(r.unidad),
+                    str(r.estado),
+                  ]}
+                />
+              ))}
+            </View>
+          </>
+        )}
+
+        {(data.componentes?.length ?? 0) > 0 && (
+          <>
+            <Divider label="Componentes Transversales" />
+            <View style={styles.table}>
+              <THead cols={['Fecha', 'Tramo', 'Componente', 'Actividad', 'Cant.', 'Estado']} />
+              {data.componentes!.map((r, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: pdf rows have no stable ID
+                <TRow
+                  key={i}
+                  alt={i % 2 === 1}
+                  wide={2}
+                  cells={[
+                    fmtD(r.fecha),
+                    str(r.id_tramo ?? r.tramo),
+                    str(r.tipo_componente),
+                    str(r.tipo_actividad),
+                    str(r.cantidad),
+                    str(r.estado),
+                  ]}
+                />
+              ))}
+            </View>
+          </>
+        )}
+
+        {(data.diario?.length ?? 0) > 0 && (
+          <>
+            <Divider label="Reporte Diario" />
+            <View style={styles.table}>
+              <THead cols={['Fecha', 'Tramo', 'Inspector', 'Observaciones', 'Estado']} />
+              {data.diario!.map((r, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: pdf rows have no stable ID
+                <TRow
+                  key={i}
+                  alt={i % 2 === 1}
+                  wide={3}
+                  cells={[
+                    fmtD(r.fecha_reporte ?? r.fecha),
+                    str(r.id_tramo ?? r.tramo),
+                    str(r.usuario_qfield ?? r.usuario_nombre),
+                    str(r.observaciones),
+                    str(r.estado),
+                  ]}
+                />
+              ))}
+            </View>
+          </>
+        )}
+
+        {(data.anotaciones?.length ?? 0) > 0 && (
+          <>
+            <Divider label="Anotaciones" />
+            <View style={styles.table}>
+              <THead cols={['Fecha', 'Tramo', 'Usuario', 'Anotación', 'Estado']} />
+              {data.anotaciones!.map((r, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: pdf rows have no stable ID
+                <TRow
+                  key={i}
+                  alt={i % 2 === 1}
+                  wide={3}
+                  cells={[
+                    fmtD(r.fecha),
+                    str(r.tramo ?? r.id_tramo),
+                    str(r.usuario_nombre ?? r.usuario_qfield),
+                    str(r.anotacion),
+                    str(r.estado),
+                  ]}
+                />
+              ))}
+            </View>
+          </>
+        )}
+      </Page>
+    </Document>
+  );
+}
+
+// ─── Download Button ──────────────────────────────────────────────────────────
+
+const dlStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  borderRadius: '0.5rem',
+  padding: '0.625rem 1.25rem',
+  fontSize: '0.875rem',
+  fontWeight: 500,
+  textDecoration: 'none',
+  background: COLORS.blue,
+  color: COLORS.white,
+};
+
+export function InformePdfDownload({
+  data,
+  disabled,
+}: {
+  data: FilteredData;
+  disabled?: boolean;
+}) {
+  if (disabled) {
+    return (
+      <button
+        type="button"
+        disabled
+        style={{ ...dlStyle, opacity: 0.4, cursor: 'not-allowed' } as CSSProperties}
+      >
+        Descargar PDF
+      </button>
+    );
+  }
+  return (
+    <PDFDownloadLink
+      document={<InformePdfDocument data={data} />}
+      fileName={`bitacora-${data.fi}-${data.ff}.pdf`}
+      style={dlStyle}
+    >
+      {({ loading }) => (loading ? 'Generando PDF…' : 'Descargar PDF')}
+    </PDFDownloadLink>
+  );
+}
