@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import type {
   InformeAnotacion,
@@ -10,7 +10,7 @@ import type {
 import { InformePdfDownload } from '@/components/pdf/InformePdf';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { SectionBadge } from '@/components/shared/SectionBadge';
-import { useMemo, useState } from 'react';
+import { type ReactElement, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 type EstadoFiltro =
   | 'Todos'
@@ -40,6 +40,8 @@ const TIPOS: TipoFormulario[] = [
   'Anotaciones',
 ];
 
+const PREVIEW_LIMIT = 5;
+
 function asDate(raw: unknown): Date | null {
   if (!raw) return null;
   const d = new Date(String(raw));
@@ -67,6 +69,109 @@ function byEstado<T extends { estado?: unknown }>(rows: T[], filtro: EstadoFiltr
   return rows.filter((r) => estados.includes(String(r.estado ?? '').toUpperCase()));
 }
 
+function fmtDate(raw: unknown): string {
+  if (!raw) return '—';
+  const d = new Date(String(raw));
+  if (Number.isNaN(d.getTime())) return String(raw);
+  return d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function truncate(s: unknown, n = 45): string {
+  const str = String(s ?? '');
+  if (!str || str === 'undefined' || str === 'null') return '—';
+  return str.length > n ? `${str.slice(0, n)}…` : str;
+}
+
+function EstadoBadge({ estado }: { estado: unknown }) {
+  const val = String(estado ?? '').toUpperCase();
+  const map: Record<string, { background: string; color: string }> = {
+    APROBADO: { background: '#d1fae5', color: '#065f46' },
+    REVISADO: { background: '#dbeafe', color: '#1e40af' },
+    BORRADOR: { background: '#fef3c7', color: '#92400e' },
+    DEVUELTO: { background: '#fee2e2', color: '#991b1b' },
+  };
+  const s = map[val] ?? { background: 'var(--bg-muted)', color: 'var(--text-muted)' };
+  return (
+    <span
+      className="inline-block rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap"
+      style={s}
+    >
+      {val || '—'}
+    </span>
+  );
+}
+
+type CellValue = string | ReactElement;
+
+function PreviewTable({ headers, rows }: { headers: string[]; rows: CellValue[][] }) {
+  return (
+    <div
+      className="overflow-x-auto rounded-md border text-xs"
+      style={{ borderColor: 'var(--border)' }}
+    >
+      <table className="w-full">
+        <thead>
+          <tr style={{ background: 'var(--bg-muted)' }}>
+            {headers.map((h) => (
+              <th
+                key={h}
+                className="px-3 py-2 text-left font-medium whitespace-nowrap"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static preview table, rows never reorder
+            <tr key={i} style={{ borderTop: '1px solid var(--border)' }}>
+              {row.map((cell, j) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: fixed column count, stable order
+                <td key={j} className="px-3 py-2 max-w-[200px] truncate">
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function PreviewSection({
+  title,
+  count,
+  children,
+}: {
+  title: string;
+  count: number;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="space-y-2">
+      <button
+        type="button"
+        className="flex items-center gap-2 text-sm font-medium w-full text-left"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="text-xs opacity-60">{open ? '▾' : '▸'}</span>
+        {title}
+        <span
+          className="rounded-full px-2 py-0.5 text-xs font-normal"
+          style={{ background: 'var(--bg-muted)', color: 'var(--text-muted)' }}
+        >
+          {count}
+        </span>
+      </button>
+      {open && children}
+    </div>
+  );
+}
+
 export default function GenerarInformeClient({ data }: { data: InformeData }) {
   const today = new Date().toISOString().slice(0, 10);
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
@@ -77,6 +182,18 @@ export default function GenerarInformeClient({ data }: { data: InformeData }) {
   const [tramo, setTramo] = useState('');
   const [usuario, setUsuario] = useState('');
   const [tiposSel, setTiposSel] = useState<TipoFormulario[]>(['Cantidades de Obra']);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const filtered = useMemo(() => {
     const cantidadesBase = byEstado(data.cantidades ?? [], estado).filter((r: InformeCantidad) => {
@@ -165,6 +282,13 @@ export default function GenerarInformeClient({ data }: { data: InformeData }) {
     setTiposSel((prev) => (prev.includes(tipo) ? prev.filter((x) => x !== tipo) : [...prev, tipo]));
   }
 
+  const dropdownLabel =
+    tiposSel.length === 0
+      ? 'Seleccionar tipos...'
+      : tiposSel.length === TIPOS.length
+        ? 'Todos los tipos'
+        : tiposSel.join(', ');
+
   return (
     <div className="space-y-6">
       <SectionBadge label="Generar Informe" page="generar-informe" />
@@ -231,23 +355,81 @@ export default function GenerarInformeClient({ data }: { data: InformeData }) {
           </label>
         </div>
 
+        {/* Multi-select dropdown */}
         <div className="space-y-2">
           <p className="text-sm font-medium">Tipos de formulario a incluir</p>
-          <div className="grid md:grid-cols-2 gap-2">
-            {TIPOS.map((tipo) => (
-              <label
-                key={tipo}
-                className="rounded-md border px-3 py-2 text-sm flex items-center gap-2"
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setDropdownOpen((o) => !o)}
+              className="w-full rounded-md border px-3 py-2 text-sm text-left flex items-center justify-between gap-2"
+              style={{
+                borderColor: 'var(--border)',
+                background: 'var(--bg-input, var(--bg-card))',
+              }}
+            >
+              <span className={tiposSel.length === 0 ? 'opacity-40' : ''}>{dropdownLabel}</span>
+              <svg
+                aria-hidden="true"
+                className={`h-4 w-4 shrink-0 transition-transform duration-150 ${dropdownOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
               >
-                <input
-                  type="checkbox"
-                  checked={tiposSel.includes(tipo)}
-                  onChange={() => toggleTipo(tipo)}
-                />
-                {tipo}
-              </label>
-            ))}
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {dropdownOpen && (
+              <div
+                className="absolute z-20 mt-1 w-full rounded-md border shadow-lg overflow-hidden"
+                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+              >
+                {TIPOS.map((tipo, idx) => (
+                  <label
+                    key={tipo}
+                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm cursor-pointer select-none hover:opacity-80"
+                    style={
+                      idx < TIPOS.length - 1
+                        ? { borderBottom: '1px solid var(--border)' }
+                        : undefined
+                    }
+                  >
+                    <input
+                      type="checkbox"
+                      className="rounded"
+                      checked={tiposSel.includes(tipo)}
+                      onChange={() => toggleTipo(tipo)}
+                    />
+                    {tipo}
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
+
+          {tiposSel.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {tiposSel.map((tipo) => (
+                <span
+                  key={tipo}
+                  className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium"
+                  style={{ background: 'rgba(0, 118, 176, 0.12)', color: '#0076B0' }}
+                >
+                  {tipo}
+                  <button
+                    type="button"
+                    onClick={() => toggleTipo(tipo)}
+                    className="rounded-full leading-none hover:opacity-60"
+                    aria-label={`Quitar ${tipo}`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -259,15 +441,128 @@ export default function GenerarInformeClient({ data }: { data: InformeData }) {
         <KpiCard label="Devueltos" value={devueltos} accent="red" />
       </div>
 
+      {/* Vista previa con datos reales */}
       <div
-        className="rounded-xl p-4 space-y-3"
+        className="rounded-xl p-4 space-y-4"
         style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
       >
         <h3 className="text-sm font-semibold">Vista previa</h3>
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-          Cantidades: {filtered.cantidades.length} · Componentes: {filtered.componentes.length} ·
-          Diario: {filtered.diario.length} · Anotaciones: {filtered.anotaciones.length}
-        </p>
+
+        {totalRegistros === 0 ? (
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            No hay registros con los filtros seleccionados.
+          </p>
+        ) : (
+          <div className="space-y-5">
+            {tiposSel.includes('Cantidades de Obra') && filtered.cantidades.length > 0 && (
+              <PreviewSection title="Cantidades de Obra" count={filtered.cantidades.length}>
+                <PreviewTable
+                  headers={[
+                    'Fecha',
+                    'Tramo',
+                    'Item',
+                    'Descripción',
+                    'Cantidad',
+                    'Unidad',
+                    'Estado',
+                  ]}
+                  rows={filtered.cantidades
+                    .slice(0, PREVIEW_LIMIT)
+                    .map((r) => [
+                      fmtDate(r.fecha),
+                      String(r.id_tramo ?? r.tramo ?? '—'),
+                      String(r.item_pago ?? '—'),
+                      truncate(r.item_descripcion),
+                      String(r.cantidad ?? '—'),
+                      String(r.unidad ?? '—'),
+                      <EstadoBadge key="estado" estado={r.estado} />,
+                    ])}
+                />
+                {filtered.cantidades.length > PREVIEW_LIMIT && (
+                  <p className="text-xs pt-1" style={{ color: 'var(--text-muted)' }}>
+                    + {filtered.cantidades.length - PREVIEW_LIMIT} registros más
+                  </p>
+                )}
+              </PreviewSection>
+            )}
+
+            {tiposSel.includes('Componentes Transversales') && filtered.componentes.length > 0 && (
+              <PreviewSection title="Componentes Transversales" count={filtered.componentes.length}>
+                <PreviewTable
+                  headers={[
+                    'Fecha',
+                    'Tramo',
+                    'Componente',
+                    'Actividad',
+                    'Cantidad',
+                    'Unidad',
+                    'Estado',
+                  ]}
+                  rows={filtered.componentes
+                    .slice(0, PREVIEW_LIMIT)
+                    .map((r) => [
+                      fmtDate(r.fecha),
+                      String(r.id_tramo ?? r.tramo ?? '—'),
+                      truncate(r.tipo_componente),
+                      truncate(r.tipo_actividad),
+                      String(r.cantidad ?? '—'),
+                      String(r.unidad ?? '—'),
+                      <EstadoBadge key="estado" estado={r.estado} />,
+                    ])}
+                />
+                {filtered.componentes.length > PREVIEW_LIMIT && (
+                  <p className="text-xs pt-1" style={{ color: 'var(--text-muted)' }}>
+                    + {filtered.componentes.length - PREVIEW_LIMIT} registros más
+                  </p>
+                )}
+              </PreviewSection>
+            )}
+
+            {tiposSel.includes('Reporte Diario') && filtered.diario.length > 0 && (
+              <PreviewSection title="Reporte Diario" count={filtered.diario.length}>
+                <PreviewTable
+                  headers={['Fecha', 'Tramo', 'Usuario', 'Observaciones', 'Estado']}
+                  rows={filtered.diario
+                    .slice(0, PREVIEW_LIMIT)
+                    .map((r) => [
+                      fmtDate(r.fecha_reporte ?? r.fecha),
+                      String(r.id_tramo ?? r.tramo ?? '—'),
+                      String(r.usuario_qfield ?? r.usuario_nombre ?? '—'),
+                      truncate(r.observaciones, 60),
+                      <EstadoBadge key="estado" estado={r.estado} />,
+                    ])}
+                />
+                {filtered.diario.length > PREVIEW_LIMIT && (
+                  <p className="text-xs pt-1" style={{ color: 'var(--text-muted)' }}>
+                    + {filtered.diario.length - PREVIEW_LIMIT} registros más
+                  </p>
+                )}
+              </PreviewSection>
+            )}
+
+            {tiposSel.includes('Anotaciones') && filtered.anotaciones.length > 0 && (
+              <PreviewSection title="Anotaciones" count={filtered.anotaciones.length}>
+                <PreviewTable
+                  headers={['Fecha', 'Tramo', 'Usuario', 'Anotación', 'Estado']}
+                  rows={filtered.anotaciones
+                    .slice(0, PREVIEW_LIMIT)
+                    .map((r) => [
+                      fmtDate(r.fecha),
+                      String(r.tramo ?? r.id_tramo ?? '—'),
+                      String(r.usuario_nombre ?? r.usuario_qfield ?? '—'),
+                      truncate(r.anotacion, 60),
+                      <EstadoBadge key="estado" estado={r.estado} />,
+                    ])}
+                />
+                {filtered.anotaciones.length > PREVIEW_LIMIT && (
+                  <p className="text-xs pt-1" style={{ color: 'var(--text-muted)' }}>
+                    + {filtered.anotaciones.length - PREVIEW_LIMIT} registros más
+                  </p>
+                )}
+              </PreviewSection>
+            )}
+          </div>
+        )}
       </div>
 
       <div
