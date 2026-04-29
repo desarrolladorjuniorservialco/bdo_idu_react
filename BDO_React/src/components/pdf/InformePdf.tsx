@@ -670,7 +670,7 @@ export function InformePdfDownload({
   return (
     <PDFDownloadLink
       document={<InformePdfDocument data={data} />}
-      fileName={`bitacora-${fileTimestamp()}.pdf`}
+      fileName={`BOB-SistemaBitacora-${fileTimestamp()}.pdf`}
       style={dlStyle}
     >
       {({ loading }) => (loading ? 'Generando PDF…' : 'Descargar PDF')}
