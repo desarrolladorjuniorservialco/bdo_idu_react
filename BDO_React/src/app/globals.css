@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-
-
 /* ── Variables CSS para componentes ─────────────────────────── */
 :root {
   /* --- Identidad Corporativa --- */
@@ -123,6 +121,51 @@
     --input: #1a2e4a;
     --ring: #8ab52e;
   }
+}
+
+/* ── Dark mode manual (toggle de usuario) ──────────────────── */
+html[data-theme="dark"] {
+  --corp-primary: #8ab52e;
+  --corp-dark: #6b8e23;
+  --corp-gold: #e5b84d;
+  --corp-gold-lt: #2d2200;
+  --corp-green-lt: #0d2010;
+
+  --idu-blue-lt: #0d2744;
+  --idu-blue-lt-fg: #a8cfef;
+  --idu-red-lt: #3d0507;
+  --idu-red-lt-fg: #ff8c8c;
+  --idu-yellow-lt: #2d2400;
+  --idu-yellow-lt-fg: #ffd200;
+  --idu-green-lt: #1a2409;
+  --idu-green-lt-fg: #a8c46a;
+
+  --bg-app: #0d1520;
+  --bg-card: #12233d;
+  --bg-sidebar: #0a1628;
+
+  --sidebar-header-bg: #060e1a;
+  --sidebar-text: #94a3b8;
+  --sidebar-text-muted: #64748b;
+  --sidebar-active-bg: rgba(139, 181, 46, 0.15);
+  --sidebar-footer-bg: #060e1a;
+
+  --text-primary: #e8f0fb;
+  --text-muted: #699bd8;
+  --border: #1a2e4a;
+
+  --card: #12233d;
+  --card-foreground: #e8f0fb;
+  --background: #0d1520;
+  --foreground: #e8f0fb;
+  --muted: #12233d;
+  --muted-foreground: #7a96b8;
+  --primary: #8ab52e;
+  --primary-foreground: #0d1520;
+  --secondary: #12233d;
+  --secondary-foreground: #e8f0fb;
+  --input: #1a2e4a;
+  --ring: #8ab52e;
 }
 
 /* ── Base ───────────────────────────────────────────────────── */

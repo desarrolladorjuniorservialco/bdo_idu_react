@@ -1,19 +1,20 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { motion } from 'framer-motion';
-import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/stores/authStore';
 import type { Perfil } from '@/types/database';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const loginSchema = z.object({
-  email:    z.string().email('Correo inválido').max(100),
+  email: z.string().email('Correo inválido').max(100),
   password: z.string().min(6, 'Mínimo 6 caracteres').max(128),
 });
 type LoginInput = z.infer<typeof loginSchema>;
@@ -21,11 +22,16 @@ type LoginInput = z.infer<typeof loginSchema>;
 const ROLES_VALIDOS = new Set(['operativo', 'obra', 'interventoria', 'supervision', 'admin']);
 
 export default function LoginPage() {
-  const router   = useRouter();
+  const router = useRouter();
   const setPerfil = useAuthStore((s) => s.setPerfil);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginInput>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -34,7 +40,7 @@ export default function LoginPage() {
     const supabase = createClient();
 
     const { data: authData, error } = await supabase.auth.signInWithPassword({
-      email:    data.email,
+      email: data.email,
       password: data.password,
     });
 
@@ -116,12 +122,35 @@ export default function LoginPage() {
 
             <div>
               <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                {...register('password')}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  className="pr-10"
+                  {...register('password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  tabIndex={-1}
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--text-primary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--text-muted)';
+                  }}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-xs mt-1" style={{ color: 'var(--idu-red)' }}>
                   {errors.password.message}
@@ -132,7 +161,11 @@ export default function LoginPage() {
             {serverError && (
               <div
                 className="rounded-md px-3 py-2 text-sm"
-                style={{ background: '#FEE2E2', color: 'var(--idu-red)', border: '1px solid #FECACA' }}
+                style={{
+                  background: '#FEE2E2',
+                  color: 'var(--idu-red)',
+                  border: '1px solid #FECACA',
+                }}
               >
                 {serverError}
               </div>

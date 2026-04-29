@@ -1,11 +1,11 @@
 'use client';
-import { Button } from '@/components/ui/button';
 import { ROL_LABELS } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotifStore } from '@/stores/notifStore';
+import { useThemeStore } from '@/stores/themeStore';
 import type { Perfil } from '@/types/database';
-import { Bell, LogOut } from 'lucide-react';
+import { Bell, LogOut, Moon, Sun } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
@@ -18,6 +18,8 @@ export function Header({ perfil }: HeaderProps) {
   const clearNotifs = useNotifStore((s) => s.clearNotifs);
   const notifs = useNotifStore((s) => s.notifs);
   const unread = notifs.filter((n) => !n.leida).length;
+  const theme = useThemeStore((s) => s.theme);
+  const toggleTheme = useThemeStore((s) => s.toggle);
 
   async function handleLogout() {
     const supabase = createClient();
@@ -64,6 +66,21 @@ export function Header({ perfil }: HeaderProps) {
             </span>
           </div>
         )}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+          aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+          aria-pressed={theme === 'dark'}
+          className="flex items-center justify-center h-9 w-9 rounded-md transition-colors duration-150 hover:bg-white/10"
+          style={{ color: 'rgba(255,255,255,0.80)' }}
+        >
+          {theme === 'dark' ? (
+            <Sun className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <Moon className="h-4 w-4" aria-hidden="true" />
+          )}
+        </button>
         <button
           type="button"
           onClick={handleLogout}
