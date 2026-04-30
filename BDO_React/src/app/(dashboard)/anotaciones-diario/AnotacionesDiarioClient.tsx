@@ -151,175 +151,191 @@ export default function AnotacionesDiarioClient({
         onChange={(payload) => dispatch({ type: 'SET_FILTERS', payload })}
       />
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          {filtered.length} registro{filtered.length !== 1 ? 's' : ''}
+          {filtered.length > 20 && ' · desplázate para ver todos'}
+        </span>
         <ExportCsvButton data={filtered} filename="anotaciones-diario" />
       </div>
 
-      <RecordList
-        items={filtered}
-        selected={selected}
-        onSelect={(id) => dispatch({ type: 'SELECT', id })}
-        renderHeader={(r) => (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
-              {toText(r.fecha_reporte ?? r.fecha)}
-            </span>
-            <span className="text-xs">{toText(r.folio)}</span>
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              {toText(r.tramo ?? r.id_tramo)}
-            </span>
-            <span
-              className="text-[10px] px-1.5 py-0.5 rounded-md"
-              style={{ background: 'var(--muted)', color: 'var(--text-muted)' }}
-            >
-              {String(r.estado ?? 'SIN ESTADO')}
-            </span>
-          </div>
-        )}
-        renderDetail={(r) => {
-          const personal = maps.personal[r.id] ?? [];
-          const clima = maps.clima[r.id]?.[0];
-          const maquinaria = maps.maquinaria[r.id] ?? [];
-          const sst = maps.sst[r.id] ?? [];
-          const fotos = maps.fotos[r.id] ?? [];
+      <div
+        className="overflow-y-auto rounded-lg"
+        style={{
+          maxHeight: '880px',
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'var(--border) transparent',
+        }}
+      >
+        <RecordList
+          items={filtered}
+          selected={selected}
+          onSelect={(id) => dispatch({ type: 'SELECT', id })}
+          renderHeader={(r) => (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
+                {toText(r.fecha_reporte ?? r.fecha)}
+              </span>
+              <span className="text-xs">{toText(r.folio)}</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                {toText(r.tramo ?? r.id_tramo)}
+              </span>
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded-md"
+                style={{ background: 'var(--muted)', color: 'var(--text-muted)' }}
+              >
+                {String(r.estado ?? 'SIN ESTADO')}
+              </span>
+            </div>
+          )}
+          renderDetail={(r) => {
+            const personal = maps.personal[r.id] ?? [];
+            const clima = maps.clima[r.id]?.[0];
+            const maquinaria = maps.maquinaria[r.id] ?? [];
+            const sst = maps.sst[r.id] ?? [];
+            const fotos = maps.fotos[r.id] ?? [];
 
-          return (
-            <div className="space-y-4 p-4 text-sm">
-              <div className="grid grid-cols-1 xl:grid-cols-[2.2fr_1fr] gap-4">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                    <span>
-                      <b>Folio:</b> {toText(r.folio, '-')}
-                    </span>
-                    <span>
-                      <b>Fecha:</b> {String(r.fecha_reporte ?? r.fecha ?? '-')}
-                    </span>
-                    <span>
-                      <b>Inspector:</b> {toText(r.usuario_qfield, '-')}
-                    </span>
-                    <span>
-                      <b>Estado:</b> {toText(r.estado, '-')}
-                    </span>
-                    <span>
-                      <b>Tramo:</b> {toText(r.tramo ?? r.id_tramo, '-')}
-                    </span>
-                    <span>
-                      <b>CIV:</b> {toText(r.civ, '-')}
-                    </span>
-                    <span>
-                      <b>PK:</b> {toText(r.pk_id, '-')}
-                    </span>
-                    <span>
-                      <b>Cantidad:</b> {toText(r.cantidad, '-')}
-                    </span>
-                    <span>
-                      <b>Unidad:</b> {toText(r.unidad, '-')}
-                    </span>
+            return (
+              <div className="space-y-4 p-4 text-sm">
+                <div className="grid grid-cols-1 xl:grid-cols-[2.2fr_1fr] gap-4">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                      <span>
+                        <b>Folio:</b> {toText(r.folio, '-')}
+                      </span>
+                      <span>
+                        <b>Fecha:</b> {String(r.fecha_reporte ?? r.fecha ?? '-')}
+                      </span>
+                      <span>
+                        <b>Inspector:</b> {toText(r.usuario_qfield, '-')}
+                      </span>
+                      <span>
+                        <b>Estado:</b> {toText(r.estado, '-')}
+                      </span>
+                      <span>
+                        <b>Tramo:</b> {toText(r.tramo ?? r.id_tramo, '-')}
+                      </span>
+                      <span>
+                        <b>CIV:</b> {toText(r.civ, '-')}
+                      </span>
+                      <span>
+                        <b>PK:</b> {toText(r.pk_id, '-')}
+                      </span>
+                      <span>
+                        <b>Cantidad:</b> {toText(r.cantidad, '-')}
+                      </span>
+                      <span>
+                        <b>Unidad:</b> {toText(r.unidad, '-')}
+                      </span>
+                    </div>
+
+                    {hasValue(r.observaciones) && (
+                      <div
+                        className="rounded-md p-2 text-xs"
+                        style={{ background: 'var(--muted)' }}
+                      >
+                        <b>Observaciones:</b> {toText(r.observaciones)}
+                      </div>
+                    )}
+
+                    {clima && (
+                      <div className="flex gap-4 flex-wrap">
+                        <span>
+                          <b>Condicion:</b> {String(clima.condicion ?? clima.estado_clima ?? '-')}
+                        </span>
+                        <span>
+                          <b>Hora:</b> {String(clima.hora ?? '').slice(0, 5) || '-'}
+                        </span>
+                      </div>
+                    )}
+
+                    {personal.length > 0 && (
+                      <div>
+                        <p
+                          className="font-semibold text-xs uppercase tracking-wide mb-1"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          Personal
+                        </p>
+                        <ul className="space-y-0.5 text-xs">
+                          {personal.map((p) => (
+                            <li
+                              key={`${String(p.cargo ?? p.tipo ?? 'Personal')}-${String(p.empresa ?? '')}-${String(p.cantidad ?? '')}`}
+                            >
+                              {String(p.cargo ?? p.tipo ?? 'Personal')}:{' '}
+                              <b>{String(p.cantidad ?? '-')}</b>{' '}
+                              {hasValue(p.empresa) ? `- ${String(p.empresa)}` : ''}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {maquinaria.length > 0 && (
+                      <div>
+                        <p
+                          className="font-semibold text-xs uppercase tracking-wide mb-1"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          Maquinaria
+                        </p>
+                        <ul className="space-y-0.5 text-xs">
+                          {maquinaria.map((m) => (
+                            <li
+                              key={`${String(m.tipo ?? 'Equipo')}-${String(m.estado ?? '')}-${String(m.cantidad ?? '')}`}
+                            >
+                              {String(m.tipo ?? 'Equipo')}: <b>{String(m.cantidad ?? '-')}</b>{' '}
+                              {hasValue(m.estado) ? `- ${String(m.estado)}` : ''}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {sst.length > 0 && (
+                      <div>
+                        <p
+                          className="font-semibold text-xs uppercase tracking-wide mb-1"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          SST / Ambiental
+                        </p>
+                        <ul className="space-y-0.5 text-xs">
+                          {sst.map((s) => (
+                            <li
+                              key={`${String(s.tipo_evento ?? s.tipo ?? 'Evento')}-${String(s.descripcion ?? '')}`}
+                            >
+                              {String(s.tipo_evento ?? s.tipo ?? 'Evento')}:{' '}
+                              {String(s.descripcion ?? '-')}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {fotos.length > 0 ? (
+                      <PhotoGrid fotos={fotos} />
+                    ) : (
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        Sin fotos registradas.
+                      </p>
+                    )}
                   </div>
 
-                  {hasValue(r.observaciones) && (
-                    <div className="rounded-md p-2 text-xs" style={{ background: 'var(--muted)' }}>
-                      <b>Observaciones:</b> {toText(r.observaciones)}
-                    </div>
-                  )}
-
-                  {clima && (
-                    <div className="flex gap-4 flex-wrap">
-                      <span>
-                        <b>Condicion:</b> {String(clima.condicion ?? clima.estado_clima ?? '-')}
-                      </span>
-                      <span>
-                        <b>Hora:</b> {String(clima.hora ?? '').slice(0, 5) || '-'}
-                      </span>
-                    </div>
-                  )}
-
-                  {personal.length > 0 && (
-                    <div>
-                      <p
-                        className="font-semibold text-xs uppercase tracking-wide mb-1"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
-                        Personal
-                      </p>
-                      <ul className="space-y-0.5 text-xs">
-                        {personal.map((p) => (
-                          <li
-                            key={`${String(p.cargo ?? p.tipo ?? 'Personal')}-${String(p.empresa ?? '')}-${String(p.cantidad ?? '')}`}
-                          >
-                            {String(p.cargo ?? p.tipo ?? 'Personal')}:{' '}
-                            <b>{String(p.cantidad ?? '-')}</b>{' '}
-                            {hasValue(p.empresa) ? `- ${String(p.empresa)}` : ''}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {maquinaria.length > 0 && (
-                    <div>
-                      <p
-                        className="font-semibold text-xs uppercase tracking-wide mb-1"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
-                        Maquinaria
-                      </p>
-                      <ul className="space-y-0.5 text-xs">
-                        {maquinaria.map((m) => (
-                          <li
-                            key={`${String(m.tipo ?? 'Equipo')}-${String(m.estado ?? '')}-${String(m.cantidad ?? '')}`}
-                          >
-                            {String(m.tipo ?? 'Equipo')}: <b>{String(m.cantidad ?? '-')}</b>{' '}
-                            {hasValue(m.estado) ? `- ${String(m.estado)}` : ''}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {sst.length > 0 && (
-                    <div>
-                      <p
-                        className="font-semibold text-xs uppercase tracking-wide mb-1"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
-                        SST / Ambiental
-                      </p>
-                      <ul className="space-y-0.5 text-xs">
-                        {sst.map((s) => (
-                          <li
-                            key={`${String(s.tipo_evento ?? s.tipo ?? 'Evento')}-${String(s.descripcion ?? '')}`}
-                          >
-                            {String(s.tipo_evento ?? s.tipo ?? 'Evento')}:{' '}
-                            {String(s.descripcion ?? '-')}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {fotos.length > 0 ? (
-                    <PhotoGrid fotos={fotos} />
-                  ) : (
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                      Sin fotos registradas.
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <ApprovalPanel
-                    registro={r}
-                    rol={rol}
-                    tabla="registros_reporte_diario"
-                    rutaRevalidar="/anotaciones-diario"
-                  />
+                  <div>
+                    <ApprovalPanel
+                      registro={r}
+                      rol={rol}
+                      tabla="registros_reporte_diario"
+                      rutaRevalidar="/anotaciones-diario"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        }}
-      />
+            );
+          }}
+        />
+      </div>
     </div>
   );
 }
