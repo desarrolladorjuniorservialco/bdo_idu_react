@@ -1,4 +1,4 @@
-﻿import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
+import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import GenerarInformeClient from './GenerarInformeClient';
 
 export default async function Page() {

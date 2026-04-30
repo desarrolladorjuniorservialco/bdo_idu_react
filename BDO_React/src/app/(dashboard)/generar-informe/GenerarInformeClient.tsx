@@ -327,13 +327,15 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
     };
   }, [data, estado, fi, ff, tramo, usuario, tiposSel]);
 
-  const totalRegistros =
-    filtered.cantidades.length +
-    filtered.componentes.length +
-    filtered.diario.length +
-    filtered.anotaciones.length;
+  const totalRegistros = filtered
+    ? filtered.cantidades.length +
+      filtered.componentes.length +
+      filtered.diario.length +
+      filtered.anotaciones.length
+    : 0;
 
   const aprobados = useMemo(() => {
+    if (!filtered) return 0;
     const rows = [...filtered.cantidades, ...filtered.componentes, ...filtered.diario] as Array<{
       estado?: string;
     }>;
@@ -341,6 +343,7 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
   }, [filtered]);
 
   const revisados = useMemo(() => {
+    if (!filtered) return 0;
     const rows = [...filtered.cantidades, ...filtered.componentes, ...filtered.diario] as Array<{
       estado?: string;
     }>;
@@ -348,6 +351,7 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
   }, [filtered]);
 
   const devueltos = useMemo(() => {
+    if (!filtered) return 0;
     const rows = [...filtered.cantidades, ...filtered.componentes, ...filtered.diario] as Array<{
       estado?: string;
     }>;
@@ -367,13 +371,18 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
         ? 'Todos los tipos'
         : tiposSel.join(', ');
 
-  if (loading) {
+  if (loading || !filtered) {
     return (
-      <div className="space-y-6">
-        <SectionBadge label="Generar Informe" page="generar-informe" />
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          Cargando datos del informe...
-        </p>
+      <div className="space-y-6 animate-pulse">
+        <div className="h-7 w-48 rounded-lg bg-[var(--border)]" />
+        <div
+          className="rounded-xl p-5 space-y-4"
+          style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+        >
+          <div className="h-4 w-64 rounded bg-[var(--border)]" />
+          <div className="h-4 w-full rounded bg-[var(--border)]" />
+          <div className="h-4 w-3/4 rounded bg-[var(--border)]" />
+        </div>
       </div>
     );
   }
