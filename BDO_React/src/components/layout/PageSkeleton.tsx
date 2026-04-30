@@ -12,7 +12,8 @@ export function PageSkeleton() {
         <div className="h-4 w-3/4 rounded bg-[var(--border)]" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={`skeleton-card-${i + 1}`} className="h-16 rounded-lg bg-[var(--border)]" />
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton, items never reorder
+            <div key={i} className="h-16 rounded-lg bg-[var(--border)]" />
           ))}
         </div>
       </div>
