@@ -125,11 +125,11 @@ export default function AnotacionesDiarioClient({
       );
     }
 
-    return [...rows].sort((a, b) =>
-      String(b.fecha_reporte ?? b.fecha ?? '').localeCompare(
-        String(a.fecha_reporte ?? a.fecha ?? ''),
-      ),
-    );
+    return [...rows].sort((a, b) => {
+      const fa = Number(a.folio) || 0;
+      const fb = Number(b.folio) || 0;
+      return fb - fa;
+    });
   }, [registros, filters]);
 
   const totalPersonal = subtablas.personal.reduce((a, p) => a + toNumber(p.cantidad), 0);
