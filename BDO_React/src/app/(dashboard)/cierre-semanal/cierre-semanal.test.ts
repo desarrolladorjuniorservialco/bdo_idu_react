@@ -55,12 +55,13 @@ describe('computePresupuestoKpis', () => {
       cantidad_ejecutada: 0,
     },
   ];
-  it('calcula total, ejecutado, pendiente y pct correctamente', () => {
+  it('calcula total, ejecutado, pendiente, pct e itemsConEjecucion correctamente', () => {
     const k = computePresupuestoKpis(items);
     expect(k.total).toBe(1500);
     expect(k.ejecutado).toBe(600);
     expect(k.pendiente).toBe(900);
     expect(k.pct).toBeCloseTo(40);
+    expect(k.itemsConEjecucion).toBe(0); // ambos items tienen cantidad_ejecutada: 0
   });
 
   it('usa cantidad * precio_unitario cuando valor_total es null', () => {
@@ -75,6 +76,7 @@ describe('computePresupuestoKpis', () => {
     ]);
     expect(k.total).toBe(500);
     expect(k.ejecutado).toBe(250);
+    expect(k.itemsConEjecucion).toBe(1);
   });
 
   it('no falla cuando valor_total es 0', () => {
@@ -89,6 +91,7 @@ describe('computePresupuestoKpis', () => {
     ]);
     expect(k.total).toBe(0);
     expect(k.ejecutado).toBe(0);
+    expect(k.itemsConEjecucion).toBe(1);
   });
 });
 

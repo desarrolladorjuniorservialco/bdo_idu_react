@@ -33,7 +33,6 @@ interface Props {
 export function SeccionPresupuesto({ items, tramos }: Props) {
   const kpis = computePresupuestoKpis(items);
   const metaKpis = computeMetaKpis(tramos);
-  const itemsConEjecucion = items.filter((i) => (i.cantidad_ejecutada ?? 0) > 0).length;
 
   return (
     <section>
@@ -62,7 +61,7 @@ export function SeccionPresupuesto({ items, tramos }: Props) {
         />
         <KpiCard
           label="Ítems con ejecución"
-          value={String(itemsConEjecucion)}
+          value={String(kpis.itemsConEjecucion)}
           accent="teal"
           sublabel={`de ${items.length} ítems`}
         />

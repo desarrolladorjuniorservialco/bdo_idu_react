@@ -38,6 +38,7 @@ export function computePresupuestoKpis(items: PresupuestoItem[]): {
   ejecutado: number;
   pendiente: number;
   pct: number;
+  itemsConEjecucion: number;
 } {
   const total = items.reduce((a, i) => {
     const v =
@@ -52,7 +53,8 @@ export function computePresupuestoKpis(items: PresupuestoItem[]): {
     return a + v;
   }, 0);
   const pct = total > 0 ? (ejecutado / total) * 100 : 0;
-  return { total, ejecutado, pendiente: Math.max(total - ejecutado, 0), pct };
+  const itemsConEjecucion = items.filter((i) => (i.cantidad_ejecutada ?? 0) > 0).length;
+  return { total, ejecutado, pendiente: Math.max(total - ejecutado, 0), pct, itemsConEjecucion };
 }
 
 interface Tramo {
