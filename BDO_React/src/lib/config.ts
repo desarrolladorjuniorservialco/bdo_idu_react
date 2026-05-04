@@ -24,6 +24,7 @@ export const NAV_ACCESS: Record<string, Rol[]> = {
   presupuesto: GESTION,
   correspondencia: GESTION,
   'generar-informe': GESTION,
+  'cierre-semanal': TODOS,
 };
 
 export interface NavCategory {
@@ -50,6 +51,7 @@ export const NAV_CATEGORIES: NavCategory[] = [
       { label: 'Anotaciones', href: '/anotaciones' },
       { label: 'Anotaciones Diario', href: '/anotaciones-diario' },
       { label: 'Reporte Cantidades', href: '/reporte-cantidades' },
+      { label: 'Cierre Semanal', href: '/cierre-semanal' },
     ],
   },
   {
@@ -82,6 +84,7 @@ export const PAGE_COLOR: Record<string, string> = {
   'componente-social': 'orange',
   'componente-pmt': 'purple',
   'seguimiento-pmts': 'red',
+  'cierre-semanal': 'teal',
 };
 
 export interface AprobacionCampos {
