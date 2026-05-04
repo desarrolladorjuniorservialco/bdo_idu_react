@@ -44,19 +44,10 @@ export default async function CierreSemanalPage() {
   ]);
 
   const componentes = [
-    ...componentesAmbiental.map((r: Record<string, unknown>) => ({
-      ...r,
-      componente: 'ambiental',
-    })),
-    ...componentesSocial.map((r: Record<string, unknown>) => ({
-      ...r,
-      componente: 'social',
-    })),
-    ...componentesPmt.map((r: Record<string, unknown>) => ({
-      ...r,
-      componente: 'pmt',
-    })),
-  ] as Parameters<typeof CierreSemanalClient>[0]['componentes'];
+    ...componentesAmbiental.map((r) => ({ ...r, componente: 'ambiental' })),
+    ...componentesSocial.map((r) => ({ ...r, componente: 'social' })),
+    ...componentesPmt.map((r) => ({ ...r, componente: 'pmt' })),
+  ];
 
   return (
     <CierreSemanalClient

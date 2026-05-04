@@ -11,7 +11,7 @@ export function getTodayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function filterByDateRange<T extends Record<string, unknown>>(
+export function filterByDateRange<T extends object>(
   rows: T[],
   campo: keyof T,
   desde: string,
