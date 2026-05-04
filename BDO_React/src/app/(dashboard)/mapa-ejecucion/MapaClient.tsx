@@ -147,8 +147,8 @@ function applyFilters(
 
 function withGeo(records: Row[]): Row[] {
   return records.filter((r) => {
-    const lat = Number.parseFloat(r.latitud);
-    const lon = Number.parseFloat(r.longitud);
+    const lat = Number.parseFloat(String(r.latitud ?? ''));
+    const lon = Number.parseFloat(String(r.longitud ?? ''));
     return !Number.isNaN(lat) && !Number.isNaN(lon);
   });
 }

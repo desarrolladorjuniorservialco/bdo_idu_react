@@ -483,7 +483,8 @@ export default function CorrespondenciaClient({
       );
     }
     if (fEstados.length) result = result.filter((r) => fEstados.includes(r.estado));
-    if (fComponentes.length) result = result.filter((r) => fComponentes.includes(r.componente));
+    if (fComponentes.length)
+      result = result.filter((r) => fComponentes.includes(r.componente ?? ''));
     if (fFechaIni) result = result.filter((r) => String(r.fecha ?? '').slice(0, 10) >= fFechaIni);
     if (fFechaFin) result = result.filter((r) => String(r.fecha ?? '').slice(0, 10) <= fFechaFin);
     return result;
@@ -749,12 +750,12 @@ export default function CorrespondenciaClient({
                     </td>
 
                     {/* Emisor */}
-                    <td style={cellBase} title={r.emisor}>
+                    <td style={cellBase} title={r.emisor ?? undefined}>
                       {r.emisor}
                     </td>
 
                     {/* Receptor */}
-                    <td style={cellBase} title={r.receptor}>
+                    <td style={cellBase} title={r.receptor ?? undefined}>
                       {r.receptor}
                     </td>
 
@@ -781,7 +782,7 @@ export default function CorrespondenciaClient({
                     </td>
 
                     {/* Asunto */}
-                    <td style={cellBase} title={r.asunto}>
+                    <td style={cellBase} title={r.asunto ?? undefined}>
                       {r.asunto}
                     </td>
 
@@ -911,7 +912,21 @@ export default function CorrespondenciaClient({
               <DialogTitle>Editar correspondencia · {editando.consecutivo}</DialogTitle>
             </DialogHeader>
             <CorrespondenciaForm
-              defaultValues={editando}
+              defaultValues={{
+                emisor: editando.emisor ?? '',
+                receptor: editando.receptor ?? '',
+                consecutivo: editando.consecutivo ?? '',
+                fecha: editando.fecha ?? '',
+                asunto: editando.asunto ?? '',
+                estado: ESTADOS.includes(editando.estado as (typeof ESTADOS)[number])
+                  ? (editando.estado as (typeof ESTADOS)[number])
+                  : 'PENDIENTE',
+                componente: editando.componente ?? undefined,
+                plazo_respuesta: editando.plazo_respuesta ?? undefined,
+                consecutivo_respuesta: editando.consecutivo_respuesta ?? undefined,
+                fecha_respuesta: editando.fecha_respuesta ?? undefined,
+                link: editando.link ?? undefined,
+              }}
               onSubmit={handleUpdate}
               onCancel={() => setEditando(null)}
               loading={isPending}

@@ -13,39 +13,24 @@ import {
 } from '@/components/ui/select';
 import { formatCOP } from '@/lib/utils';
 import type { Rol } from '@/types/database';
-import dynamic from 'next/dynamic';
 import { useCallback, useMemo, useState } from 'react';
-
-const BarChart = dynamic(() => import('recharts').then((m) => ({ default: m.BarChart })), {
-  ssr: false,
-});
-const Bar = dynamic(() => import('recharts').then((m) => ({ default: m.Bar })), { ssr: false });
-const XAxis = dynamic(() => import('recharts').then((m) => ({ default: m.XAxis })), { ssr: false });
-const YAxis = dynamic(() => import('recharts').then((m) => ({ default: m.YAxis })), { ssr: false });
-const CartesianGrid = dynamic(
-  () => import('recharts').then((m) => ({ default: m.CartesianGrid })),
-  {
-    ssr: false,
-  },
-);
-const Tooltip = dynamic(() => import('recharts').then((m) => ({ default: m.Tooltip })), {
-  ssr: false,
-});
-const Legend = dynamic(() => import('recharts').then((m) => ({ default: m.Legend })), {
-  ssr: false,
-});
-const ResponsiveContainer = dynamic(
-  () => import('recharts').then((m) => ({ default: m.ResponsiveContainer })),
-  {
-    ssr: false,
-  },
-);
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 type BudgetItem = Record<string, unknown>;
 type TramoItem = Record<string, unknown>;
 
-function toNumber(value: string | number): number {
-  return typeof value === 'number' ? value : Number(value);
+function toNumber(value: unknown): number {
+  const n = typeof value === 'number' ? value : Number(value ?? 0);
+  return Number.isFinite(n) ? n : 0;
 }
 
 // â”€â”€â”€ Paleta IDU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -301,13 +286,14 @@ export default function PresupuestoClient({
   // â”€â”€ KPIs financieros â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const kpis = useMemo(() => {
     const total = itemsFiltrados.reduce(
-      (a, i) => a + (Number(i.valor_total ?? 0) || (i.cantidad ?? 0) * (i.precio_unitario ?? 0)),
+      (a, i) => a + (toNumber(i.valor_total) || toNumber(i.cantidad) * toNumber(i.precio_unitario)),
       0,
     );
     const ejecutado = itemsFiltrados.reduce(
       (a, i) =>
         a +
-        (Number(i.valor_ejecutado ?? 0) || (i.cantidad_ejecutada ?? 0) * (i.precio_unitario ?? 0)),
+        (toNumber(i.valor_ejecutado) ||
+          toNumber(i.cantidad_ejecutada) * toNumber(i.precio_unitario)),
       0,
     );
     const pct = total > 0 ? (ejecutado / total) * 100 : 0;
@@ -318,12 +304,12 @@ export default function PresupuestoClient({
   const chartDataCap = useMemo(() => {
     const by: Record<string, { presupuestado: number; ejecutado: number }> = {};
     for (const i of itemsFiltrados) {
-      const key = i.capitulo ?? i.componente ?? i.compenente ?? 'Sin capÃ­tulo';
+      const key = String(i.capitulo ?? i.componente ?? i.compenente ?? 'Sin capÃ­tulo');
       if (!by[key]) by[key] = { presupuestado: 0, ejecutado: 0 };
       by[key].presupuestado +=
-        Number(i.valor_total ?? 0) || (i.cantidad ?? 0) * (i.precio_unitario ?? 0);
+        toNumber(i.valor_total) || toNumber(i.cantidad) * toNumber(i.precio_unitario);
       by[key].ejecutado +=
-        Number(i.valor_ejecutado ?? 0) || (i.cantidad_ejecutada ?? 0) * (i.precio_unitario ?? 0);
+        toNumber(i.valor_ejecutado) || toNumber(i.cantidad_ejecutada) * toNumber(i.precio_unitario);
     }
     return Object.entries(by).map(([name, v]) => ({ name, ...v }));
   }, [itemsFiltrados]);
@@ -381,7 +367,12 @@ export default function PresupuestoClient({
     return tramosData
       .filter((t) => t._infra === activeCodigo)
       .map((t) => ({
-        name: String(t.id_tramo ?? t.nombre ?? t.id ?? 'â€”'),
+        name: String(
+          (t as Record<string, unknown>).id_tramo ??
+            (t as Record<string, unknown>).nombre ??
+            (t as Record<string, unknown>).id ??
+            'â€”',
+        ),
         meta: t._meta,
         ejecutado: t._ejec,
       }));
@@ -456,7 +447,7 @@ export default function PresupuestoClient({
         />
         <KpiCard
           label="Ãtems con ejecuciÃ³n"
-          value={String(itemsFiltrados.filter((i) => (i.cantidad_ejecutada ?? 0) > 0).length)}
+          value={String(itemsFiltrados.filter((i) => toNumber(i.cantidad_ejecutada) > 0).length)}
           accent="teal"
           sublabel={`de ${itemsFiltrados.length} Ã­tems`}
         />
@@ -593,11 +584,11 @@ export default function PresupuestoClient({
                   </tr>
                 ) : (
                   itemsFiltrados.map((item: BudgetItem, idx: number) => {
-                    const cantProg = item.cantidad ?? item.cantidad_contrato ?? 0;
-                    const pu = item.precio_unitario ?? item.valor_unitario ?? 0;
-                    const vProg = Number(item.valor_total ?? 0) || cantProg * pu;
-                    const cantEjec = item.cantidad_ejecutada ?? 0;
-                    const vEjec = Number(item.valor_ejecutado ?? 0) || cantEjec * pu;
+                    const cantProg = toNumber(item.cantidad ?? item.cantidad_contrato);
+                    const pu = toNumber(item.precio_unitario ?? item.valor_unitario);
+                    const vProg = toNumber(item.valor_total) || cantProg * pu;
+                    const cantEjec = toNumber(item.cantidad_ejecutada);
+                    const vEjec = toNumber(item.valor_ejecutado) || cantEjec * pu;
                     const pct = vProg > 0 ? (vEjec / vProg) * 100 : 0;
 
                     const cellStyle: React.CSSProperties = {
@@ -610,7 +601,7 @@ export default function PresupuestoClient({
 
                     return (
                       <tr
-                        key={item.id ?? idx}
+                        key={String(item.id ?? idx)}
                         style={{
                           background: idx % 2 === 0 ? 'transparent' : 'var(--muted)',
                         }}
@@ -623,14 +614,20 @@ export default function PresupuestoClient({
                             idx % 2 === 0 ? 'transparent' : 'var(--muted)';
                         }}
                       >
-                        <td style={cellStyle} title={item.capitulo ?? item.componente ?? ''}>
-                          {item.capitulo ?? item.componente ?? item.compenente ?? 'â€”'}
+                        <td
+                          style={cellStyle}
+                          title={String(item.capitulo ?? item.componente ?? '')}
+                        >
+                          {String(item.capitulo ?? item.componente ?? item.compenente ?? 'â€”')}
                         </td>
-                        <td style={cellStyle} title={item.actividad ?? item.descripcion ?? ''}>
-                          {item.actividad ?? item.descripcion ?? 'â€”'}
+                        <td
+                          style={cellStyle}
+                          title={String(item.actividad ?? item.descripcion ?? '')}
+                        >
+                          {String(item.actividad ?? item.descripcion ?? 'â€”')}
                         </td>
                         <td style={{ ...cellStyle, fontFamily: 'monospace' }}>
-                          {item.unidad ?? item.und ?? 'â€”'}
+                          {String(item.unidad ?? item.und ?? 'â€”')}
                         </td>
                         <td
                           style={{
@@ -889,7 +886,11 @@ export default function PresupuestoClient({
                           .filter((t) => t._infra === activeCodigo)
                           .map((t, idx) => (
                             <tr
-                              key={t.id_tramo ?? t.id ?? idx}
+                              key={String(
+                                (t as Record<string, unknown>).id_tramo ??
+                                  (t as Record<string, unknown>).id ??
+                                  idx,
+                              )}
                               style={{ borderTop: '1px solid var(--border)' }}
                             >
                               <td
@@ -899,7 +900,12 @@ export default function PresupuestoClient({
                                   fontSize: 11,
                                 }}
                               >
-                                {t.id_tramo ?? t.nombre ?? t.id ?? 'â€”'}
+                                {String(
+                                  (t as Record<string, unknown>).id_tramo ??
+                                    (t as Record<string, unknown>).nombre ??
+                                    (t as Record<string, unknown>).id ??
+                                    'â€”',
+                                )}
                               </td>
                               <td
                                 style={{

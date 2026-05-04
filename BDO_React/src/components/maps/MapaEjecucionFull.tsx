@@ -34,8 +34,10 @@ type TramoRow = {
   geojson?: string | object;
 };
 
-type LeafletIconDefaultPrototype = L.Icon.Default['prototype'] & { _getIconUrl?: unknown };
-(L.Icon.Default.prototype as LeafletIconDefaultPrototype)._getIconUrl = undefined;
+type LeafletIconDefaultWithPrototype = typeof L.Icon.Default & {
+  prototype: { _getIconUrl?: unknown };
+};
+(L.Icon.Default as LeafletIconDefaultWithPrototype).prototype._getIconUrl = undefined;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -57,8 +59,8 @@ const TRAMO_COLOR: Record<string, string> = {
 };
 
 function parseLL(r: MapRow): [number, number] | null {
-  const lat = Number.parseFloat(r.latitud);
-  const lon = Number.parseFloat(r.longitud);
+  const lat = Number.parseFloat(String(r.latitud ?? ''));
+  const lon = Number.parseFloat(String(r.longitud ?? ''));
   return Number.isNaN(lat) || Number.isNaN(lon) ? null : [lat, lon];
 }
 
@@ -72,7 +74,7 @@ function recordKey(r: MapRow, label: string): string {
 }
 
 function InfoPopup({ r, label }: { r: MapRow; label: string }) {
-  const color = ESTADO_COLOR[r.estado] ?? '#555';
+  const color = ESTADO_COLOR[String(r.estado ?? '')] ?? '#555';
   return (
     <div style={{ minWidth: 190, fontSize: 12, lineHeight: 1.7 }}>
       <b style={{ color }}>{label}</b>
@@ -141,7 +143,7 @@ function PointLayer({ records, label }: { records: MapRow[]; label: string }) {
       {records.map((r) => {
         const ll = parseLL(r);
         if (!ll) return null;
-        const color = ESTADO_COLOR[r.estado] ?? '#9CA3AF';
+        const color = ESTADO_COLOR[String(r.estado ?? '')] ?? '#9CA3AF';
         return (
           <CircleMarker
             key={recordKey(r, label)}
