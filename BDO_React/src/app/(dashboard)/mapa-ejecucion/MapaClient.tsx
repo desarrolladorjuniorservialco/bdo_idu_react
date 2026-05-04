@@ -1,9 +1,7 @@
 'use client';
-import { useMemo, useReducer, useState } from 'react';
-import dynamic from 'next/dynamic';
-import { SectionBadge } from '@/components/shared/SectionBadge';
-import { KpiCard } from '@/components/shared/KpiCard';
 import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
+import { KpiCard } from '@/components/shared/KpiCard';
+import { SectionBadge } from '@/components/shared/SectionBadge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,21 +12,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import dynamic from 'next/dynamic';
+import { useMemo, useReducer, useState } from 'react';
 
-const MapaEjecucionFull = dynamic(
-  () => import('@/components/maps/MapaEjecucionFull'),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        className="h-[520px] rounded-md flex items-center justify-center"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-      >
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Cargando mapa…</p>
-      </div>
-    ),
-  },
-);
+const MapaEjecucionFull = dynamic(() => import('@/components/maps/MapaEjecucionFull'), {
+  ssr: false,
+  loading: () => (
+    <div
+      className="h-[520px] rounded-md flex items-center justify-center"
+      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+    >
+      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        Cargando mapa…
+      </p>
+    </div>
+  ),
+});
 
 // ─── Paleta de estados ────────────────────────────────────────────────────────
 const ESTADO_COLOR: Record<string, string> = {
@@ -49,38 +48,39 @@ const ESTADO_OPTS = ['Todos', 'BORRADOR', 'REVISADO', 'APROBADO', 'DEVUELTO'];
 
 // ─── Estado de filtros ────────────────────────────────────────────────────────
 type Filters = {
-  desde:     string;
-  hasta:     string;
-  estado:    string;
-  buscar:    string;
-  tramo:     string;
-  civ:       string;
-  item:      string;
-  comp:      string;
-  showCant:  boolean;
-  showComp:  boolean;
+  desde: string;
+  hasta: string;
+  estado: string;
+  buscar: string;
+  tramo: string;
+  civ: string;
+  item: string;
+  comp: string;
+  showCant: boolean;
+  showComp: boolean;
   showDiario: boolean;
-  showPmt:   boolean;
+  showPmt: boolean;
 };
 
 type Action = { type: 'SET'; payload: Partial<Filters> };
+type Row = Record<string, unknown>;
 
-const today     = new Date().toISOString().slice(0, 10);
+const today = new Date().toISOString().slice(0, 10);
 const thirtyAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
 const initial: Filters = {
-  desde:     thirtyAgo,
-  hasta:     today,
-  estado:    'Todos',
-  buscar:    '',
-  tramo:     '',
-  civ:       '',
-  item:      '',
-  comp:      '',
-  showCant:  true,
-  showComp:  true,
+  desde: thirtyAgo,
+  hasta: today,
+  estado: 'Todos',
+  buscar: '',
+  tramo: '',
+  civ: '',
+  item: '',
+  comp: '',
+  showCant: true,
+  showComp: true,
   showDiario: true,
-  showPmt:   true,
+  showPmt: true,
 };
 
 function reducer(state: Filters, action: Action): Filters {
@@ -88,22 +88,22 @@ function reducer(state: Filters, action: Action): Filters {
 }
 
 // ─── Utilidades de filtrado ───────────────────────────────────────────────────
-function dateOf(r: any, ...cols: string[]): string {
+function dateOf(r: Row, ...cols: string[]): string {
   for (const c of cols) if (r[c]) return String(r[c]).slice(0, 10);
   return '';
 }
 
 function applyFilters(
-  records:    any[],
-  dateCols:   string[],
-  textCols:   string[],
+  records: Row[],
+  dateCols: string[],
+  textCols: string[],
   advFilters: [string[], string][],
-  f:          Filters,
-): any[] {
+  f: Filters,
+): Row[] {
   let rows = records;
 
   if (f.desde || f.hasta) {
-    rows = rows.filter(r => {
+    rows = rows.filter((r) => {
       const d = dateOf(r, ...dateCols);
       if (!d) return true;
       if (f.desde && d < f.desde) return false;
@@ -113,21 +113,31 @@ function applyFilters(
   }
 
   if (f.estado !== 'Todos') {
-    rows = rows.filter(r => r.estado === f.estado);
+    rows = rows.filter((r) => r.estado === f.estado);
   }
 
   if (f.buscar.trim()) {
     const q = f.buscar.toLowerCase();
-    rows = rows.filter(r =>
-      textCols.some(c => String(r[c] ?? '').toLowerCase().includes(q)),
+    rows = rows.filter((r) =>
+      textCols.some(
+        (c) =>
+          String(r[c] ?? '')
+            .toLowerCase()
+            .indexOf(q) !== -1,
+      ),
     );
   }
 
   for (const [cols, val] of advFilters) {
     if (val.trim()) {
       const v = val.toLowerCase();
-      rows = rows.filter(r =>
-        cols.some(c => String(r[c] ?? '').toLowerCase().includes(v)),
+      rows = rows.filter((r) =>
+        cols.some(
+          (c) =>
+            String(r[c] ?? '')
+              .toLowerCase()
+              .indexOf(v) !== -1,
+        ),
       );
     }
   }
@@ -135,21 +145,19 @@ function applyFilters(
   return rows;
 }
 
-function withGeo(records: any[]): any[] {
-  return records.filter(r => {
-    const lat = parseFloat(r.latitud);
-    const lon = parseFloat(r.longitud);
-    return !isNaN(lat) && !isNaN(lon);
+function withGeo(records: Row[]): Row[] {
+  return records.filter((r) => {
+    const lat = Number.parseFloat(r.latitud);
+    const lon = Number.parseFloat(r.longitud);
+    return !Number.isNaN(lat) && !Number.isNaN(lon);
   });
 }
 
-function pickCols(records: any[], cols: string[]): object[] {
+function pickCols(records: Row[], cols: string[]): object[] {
   if (!records.length) return [];
-  const available = cols.filter(c => records.some(r => r[c] != null));
+  const available = cols.filter((c) => records.some((r) => r[c] != null));
   if (!available.length) return records;
-  return records.map(r =>
-    Object.fromEntries(available.map(c => [c, r[c] ?? ''])),
-  );
+  return records.map((r) => Object.fromEntries(available.map((c) => [c, r[c] ?? ''])));
 }
 
 // ─── Tabla de resumen ─────────────────────────────────────────────────────────
@@ -159,11 +167,19 @@ function RecordTable({
   labels,
   empty,
 }: {
-  records: any[];
+  records: Row[];
   columns: string[];
-  labels:  Record<string, string>;
-  empty:   string;
+  labels: Record<string, string>;
+  empty: string;
 }) {
+  const getRowKey = (r: Row) =>
+    String(
+      r.id ??
+        r.folio ??
+        r.numero_pmt ??
+        `${r.latitud ?? 'na'}-${r.longitud ?? 'na'}-${r.fecha ?? r.fecha_reporte ?? r.fecha_creacion ?? 'na'}`,
+    );
+
   if (!records.length) {
     return (
       <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>
@@ -172,17 +188,14 @@ function RecordTable({
     );
   }
 
-  const available = columns.filter(c => records.some(r => r[c] != null));
+  const available = columns.filter((c) => records.some((r) => r[c] != null));
 
   return (
-    <div
-      className="overflow-x-auto rounded-lg border"
-      style={{ borderColor: 'var(--border)' }}
-    >
+    <div className="overflow-x-auto rounded-lg border" style={{ borderColor: 'var(--border)' }}>
       <table className="w-full text-sm border-collapse">
         <thead>
           <tr style={{ background: 'var(--muted, #f8f9fa)' }}>
-            {available.map(c => (
+            {available.map((c) => (
               <th
                 key={c}
                 className="px-3 py-2 text-left font-semibold whitespace-nowrap"
@@ -199,13 +212,13 @@ function RecordTable({
         <tbody>
           {records.map((r, i) => (
             <tr
-              key={i}
+              key={getRowKey(r)}
               style={{
                 borderBottom: '1px solid var(--border)',
                 background: i % 2 ? 'var(--muted, rgba(0,0,0,0.02))' : 'transparent',
               }}
             >
-              {available.map(c => (
+              {available.map((c) => (
                 <td key={c} className="px-3 py-1.5" style={{ color: 'var(--text-primary)' }}>
                   {c === 'estado' ? (
                     <StatusBadge estado={String(r[c] ?? '')} />
@@ -229,15 +242,19 @@ type TabKey = 'cantidades' | 'componentes' | 'diario' | 'pmt';
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 interface Props {
-  tramos:       any[];
-  cantidades:   any[];
-  componentes:  any[];
-  reporteDiario: any[];
-  formularioPmt: any[];
+  tramos: Row[];
+  cantidades: Row[];
+  componentes: Row[];
+  reporteDiario: Row[];
+  formularioPmt: Row[];
 }
 
 export default function MapaClient({
-  tramos, cantidades, componentes, reporteDiario, formularioPmt,
+  tramos,
+  cantidades,
+  componentes,
+  reporteDiario,
+  formularioPmt,
 }: Props) {
   const [filters, dispatch] = useReducer(reducer, initial);
   const [activeTab, setActiveTab] = useState<TabKey>('cantidades');
@@ -250,12 +267,21 @@ export default function MapaClient({
     return applyFilters(
       cantidades,
       ['fecha', 'fecha_creacion'],
-      ['folio', 'id_tramo', 'tramo', 'civ', 'tipo_actividad', 'actividad',
-       'item_pago', 'capitulo', 'usuario_qfield'],
       [
-        [['id_tramo', 'tramo'],             filters.tramo],
-        [['civ'],                           filters.civ],
-        [['item_pago', 'capitulo'],         filters.item],
+        'folio',
+        'id_tramo',
+        'tramo',
+        'civ',
+        'tipo_actividad',
+        'actividad',
+        'item_pago',
+        'capitulo',
+        'usuario_qfield',
+      ],
+      [
+        [['id_tramo', 'tramo'], filters.tramo],
+        [['civ'], filters.civ],
+        [['item_pago', 'capitulo'], filters.item],
         [['codigo_elemento', 'tipo_actividad', 'actividad'], filters.comp],
       ],
       filters,
@@ -267,11 +293,19 @@ export default function MapaClient({
     return applyFilters(
       componentes,
       ['fecha', 'fecha_creacion'],
-      ['folio', 'id_tramo', 'tramo', 'civ', 'tipo_componente',
-       'tipo_actividad', 'actividad', 'usuario_qfield'],
       [
-        [['id_tramo', 'tramo'],         filters.tramo],
-        [['civ'],                       filters.civ],
+        'folio',
+        'id_tramo',
+        'tramo',
+        'civ',
+        'tipo_componente',
+        'tipo_actividad',
+        'actividad',
+        'usuario_qfield',
+      ],
+      [
+        [['id_tramo', 'tramo'], filters.tramo],
+        [['civ'], filters.civ],
         [['tipo_componente', 'componente'], filters.comp],
       ],
       filters,
@@ -286,7 +320,7 @@ export default function MapaClient({
       ['folio', 'id_tramo', 'tramo', 'civ', 'observaciones', 'usuario_qfield'],
       [
         [['id_tramo', 'tramo'], filters.tramo],
-        [['civ'],               filters.civ],
+        [['civ'], filters.civ],
       ],
       filters,
     );
@@ -298,63 +332,115 @@ export default function MapaClient({
       formularioPmt,
       ['inicio_vigencia', 'fecha_creacion'],
       ['folio', 'civ', 'descripcion', 'usuario', 'numero_pmt'],
-      [
-        [['civ'], filters.civ],
-      ],
+      [[['civ'], filters.civ]],
       filters,
     );
   }, [formularioPmt, filters]);
 
   // ── Geo-filtrado (solo registros con lat/lon válidas) ──────────────────────
-  const geoCant   = useMemo(() => withGeo(filteredCant),   [filteredCant]);
-  const geoComp   = useMemo(() => withGeo(filteredComp),   [filteredComp]);
+  const geoCant = useMemo(() => withGeo(filteredCant), [filteredCant]);
+  const geoComp = useMemo(() => withGeo(filteredComp), [filteredComp]);
   const geoDiario = useMemo(() => withGeo(filteredDiario), [filteredDiario]);
-  const geoPmt    = useMemo(() => withGeo(filteredPmt),    [filteredPmt]);
+  const geoPmt = useMemo(() => withGeo(filteredPmt), [filteredPmt]);
 
   // ── KPIs ──────────────────────────────────────────────────────────────────
   const cantAprobadas = useMemo(
-    () => filteredCant.filter(r => r.estado === 'APROBADO').length,
+    () => filteredCant.filter((r) => r.estado === 'APROBADO').length,
     [filteredCant],
   );
 
   // ── Datos de exportación (columnas relevantes por capa) ────────────────────
-  const expCant = useMemo(() => pickCols(geoCant, [
-    'folio', 'fecha', 'fecha_creacion', 'id_tramo', 'tramo', 'civ',
-    'tipo_actividad', 'actividad', 'item_pago', 'capitulo',
-    'cantidad', 'unidad', 'estado', 'latitud', 'longitud',
-  ]), [geoCant]);
+  const expCant = useMemo(
+    () =>
+      pickCols(geoCant, [
+        'folio',
+        'fecha',
+        'fecha_creacion',
+        'id_tramo',
+        'tramo',
+        'civ',
+        'tipo_actividad',
+        'actividad',
+        'item_pago',
+        'capitulo',
+        'cantidad',
+        'unidad',
+        'estado',
+        'latitud',
+        'longitud',
+      ]),
+    [geoCant],
+  );
 
-  const expComp = useMemo(() => pickCols(geoComp, [
-    'folio', 'fecha', 'fecha_creacion', 'id_tramo', 'tramo',
-    'tipo_componente', 'tipo_actividad', 'actividad',
-    'cantidad', 'unidad', 'estado', 'latitud', 'longitud',
-  ]), [geoComp]);
+  const expComp = useMemo(
+    () =>
+      pickCols(geoComp, [
+        'folio',
+        'fecha',
+        'fecha_creacion',
+        'id_tramo',
+        'tramo',
+        'tipo_componente',
+        'tipo_actividad',
+        'actividad',
+        'cantidad',
+        'unidad',
+        'estado',
+        'latitud',
+        'longitud',
+      ]),
+    [geoComp],
+  );
 
-  const expDiario = useMemo(() => pickCols(geoDiario, [
-    'folio', 'fecha_reporte', 'fecha', 'id_tramo', 'tramo',
-    'usuario_qfield', 'observaciones', 'estado', 'latitud', 'longitud',
-  ]), [geoDiario]);
+  const expDiario = useMemo(
+    () =>
+      pickCols(geoDiario, [
+        'folio',
+        'fecha_reporte',
+        'fecha',
+        'id_tramo',
+        'tramo',
+        'usuario_qfield',
+        'observaciones',
+        'estado',
+        'latitud',
+        'longitud',
+      ]),
+    [geoDiario],
+  );
 
-  const expPmt = useMemo(() => pickCols(geoPmt, [
-    'folio', 'numero_pmt', 'civ', 'descripcion',
-    'inicio_vigencia', 'fin_vigencia', 'responsable', 'usuario',
-    'estado', 'latitud', 'longitud',
-  ]), [geoPmt]);
+  const expPmt = useMemo(
+    () =>
+      pickCols(geoPmt, [
+        'folio',
+        'numero_pmt',
+        'civ',
+        'descripcion',
+        'inicio_vigencia',
+        'fin_vigencia',
+        'responsable',
+        'usuario',
+        'estado',
+        'latitud',
+        'longitud',
+      ]),
+    [geoPmt],
+  );
 
   // ── Capas para el toggle de capas ─────────────────────────────────────────
   const CAPAS = [
-    { key: 'showCant'  as const, label: 'Cantidades de Obra',  color: ESTADO_COLOR.APROBADO },
-    { key: 'showComp'  as const, label: 'Componentes Transv.', color: ESTADO_COLOR.REVISADO },
-    { key: 'showDiario'as const, label: 'Reporte Diario',      color: ESTADO_COLOR.BORRADOR },
-    { key: 'showPmt'   as const, label: 'Formularios PMT',     color: ESTADO_COLOR.DEVUELTO },
+    { key: 'showCant' as const, label: 'Cantidades de Obra', color: ESTADO_COLOR.APROBADO },
+    { key: 'showComp' as const, label: 'Componentes Transv.', color: ESTADO_COLOR.REVISADO },
+    { key: 'showDiario' as const, label: 'Reporte Diario', color: ESTADO_COLOR.BORRADOR },
+    { key: 'showPmt' as const, label: 'Formularios PMT', color: ESTADO_COLOR.DEVUELTO },
   ] as const;
 
   // ── Tabs de resumen ────────────────────────────────────────────────────────
   const TABS: { key: TabKey; label: string; count: number }[] = [
-    { key: 'cantidades',  label: 'Cantidades',    count: geoCant.length   },
-    { key: 'componentes', label: 'Componentes',   count: geoComp.length   },
-    { key: 'diario',      label: 'Reporte Diario',count: geoDiario.length },
-    { key: 'pmt',         label: 'PMT',           count: geoPmt.length    },
+    { key: 'cantidades', label: 'Cantidades', count: geoCant.length },
+    { key: 'componentes', label: 'Componentes', count: geoComp.length },
+    { key: 'diario', label: 'Reporte Diario', count: geoDiario.length },
+    { key: 'pmt', label: 'PMT', count: geoPmt.length },
   ];
 
   return (
@@ -383,7 +469,7 @@ export default function MapaClient({
             <Input
               type="date"
               value={filters.desde}
-              onChange={e => set({ desde: e.target.value })}
+              onChange={(e) => set({ desde: e.target.value })}
             />
           </div>
           <div>
@@ -391,16 +477,20 @@ export default function MapaClient({
             <Input
               type="date"
               value={filters.hasta}
-              onChange={e => set({ hasta: e.target.value })}
+              onChange={(e) => set({ hasta: e.target.value })}
             />
           </div>
           <div>
             <Label>Estado</Label>
-            <Select value={filters.estado} onValueChange={v => set({ estado: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select value={filters.estado} onValueChange={(v) => set({ estado: v })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {ESTADO_OPTS.map(o => (
-                  <SelectItem key={o} value={o}>{o}</SelectItem>
+                {ESTADO_OPTS.map((o) => (
+                  <SelectItem key={o} value={o}>
+                    {o}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -410,7 +500,7 @@ export default function MapaClient({
             <Input
               placeholder="Folio, CIV, tramo…"
               value={filters.buscar}
-              onChange={e => set({ buscar: e.target.value })}
+              onChange={(e) => set({ buscar: e.target.value })}
             />
           </div>
         </div>
@@ -419,19 +509,19 @@ export default function MapaClient({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div>
             <Label>Tramo</Label>
-            <Input value={filters.tramo} onChange={e => set({ tramo: e.target.value })} />
+            <Input value={filters.tramo} onChange={(e) => set({ tramo: e.target.value })} />
           </div>
           <div>
             <Label>CIV</Label>
-            <Input value={filters.civ} onChange={e => set({ civ: e.target.value })} />
+            <Input value={filters.civ} onChange={(e) => set({ civ: e.target.value })} />
           </div>
           <div>
             <Label>Ítem de pago</Label>
-            <Input value={filters.item} onChange={e => set({ item: e.target.value })} />
+            <Input value={filters.item} onChange={(e) => set({ item: e.target.value })} />
           </div>
           <div>
             <Label>Componente / Cap.</Label>
-            <Input value={filters.comp} onChange={e => set({ comp: e.target.value })} />
+            <Input value={filters.comp} onChange={(e) => set({ comp: e.target.value })} />
           </div>
         </div>
 
@@ -445,7 +535,7 @@ export default function MapaClient({
               <input
                 type="checkbox"
                 checked={filters[key]}
-                onChange={e => set({ [key]: e.target.checked })}
+                onChange={(e) => set({ [key]: e.target.checked })}
                 style={{ accentColor: color, width: 14, height: 14 }}
               />
               <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
@@ -486,25 +576,25 @@ export default function MapaClient({
 
       {/* ── Exportación CSV ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <ExportCsvButton data={expCant}   filename="Cantidades_geo"   label="CSV Cantidades" />
-        <ExportCsvButton data={expComp}   filename="Componentes_geo"  label="CSV Componentes" />
-        <ExportCsvButton data={expDiario} filename="Diario_geo"       label="CSV Diario" />
-        <ExportCsvButton data={expPmt}    filename="PMT_geo"          label="CSV PMT" />
+        <ExportCsvButton data={expCant} filename="Cantidades_geo" label="CSV Cantidades" />
+        <ExportCsvButton data={expComp} filename="Componentes_geo" label="CSV Componentes" />
+        <ExportCsvButton data={expDiario} filename="Diario_geo" label="CSV Diario" />
+        <ExportCsvButton data={expPmt} filename="PMT_geo" label="CSV PMT" />
       </div>
 
       {/* ── Leyenda de estados ── */}
       <div className="flex flex-wrap gap-4">
-        {LEYENDA.map(l => (
+        {LEYENDA.map((l) => (
           <div key={l.color} className="flex items-center gap-1.5 text-xs">
-            <span
-              className="inline-block w-3 h-3 rounded-full"
-              style={{ background: l.color }}
-            />
+            <span className="inline-block w-3 h-3 rounded-full" style={{ background: l.color }} />
             <span style={{ color: 'var(--text-muted)' }}>{l.label}</span>
           </div>
         ))}
         <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
-          <span className="inline-block w-6 border-t-2 opacity-60" style={{ borderColor: '#6D8E2D' }} />
+          <span
+            className="inline-block w-6 border-t-2 opacity-60"
+            style={{ borderColor: '#6D8E2D' }}
+          />
           Tramos (líneas)
         </div>
       </div>
@@ -523,23 +613,19 @@ export default function MapaClient({
 
       <div>
         {/* Tab headers */}
-        <div
-          className="flex border-b mb-3"
-          style={{ borderColor: 'var(--border)' }}
-        >
-          {TABS.map(t => (
+        <div className="flex border-b mb-3" style={{ borderColor: 'var(--border)' }}>
+          {TABS.map((t) => (
             <button
               key={t.key}
               type="button"
               onClick={() => setActiveTab(t.key)}
               className="px-4 py-2 text-xs font-semibold transition-colors"
               style={{
-                color:        activeTab === t.key ? 'var(--accent-teal)' : 'var(--text-muted)',
-                borderBottom: activeTab === t.key
-                  ? '2px solid var(--accent-teal)'
-                  : '2px solid transparent',
-                background:   'none',
-                cursor:       'pointer',
+                color: activeTab === t.key ? 'var(--accent-teal)' : 'var(--text-muted)',
+                borderBottom:
+                  activeTab === t.key ? '2px solid var(--accent-teal)' : '2px solid transparent',
+                background: 'none',
+                cursor: 'pointer',
               }}
             >
               {t.label}
@@ -547,7 +633,7 @@ export default function MapaClient({
                 className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
                 style={{
                   background: activeTab === t.key ? 'var(--accent-teal)' : 'var(--muted)',
-                  color:      activeTab === t.key ? '#1c3277' : 'var(--text-muted)',
+                  color: activeTab === t.key ? '#1c3277' : 'var(--text-muted)',
                 }}
               >
                 {t.count}
@@ -561,17 +647,38 @@ export default function MapaClient({
           <RecordTable
             records={geoCant}
             columns={[
-              'folio', 'fecha', 'fecha_creacion', 'id_tramo', 'tramo', 'civ',
-              'tipo_actividad', 'actividad', 'item_pago', 'capitulo',
-              'cantidad', 'unidad', 'estado', 'latitud', 'longitud',
+              'folio',
+              'fecha',
+              'fecha_creacion',
+              'id_tramo',
+              'tramo',
+              'civ',
+              'tipo_actividad',
+              'actividad',
+              'item_pago',
+              'capitulo',
+              'cantidad',
+              'unidad',
+              'estado',
+              'latitud',
+              'longitud',
             ]}
             labels={{
-              folio: 'Folio', fecha: 'Fecha', fecha_creacion: 'F. Creación',
-              id_tramo: 'Tramo', tramo: 'Tramo', civ: 'CIV',
-              tipo_actividad: 'Actividad', actividad: 'Actividad',
-              item_pago: 'Ítem Pago', capitulo: 'Capítulo',
-              cantidad: 'Cantidad', unidad: 'Unidad', estado: 'Estado',
-              latitud: 'Lat', longitud: 'Lon',
+              folio: 'Folio',
+              fecha: 'Fecha',
+              fecha_creacion: 'F. Creación',
+              id_tramo: 'Tramo',
+              tramo: 'Tramo',
+              civ: 'CIV',
+              tipo_actividad: 'Actividad',
+              actividad: 'Actividad',
+              item_pago: 'Ítem Pago',
+              capitulo: 'Capítulo',
+              cantidad: 'Cantidad',
+              unidad: 'Unidad',
+              estado: 'Estado',
+              latitud: 'Lat',
+              longitud: 'Lon',
             }}
             empty="Sin registros de cantidades con coordenadas."
           />
@@ -580,16 +687,34 @@ export default function MapaClient({
           <RecordTable
             records={geoComp}
             columns={[
-              'folio', 'fecha', 'fecha_creacion', 'id_tramo', 'tramo',
-              'tipo_componente', 'tipo_actividad', 'actividad',
-              'cantidad', 'unidad', 'estado', 'latitud', 'longitud',
+              'folio',
+              'fecha',
+              'fecha_creacion',
+              'id_tramo',
+              'tramo',
+              'tipo_componente',
+              'tipo_actividad',
+              'actividad',
+              'cantidad',
+              'unidad',
+              'estado',
+              'latitud',
+              'longitud',
             ]}
             labels={{
-              folio: 'Folio', fecha: 'Fecha', fecha_creacion: 'F. Creación',
-              id_tramo: 'Tramo', tramo: 'Tramo',
-              tipo_componente: 'Componente', tipo_actividad: 'Actividad', actividad: 'Actividad',
-              cantidad: 'Cantidad', unidad: 'Unidad', estado: 'Estado',
-              latitud: 'Lat', longitud: 'Lon',
+              folio: 'Folio',
+              fecha: 'Fecha',
+              fecha_creacion: 'F. Creación',
+              id_tramo: 'Tramo',
+              tramo: 'Tramo',
+              tipo_componente: 'Componente',
+              tipo_actividad: 'Actividad',
+              actividad: 'Actividad',
+              cantidad: 'Cantidad',
+              unidad: 'Unidad',
+              estado: 'Estado',
+              latitud: 'Lat',
+              longitud: 'Lon',
             }}
             empty="Sin registros de componentes con coordenadas."
           />
@@ -598,14 +723,28 @@ export default function MapaClient({
           <RecordTable
             records={geoDiario}
             columns={[
-              'folio', 'fecha_reporte', 'fecha', 'id_tramo', 'tramo',
-              'usuario_qfield', 'observaciones', 'estado', 'latitud', 'longitud',
+              'folio',
+              'fecha_reporte',
+              'fecha',
+              'id_tramo',
+              'tramo',
+              'usuario_qfield',
+              'observaciones',
+              'estado',
+              'latitud',
+              'longitud',
             ]}
             labels={{
-              folio: 'Folio', fecha_reporte: 'F. Reporte', fecha: 'Fecha',
-              id_tramo: 'Tramo', tramo: 'Tramo', usuario_qfield: 'Usuario',
-              observaciones: 'Observaciones', estado: 'Estado',
-              latitud: 'Lat', longitud: 'Lon',
+              folio: 'Folio',
+              fecha_reporte: 'F. Reporte',
+              fecha: 'Fecha',
+              id_tramo: 'Tramo',
+              tramo: 'Tramo',
+              usuario_qfield: 'Usuario',
+              observaciones: 'Observaciones',
+              estado: 'Estado',
+              latitud: 'Lat',
+              longitud: 'Lon',
             }}
             empty="Sin registros de reporte diario con coordenadas."
           />
@@ -614,16 +753,30 @@ export default function MapaClient({
           <RecordTable
             records={geoPmt}
             columns={[
-              'folio', 'numero_pmt', 'civ', 'descripcion',
-              'inicio_vigencia', 'fin_vigencia', 'responsable', 'usuario',
-              'estado', 'latitud', 'longitud',
+              'folio',
+              'numero_pmt',
+              'civ',
+              'descripcion',
+              'inicio_vigencia',
+              'fin_vigencia',
+              'responsable',
+              'usuario',
+              'estado',
+              'latitud',
+              'longitud',
             ]}
             labels={{
-              folio: 'Folio', numero_pmt: 'Nro PMT', civ: 'CIV',
+              folio: 'Folio',
+              numero_pmt: 'Nro PMT',
+              civ: 'CIV',
               descripcion: 'Descripción',
-              inicio_vigencia: 'Inicio', fin_vigencia: 'Fin',
-              responsable: 'Responsable', usuario: 'Usuario',
-              estado: 'Estado', latitud: 'Lat', longitud: 'Lon',
+              inicio_vigencia: 'Inicio',
+              fin_vigencia: 'Fin',
+              responsable: 'Responsable',
+              usuario: 'Usuario',
+              estado: 'Estado',
+              latitud: 'Lat',
+              longitud: 'Lon',
             }}
             empty="Sin formularios PMT con coordenadas."
           />

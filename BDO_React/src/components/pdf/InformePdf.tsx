@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   footerPage: { marginLeft: 'auto', fontSize: 8, color: COLORS.blueDark, fontWeight: 700 },
 });
 
-export const Header = () => (
+const Header = () => (
   <View style={styles.header} fixed>
     <View style={styles.brandBlock}>
       <View style={styles.brandMark}>
@@ -234,7 +234,7 @@ export const Header = () => (
   </View>
 );
 
-export const Footer = () => (
+const Footer = () => (
   <View style={styles.footer} fixed>
     <View style={styles.footerStripe}>
       <View style={styles.footerStripeBlue} />
@@ -248,7 +248,7 @@ export const Footer = () => (
   </View>
 );
 
-export const Card = ({
+const Card = ({
   title,
   children,
   accent = true,
@@ -262,7 +262,7 @@ export const Card = ({
   </View>
 );
 
-export const Divider = ({ label }: { label: string }) => (
+const Divider = ({ label }: { label: string }) => (
   <View style={styles.sectionDivider}>
     <View style={styles.dividerLine} />
     <Text style={styles.dividerLabel}>{label}</Text>

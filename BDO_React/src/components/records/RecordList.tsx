@@ -5,8 +5,10 @@ interface RecordListProps<T extends { id: string }> {
   items: T[];
   selected: string | null;
   onSelect: (id: string | null) => void;
-  renderHeader: (item: T) => React.ReactNode;
-  renderDetail: (item: T) => React.ReactNode;
+  renderHeader?: (item: T) => React.ReactNode;
+  renderDetail?: (item: T) => React.ReactNode;
+  HeaderComponent?: React.ComponentType<{ item: T }>;
+  DetailComponent?: React.ComponentType<{ item: T }>;
 }
 
 export function RecordList<T extends { id: string }>({
@@ -15,6 +17,8 @@ export function RecordList<T extends { id: string }>({
   onSelect,
   renderHeader,
   renderDetail,
+  HeaderComponent,
+  DetailComponent,
 }: RecordListProps<T>) {
   if (!items.length) {
     return (
@@ -37,8 +41,20 @@ export function RecordList<T extends { id: string }>({
           key={item.id}
           isOpen={selected === item.id}
           onToggle={() => onSelect(selected === item.id ? null : item.id)}
-          header={renderHeader(item)}
-          detail={renderDetail(item)}
+          header={
+            HeaderComponent ? (
+              <HeaderComponent item={item} />
+            ) : renderHeader ? (
+              renderHeader(item)
+            ) : null
+          }
+          detail={
+            DetailComponent ? (
+              <DetailComponent item={item} />
+            ) : renderDetail ? (
+              renderDetail(item)
+            ) : null
+          }
         />
       ))}
     </div>

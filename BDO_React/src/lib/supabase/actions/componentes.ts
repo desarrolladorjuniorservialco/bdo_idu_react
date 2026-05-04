@@ -16,16 +16,6 @@ export async function fetchComponentes(contratoId: string, componente: string) {
   return data ?? [];
 }
 
-export async function fetchFotosComponentes(registroIds: string[]) {
-  if (!registroIds.length) return [];
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('rf_componentes')
-    .select('registro_id, url, descripcion')
-    .in('registro_id', registroIds);
-  return data ?? [];
-}
-
 export async function fetchFotosComponentesByContrato(contratoId: string) {
   const supabase = await createClient();
   const { data } = await supabase

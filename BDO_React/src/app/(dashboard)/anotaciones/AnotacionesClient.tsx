@@ -10,7 +10,7 @@ import { insertarAnotacion } from '@/lib/supabase/actions/anotaciones';
 import { type AnotacionInput, anotacionSchema } from '@/lib/validators/anotacion.schema';
 import type { AnotacionGeneral } from '@/types/database';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LazyMotion, domAnimation, m, useReducedMotion } from 'framer-motion';
+import { LazyMotion, MotionConfig, domAnimation, m, useReducedMotion } from 'framer-motion';
 import {
   Calendar,
   Clock,
@@ -32,7 +32,7 @@ const ROL_COLOR: Record<string, string> = {
   admin: 'var(--accent-orange)',
 };
 
-export interface FiltersState {
+interface FiltersState {
   buscar: string;
   usuario: string;
   tramo: string;
@@ -82,7 +82,7 @@ export default function AnotacionesClient({
   const [newItems, setNewItems] = useState<AnotacionGeneral[]>([]);
   const reducedMotion = useReducedMotion();
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const today = new Date().toISOString().slice(0, 10);
+  const [today] = useState(() => new Date().toISOString().slice(0, 10));
 
   const {
     register,
@@ -209,108 +209,111 @@ export default function AnotacionesClient({
         {filtered.length} anotación{filtered.length !== 1 ? 'es' : ''}
       </p>
 
-      <LazyMotion features={domAnimation}>
-        <div
-          className="rounded-xl p-4 space-y-3 max-h-[560px] overflow-y-auto"
-          style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-          }}
-        >
-          {filtered.length === 0 && (
-            <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>
-              Sin anotaciones para los filtros seleccionados.
-            </p>
-          )}
-          {filtered.map((a, i) => {
-            const color = ROL_COLOR[a.usuario_rol] ?? 'var(--text-muted)';
-            const ts = a.created_at
-              ? new Date(a.created_at).toLocaleString('es-CO', {
-                  dateStyle: 'short',
-                  timeStyle: 'short',
-                })
-              : '';
-            return (
-              <m.article
-                key={a.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: reducedMotion ? 0 : Math.min(i * 0.03, 0.18),
-                  duration: reducedMotion ? 0 : 0.2,
-                }}
-                className="flex gap-3 p-3 rounded-lg"
-                style={{
-                  background: 'var(--muted)',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 mt-0.5"
-                  style={{ background: color }}
-                  title={a.usuario_nombre}
+      <MotionConfig reducedMotion="user">
+        <LazyMotion features={domAnimation}>
+          <div
+            className="rounded-xl p-4 space-y-3 max-h-[560px] overflow-y-auto"
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+            }}
+          >
+            {filtered.length === 0 && (
+              <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>
+                Sin anotaciones para los filtros seleccionados.
+              </p>
+            )}
+            {filtered.map((a, i) => {
+              const color = ROL_COLOR[a.usuario_rol] ?? 'var(--text-muted)';
+              const ts = a.created_at
+                ? new Date(a.created_at).toLocaleString('es-CO', {
+                    dateStyle: 'short',
+                    timeStyle: 'short',
+                  })
+                : '';
+              return (
+                <m.article
+                  key={a.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: reducedMotion ? 0 : Math.min(i * 0.03, 0.18),
+                    duration: reducedMotion ? 0 : 0.2,
+                  }}
+                  className="flex gap-3 p-3 rounded-lg"
+                  style={{
+                    background: 'var(--muted)',
+                    border: '1px solid var(--border)',
+                  }}
                 >
-                  {a.usuario_nombre.charAt(0).toUpperCase()}
-                </div>
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 mt-0.5"
+                    style={{ background: color }}
+                    title={a.usuario_nombre}
+                  >
+                    {a.usuario_nombre.charAt(0).toUpperCase()}
+                  </div>
 
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className="font-semibold text-sm" style={{ color }}>
-                      {a.usuario_nombre}
-                    </span>
-                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                      {ROL_LABELS[a.usuario_rol]} · {a.usuario_empresa}
-                    </span>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="font-semibold text-sm" style={{ color }}>
+                        {a.usuario_nombre}
+                      </span>
+                      <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                        {ROL_LABELS[a.usuario_rol]} · {a.usuario_empresa}
+                      </span>
+                    </div>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+                      {a.anotacion}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
+                      <span
+                        className="flex items-center gap-1 text-[11px]"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        <Calendar size={11} /> {a.fecha}
+                      </span>
+                      {a.tramo && (
+                        <span
+                          className="flex items-center gap-1 text-[11px]"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          <MapPin size={11} /> {a.tramo}
+                        </span>
+                      )}
+                      {a.civ && (
+                        <span
+                          className="flex items-center gap-1 text-[11px]"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          <Tag size={11} /> {a.civ}
+                        </span>
+                      )}
+                      {a.pk && (
+                        <span
+                          className="flex items-center gap-1 text-[11px]"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          <Navigation size={11} /> {a.pk}
+                        </span>
+                      )}
+                      {ts && (
+                        <span
+                          suppressHydrationWarning
+                          className="flex items-center gap-1 text-[11px]"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          <Clock size={11} /> {ts}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
-                    {a.anotacion}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
-                    <span
-                      className="flex items-center gap-1 text-[11px]"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
-                      <Calendar size={11} /> {a.fecha}
-                    </span>
-                    {a.tramo && (
-                      <span
-                        className="flex items-center gap-1 text-[11px]"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
-                        <MapPin size={11} /> {a.tramo}
-                      </span>
-                    )}
-                    {a.civ && (
-                      <span
-                        className="flex items-center gap-1 text-[11px]"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
-                        <Tag size={11} /> {a.civ}
-                      </span>
-                    )}
-                    {a.pk && (
-                      <span
-                        className="flex items-center gap-1 text-[11px]"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
-                        <Navigation size={11} /> {a.pk}
-                      </span>
-                    )}
-                    {ts && (
-                      <span
-                        className="flex items-center gap-1 text-[11px]"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
-                        <Clock size={11} /> {ts}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </m.article>
-            );
-          })}
-        </div>
-      </LazyMotion>
+                </m.article>
+              );
+            })}
+          </div>
+        </LazyMotion>
+      </MotionConfig>
 
       <form
         onSubmit={handleSubmit(onSubmit)}

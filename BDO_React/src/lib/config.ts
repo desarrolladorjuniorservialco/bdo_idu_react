@@ -87,7 +87,7 @@ export const PAGE_COLOR: Record<string, string> = {
   'cierre-semanal': 'teal',
 };
 
-export interface AprobacionCampos {
+interface AprobacionCampos {
   campo_cant: string;
   campo_estado: string;
   campo_apr: string;
@@ -95,7 +95,7 @@ export interface AprobacionCampos {
   campo_obs: string;
 }
 
-export interface AprobacionConfig {
+interface AprobacionConfig {
   estadosAccion: Estado[];
   estadoResultante: Estado;
   puedeDevolver: boolean;

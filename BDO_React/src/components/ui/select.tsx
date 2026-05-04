@@ -5,7 +5,6 @@ import { Check, ChevronDown } from 'lucide-react';
 import type * as React from 'react';
 
 const Select = SelectPrimitive.Root;
-const SelectGroup = SelectPrimitive.Group;
 const SelectValue = SelectPrimitive.Value;
 
 function SelectTrigger({
@@ -91,4 +90,4 @@ function SelectItem({
 }
 SelectItem.displayName = SelectPrimitive.Item.displayName;
 
-export { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue };
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue };
