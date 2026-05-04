@@ -91,8 +91,8 @@ export default function CierreSemanalClient({
   presupuestoItems,
   tramos,
 }: Props) {
-  const defaultDesde = getMondayOfWeek();
-  const defaultHasta = getTodayISO();
+  const defaultDesde = useMemo(() => getMondayOfWeek(), []);
+  const defaultHasta = useMemo(() => getTodayISO(), []);
 
   const [desde, setDesde] = useState(defaultDesde);
   const [hasta, setHasta] = useState(defaultHasta);
