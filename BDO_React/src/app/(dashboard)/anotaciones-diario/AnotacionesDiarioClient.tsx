@@ -322,7 +322,7 @@ export default function AnotacionesDiarioClient({
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
           {filtered.length} registro{filtered.length !== 1 ? 's' : ''}
-          {filtered.length > 20 && ' · desplázate para ver todos'}
+          {filtered.length > 15 && ' · desplázate para ver todos'}
         </span>
         <ExportCsvButton data={filtered} filename="anotaciones-diario" />
       </div>
@@ -330,9 +330,9 @@ export default function AnotacionesDiarioClient({
       <div
         className="overflow-y-auto rounded-lg"
         style={{
-          maxHeight: '880px',
+          maxHeight: '720px',
           scrollbarWidth: 'thin',
-          scrollbarColor: 'var(--border) transparent',
+          scrollbarColor: 'var(--text-muted) transparent',
         }}
       >
         <RecordList

@@ -216,6 +216,8 @@ export default function AnotacionesClient({
             style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border)',
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'var(--text-muted) transparent',
             }}
           >
             {filtered.length === 0 && (
