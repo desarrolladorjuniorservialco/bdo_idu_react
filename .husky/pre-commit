@@ -1,2 +1,2 @@
 cd BDO_React || exit 1
-NO_COLOR=1 FORCE_COLOR=0 npx lint-staged
+NO_COLOR=1 FORCE_COLOR=0 npx lint-staged --no-stash
