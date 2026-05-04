@@ -31,12 +31,16 @@ export function SeccionDiario({ items, total }: Props) {
       ) : (
         <>
           <div className="overflow-x-auto rounded-lg" style={{ border: '1px solid var(--border)' }}>
-            <table className="w-full text-sm border-collapse">
+            <table
+              className="w-full text-sm border-collapse"
+              aria-label="Anotaciones diarias del período"
+            >
               <thead>
                 <tr style={{ background: 'var(--bg-sidebar)' }}>
                   {['Fecha', 'Actividad', 'Estado', 'Registrado por'].map((h) => (
                     <th
                       key={h}
+                      scope="col"
                       className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wide"
                       style={{ color: 'var(--text-muted)' }}
                     >

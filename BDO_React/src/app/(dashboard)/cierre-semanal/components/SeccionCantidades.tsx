@@ -32,12 +32,16 @@ export function SeccionCantidades({ items, total }: Props) {
       ) : (
         <>
           <div className="overflow-x-auto rounded-lg" style={{ border: '1px solid var(--border)' }}>
-            <table className="w-full text-sm border-collapse">
+            <table
+              className="w-full text-sm border-collapse"
+              aria-label="Reporte de cantidades del período"
+            >
               <thead>
                 <tr style={{ background: 'var(--bg-sidebar)' }}>
                   {['Fecha', 'Actividad', 'Cantidad', 'Unidad', 'Estado'].map((h) => (
                     <th
                       key={h}
+                      scope="col"
                       className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wide"
                       style={{ color: 'var(--text-muted)' }}
                     >
@@ -53,7 +57,7 @@ export function SeccionCantidades({ items, total }: Props) {
                     style={{ background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-app)' }}
                   >
                     <td className="px-3 py-2 whitespace-nowrap">
-                      {String(row.fecha_creacion).slice(0, 10)}
+                      {row.fecha_creacion.slice(0, 10)}
                     </td>
                     <td className="px-3 py-2 max-w-xs truncate">{row.actividad ?? '—'}</td>
                     <td className="px-3 py-2 tabular-nums">
