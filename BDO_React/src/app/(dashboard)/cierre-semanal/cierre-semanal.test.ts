@@ -62,6 +62,34 @@ describe('computePresupuestoKpis', () => {
     expect(k.pendiente).toBe(900);
     expect(k.pct).toBeCloseTo(40);
   });
+
+  it('usa cantidad * precio_unitario cuando valor_total es null', () => {
+    const k = computePresupuestoKpis([
+      {
+        valor_total: null,
+        cantidad: 10,
+        precio_unitario: 50,
+        valor_ejecutado: null,
+        cantidad_ejecutada: 5,
+      },
+    ]);
+    expect(k.total).toBe(500);
+    expect(k.ejecutado).toBe(250);
+  });
+
+  it('no falla cuando valor_total es 0', () => {
+    const k = computePresupuestoKpis([
+      {
+        valor_total: 0,
+        cantidad: 10,
+        precio_unitario: 50,
+        valor_ejecutado: 0,
+        cantidad_ejecutada: 5,
+      },
+    ]);
+    expect(k.total).toBe(0);
+    expect(k.ejecutado).toBe(0);
+  });
 });
 
 describe('computeMetaKpis', () => {

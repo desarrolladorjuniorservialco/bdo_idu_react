@@ -33,17 +33,24 @@ interface PresupuestoItem {
   cantidad_ejecutada?: number | null;
 }
 
-export function computePresupuestoKpis(items: PresupuestoItem[]) {
-  const total = items.reduce(
-    (a, i) => a + (Number(i.valor_total ?? 0) || (i.cantidad ?? 0) * (i.precio_unitario ?? 0)),
-    0,
-  );
-  const ejecutado = items.reduce(
-    (a, i) =>
-      a +
-      (Number(i.valor_ejecutado ?? 0) || (i.cantidad_ejecutada ?? 0) * (i.precio_unitario ?? 0)),
-    0,
-  );
+export function computePresupuestoKpis(items: PresupuestoItem[]): {
+  total: number;
+  ejecutado: number;
+  pendiente: number;
+  pct: number;
+} {
+  const total = items.reduce((a, i) => {
+    const v =
+      i.valor_total != null ? Number(i.valor_total) : (i.cantidad ?? 0) * (i.precio_unitario ?? 0);
+    return a + v;
+  }, 0);
+  const ejecutado = items.reduce((a, i) => {
+    const v =
+      i.valor_ejecutado != null
+        ? Number(i.valor_ejecutado)
+        : (i.cantidad_ejecutada ?? 0) * (i.precio_unitario ?? 0);
+    return a + v;
+  }, 0);
   const pct = total > 0 ? (ejecutado / total) * 100 : 0;
   return { total, ejecutado, pendiente: Math.max(total - ejecutado, 0), pct };
 }
