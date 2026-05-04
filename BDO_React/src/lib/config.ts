@@ -1,10 +1,10 @@
-import type { Estado, Rol } from '@/types/database';
+﻿import type { Estado, Rol } from '@/types/database';
 
 export const ROL_LABELS: Record<Rol, string> = {
   operativo: 'Inspector de Campo',
   obra: 'Residente de Obra',
-  interventoria: 'Interventoría IDU',
-  supervision: 'Supervisión IDU',
+  interventoria: 'InterventorÃ­a IDU',
+  supervision: 'SupervisiÃ³n IDU',
   admin: 'Administrador',
 };
 
@@ -27,7 +27,7 @@ export const NAV_ACCESS: Record<string, Rol[]> = {
   'cierre-semanal': TODOS,
 };
 
-export interface NavCategory {
+interface NavCategory {
   label: string;
   highlight: boolean;
   pages: { label: string; href: string }[];
@@ -39,7 +39,7 @@ export const NAV_CATEGORIES: NavCategory[] = [
     highlight: false,
     pages: [
       { label: 'Estado Actual', href: '/estado-actual' },
-      { label: 'Mapa Ejecución', href: '/mapa-ejecucion' },
+      { label: 'Mapa EjecuciÃ³n', href: '/mapa-ejecucion' },
       { label: 'Presupuesto', href: '/presupuesto' },
       { label: 'Correspondencia', href: '/correspondencia' },
     ],

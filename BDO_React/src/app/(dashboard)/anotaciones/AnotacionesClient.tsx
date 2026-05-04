@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
 import { SectionBadge } from '@/components/shared/SectionBadge';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { insertarAnotacion } from '@/lib/supabase/actions/anotaciones';
 import { type AnotacionInput, anotacionSchema } from '@/lib/validators/anotacion.schema';
 import type { AnotacionGeneral } from '@/types/database';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
+import { LazyMotion, domAnimation, m, useReducedMotion } from 'framer-motion';
 import {
   Calendar,
   Clock,
@@ -79,7 +79,8 @@ export default function AnotacionesClient({
   contratoId: string;
 }) {
   const [filters, dispatch] = useReducer(reducer, FILTERS_INIT);
-  const [anotacionesState, setAnotacionesState] = useState(anotaciones);
+  const [newItems, setNewItems] = useState<AnotacionGeneral[]>([]);
+  const reducedMotion = useReducedMotion();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -98,7 +99,7 @@ export default function AnotacionesClient({
     try {
       const result = await insertarAnotacion(contratoId, data);
       if (result?.anotacion) {
-        setAnotacionesState((prev) => [...prev, result.anotacion]);
+        setNewItems((prev) => [...prev, result.anotacion]);
       }
       reset({ fecha: today });
     } catch (err) {
@@ -107,10 +108,8 @@ export default function AnotacionesClient({
     }
   }
 
-  const filtered = useMemo(
-    () => applyFilters(anotacionesState, filters),
-    [anotacionesState, filters],
-  );
+  const allAnotaciones = useMemo(() => [...anotaciones, ...newItems], [anotaciones, newItems]);
+  const filtered = useMemo(() => applyFilters(allAnotaciones, filters), [allAnotaciones, filters]);
   const hasFilters = Object.values(filters).some(Boolean);
 
   function set(key: keyof FiltersState) {
@@ -120,16 +119,17 @@ export default function AnotacionesClient({
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <SectionBadge label="Anotaciones Generales" page="anotaciones" />
         <ExportCsvButton data={filtered} filename="anotaciones" />
       </div>
 
-      {/* Filter panel */}
       <div
         className="rounded-xl p-4 space-y-3"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+        style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+        }}
       >
         <div className="flex items-center justify-between">
           <span
@@ -152,141 +152,173 @@ export default function AnotacionesClient({
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <div>
-            <Label className="text-xs">Desde</Label>
-            <Input type="date" value={filters.desde} onChange={set('desde')} />
+            <Label htmlFor="f-desde" className="text-xs">
+              Desde
+            </Label>
+            <Input id="f-desde" type="date" value={filters.desde} onChange={set('desde')} />
           </div>
           <div>
-            <Label className="text-xs">Hasta</Label>
-            <Input type="date" value={filters.hasta} onChange={set('hasta')} />
+            <Label htmlFor="f-hasta" className="text-xs">
+              Hasta
+            </Label>
+            <Input id="f-hasta" type="date" value={filters.hasta} onChange={set('hasta')} />
           </div>
           <div>
-            <Label className="text-xs">Usuario</Label>
+            <Label htmlFor="f-usuario" className="text-xs">
+              Usuario
+            </Label>
             <Input
+              id="f-usuario"
               placeholder="Nombre del autor"
               value={filters.usuario}
               onChange={set('usuario')}
             />
           </div>
           <div>
-            <Label className="text-xs">Tramo</Label>
-            <Input placeholder="ID de tramo" value={filters.tramo} onChange={set('tramo')} />
+            <Label htmlFor="f-tramo" className="text-xs">
+              Tramo
+            </Label>
+            <Input
+              id="f-tramo"
+              placeholder="ID de tramo"
+              value={filters.tramo}
+              onChange={set('tramo')}
+            />
           </div>
           <div>
-            <Label className="text-xs">CIV</Label>
-            <Input placeholder="Código CIV" value={filters.civ} onChange={set('civ')} />
+            <Label htmlFor="f-civ" className="text-xs">
+              CIV
+            </Label>
+            <Input id="f-civ" placeholder="Código CIV" value={filters.civ} onChange={set('civ')} />
           </div>
           <div>
-            <Label className="text-xs">Buscar en anotación</Label>
-            <Input placeholder="Texto libre" value={filters.buscar} onChange={set('buscar')} />
+            <Label htmlFor="f-buscar" className="text-xs">
+              Buscar en anotación
+            </Label>
+            <Input
+              id="f-buscar"
+              placeholder="Texto libre"
+              value={filters.buscar}
+              onChange={set('buscar')}
+            />
           </div>
         </div>
       </div>
 
-      {/* Count */}
       <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
         {filtered.length} anotación{filtered.length !== 1 ? 'es' : ''}
       </p>
 
-      {/* Feed */}
-      <div
-        className="rounded-xl p-4 space-y-3 max-h-[560px] overflow-y-auto"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-      >
-        {filtered.length === 0 && (
-          <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>
-            Sin anotaciones para los filtros seleccionados.
-          </p>
-        )}
-        {filtered.map((a, i) => {
-          const color = ROL_COLOR[a.usuario_rol] ?? 'var(--text-muted)';
-          const ts = a.created_at
-            ? new Date(a.created_at).toLocaleString('es-CO', {
-                dateStyle: 'short',
-                timeStyle: 'short',
-              })
-            : '';
-          return (
-            <motion.article
-              key={a.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: Math.min(i * 0.03, 0.18), duration: 0.2 }}
-              className="flex gap-3 p-3 rounded-lg"
-              style={{ background: 'var(--muted)', border: '1px solid var(--border)' }}
-            >
-              {/* Avatar */}
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 mt-0.5"
-                style={{ background: color }}
-                title={a.usuario_nombre}
+      <LazyMotion features={domAnimation}>
+        <div
+          className="rounded-xl p-4 space-y-3 max-h-[560px] overflow-y-auto"
+          style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+          }}
+        >
+          {filtered.length === 0 && (
+            <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>
+              Sin anotaciones para los filtros seleccionados.
+            </p>
+          )}
+          {filtered.map((a, i) => {
+            const color = ROL_COLOR[a.usuario_rol] ?? 'var(--text-muted)';
+            const ts = a.created_at
+              ? new Date(a.created_at).toLocaleString('es-CO', {
+                  dateStyle: 'short',
+                  timeStyle: 'short',
+                })
+              : '';
+            return (
+              <m.article
+                key={a.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: reducedMotion ? 0 : Math.min(i * 0.03, 0.18),
+                  duration: reducedMotion ? 0 : 0.2,
+                }}
+                className="flex gap-3 p-3 rounded-lg"
+                style={{
+                  background: 'var(--muted)',
+                  border: '1px solid var(--border)',
+                }}
               >
-                {a.usuario_nombre.charAt(0).toUpperCase()}
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="font-semibold text-sm" style={{ color }}>
-                    {a.usuario_nombre}
-                  </span>
-                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                    {ROL_LABELS[a.usuario_rol]} · {a.usuario_empresa}
-                  </span>
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 mt-0.5"
+                  style={{ background: color }}
+                  title={a.usuario_nombre}
+                >
+                  {a.usuario_nombre.charAt(0).toUpperCase()}
                 </div>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
-                  {a.anotacion}
-                </p>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
-                  <span
-                    className="flex items-center gap-1 text-[11px]"
-                    style={{ color: 'var(--text-muted)' }}
-                  >
-                    <Calendar size={11} /> {a.fecha}
-                  </span>
-                  {a.tramo && (
-                    <span
-                      className="flex items-center gap-1 text-[11px]"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
-                      <MapPin size={11} /> {a.tramo}
-                    </span>
-                  )}
-                  {a.civ && (
-                    <span
-                      className="flex items-center gap-1 text-[11px]"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
-                      <Tag size={11} /> {a.civ}
-                    </span>
-                  )}
-                  {a.pk && (
-                    <span
-                      className="flex items-center gap-1 text-[11px]"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
-                      <Navigation size={11} /> {a.pk}
-                    </span>
-                  )}
-                  {ts && (
-                    <span
-                      className="flex items-center gap-1 text-[11px]"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
-                      <Clock size={11} /> {ts}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </motion.article>
-          );
-        })}
-      </div>
 
-      {/* Composer */}
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="font-semibold text-sm" style={{ color }}>
+                      {a.usuario_nombre}
+                    </span>
+                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                      {ROL_LABELS[a.usuario_rol]} · {a.usuario_empresa}
+                    </span>
+                  </div>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+                    {a.anotacion}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
+                    <span
+                      className="flex items-center gap-1 text-[11px]"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      <Calendar size={11} /> {a.fecha}
+                    </span>
+                    {a.tramo && (
+                      <span
+                        className="flex items-center gap-1 text-[11px]"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        <MapPin size={11} /> {a.tramo}
+                      </span>
+                    )}
+                    {a.civ && (
+                      <span
+                        className="flex items-center gap-1 text-[11px]"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        <Tag size={11} /> {a.civ}
+                      </span>
+                    )}
+                    {a.pk && (
+                      <span
+                        className="flex items-center gap-1 text-[11px]"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        <Navigation size={11} /> {a.pk}
+                      </span>
+                    )}
+                    {ts && (
+                      <span
+                        className="flex items-center gap-1 text-[11px]"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        <Clock size={11} /> {ts}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </m.article>
+            );
+          })}
+        </div>
+      </LazyMotion>
+
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="rounded-xl p-4 space-y-3"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+        style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+        }}
       >
         <p
           className="flex items-center gap-1.5 text-xs font-semibold"
@@ -297,26 +329,27 @@ export default function AnotacionesClient({
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div>
-            <Label>Fecha *</Label>
-            <Input type="date" {...register('fecha')} />
+            <Label htmlFor="anot-fecha">Fecha *</Label>
+            <Input id="anot-fecha" type="date" {...register('fecha')} />
             {errors.fecha && <p className="text-xs text-red-600 mt-0.5">{errors.fecha.message}</p>}
           </div>
           <div>
-            <Label>Tramo</Label>
-            <Input placeholder="Ej: Carrera 10" {...register('tramo')} />
+            <Label htmlFor="anot-tramo">Tramo</Label>
+            <Input id="anot-tramo" placeholder="Ej: Carrera 10" {...register('tramo')} />
           </div>
           <div>
-            <Label>CIV</Label>
-            <Input placeholder="Código" {...register('civ')} />
+            <Label htmlFor="anot-civ">CIV</Label>
+            <Input id="anot-civ" placeholder="Código" {...register('civ')} />
           </div>
           <div>
-            <Label>PK</Label>
-            <Input placeholder="PK 0+000" {...register('pk')} />
+            <Label htmlFor="anot-pk">PK</Label>
+            <Input id="anot-pk" placeholder="PK 0+000" {...register('pk')} />
           </div>
         </div>
         <div>
-          <Label>Anotación *</Label>
+          <Label htmlFor="anot-texto">Anotación *</Label>
           <Textarea
+            id="anot-texto"
             rows={3}
             maxLength={2000}
             placeholder="Descripción de la novedad…"

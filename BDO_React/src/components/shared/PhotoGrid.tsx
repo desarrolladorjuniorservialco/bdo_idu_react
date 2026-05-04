@@ -1,4 +1,4 @@
-import Image from 'next/image';
+﻿import Image from 'next/image';
 
 interface Foto {
   url: string;
@@ -10,11 +10,17 @@ export function PhotoGrid({ fotos }: { fotos: Foto[] }) {
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-        Registro fotográfico ({fotos.length})
+        Registro fotogrÃ¡fico ({fotos.length})
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
         {fotos.map((f, i) => (
-          <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" className="group block">
+          <a
+            key={f.url ?? `foto-${i}`}
+            href={f.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group block"
+          >
             <div className="relative aspect-square rounded-md overflow-hidden bg-[var(--muted)]">
               <Image
                 src={f.url}

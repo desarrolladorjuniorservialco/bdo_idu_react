@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { ROL_LABELS } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
@@ -13,7 +13,7 @@ interface HeaderProps {
 }
 
 export function Header({ perfil }: HeaderProps) {
-  const router = useRouter();
+  const { push, refresh } = useRouter();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const clearNotifs = useNotifStore((s) => s.clearNotifs);
   const notifs = useNotifStore((s) => s.notifs);
@@ -26,8 +26,8 @@ export function Header({ perfil }: HeaderProps) {
     await supabase.auth.signOut();
     clearAuth();
     clearNotifs();
-    router.push('/login');
-    router.refresh();
+    push('/login');
+    refresh();
   }
 
   return (
@@ -84,7 +84,7 @@ export function Header({ perfil }: HeaderProps) {
         <button
           type="button"
           onClick={handleLogout}
-          title="Cerrar sesión"
+          title="Cerrar sesiÃ³n"
           className="flex items-center justify-center h-9 w-9 rounded-md transition-colors duration-150 hover:bg-white/10"
           style={{ color: 'rgba(255,255,255,0.80)' }}
         >

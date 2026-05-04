@@ -11,7 +11,15 @@ import { InformePdfDownload } from '@/components/pdf/InformePdf';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { SectionBadge } from '@/components/shared/SectionBadge';
 import { createClient } from '@/lib/supabase/client';
-import { type ReactElement, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type ReactElement,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 
 type EstadoFiltro =
   | 'Todos'
@@ -42,6 +50,69 @@ const TIPOS: TipoFormulario[] = [
 ];
 
 const PREVIEW_LIMIT = 5;
+
+type FetchState = {
+  data: InformeData | null;
+  loading: boolean;
+  error: string | null;
+};
+type FetchAction =
+  | { type: 'FETCH_START' }
+  | { type: 'FETCH_SUCCESS'; data: InformeData }
+  | { type: 'FETCH_ERROR'; error: string };
+
+function fetchReducer(state: FetchState, action: FetchAction): FetchState {
+  switch (action.type) {
+    case 'FETCH_START':
+      return { ...state, loading: true, error: null };
+    case 'FETCH_SUCCESS':
+      return { data: action.data, loading: false, error: null };
+    case 'FETCH_ERROR':
+      return { data: null, loading: false, error: action.error };
+    default:
+      return state;
+  }
+}
+
+type FilterState = {
+  fi: string;
+  ff: string;
+  estado: EstadoFiltro;
+  tramo: string;
+  usuario: string;
+  tiposSel: TipoFormulario[];
+};
+type FilterAction =
+  | { type: 'SET_FI'; value: string }
+  | { type: 'SET_FF'; value: string }
+  | { type: 'SET_ESTADO'; value: EstadoFiltro }
+  | { type: 'SET_TRAMO'; value: string }
+  | { type: 'SET_USUARIO'; value: string }
+  | { type: 'TOGGLE_TIPO'; tipo: TipoFormulario };
+
+function filterReducer(state: FilterState, action: FilterAction): FilterState {
+  switch (action.type) {
+    case 'SET_FI':
+      return { ...state, fi: action.value };
+    case 'SET_FF':
+      return { ...state, ff: action.value };
+    case 'SET_ESTADO':
+      return { ...state, estado: action.value };
+    case 'SET_TRAMO':
+      return { ...state, tramo: action.value };
+    case 'SET_USUARIO':
+      return { ...state, usuario: action.value };
+    case 'TOGGLE_TIPO':
+      return {
+        ...state,
+        tiposSel: state.tiposSel.includes(action.tipo)
+          ? state.tiposSel.filter((t) => t !== action.tipo)
+          : [...state.tiposSel, action.tipo],
+      };
+    default:
+      return state;
+  }
+}
 
 function asDate(raw: unknown): Date | null {
   if (!raw) return null;
@@ -74,7 +145,11 @@ function fmtDate(raw: unknown): string {
   if (!raw) return '—';
   const d = new Date(String(raw));
   if (Number.isNaN(d.getTime())) return String(raw);
-  return d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return d.toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
 }
 
 function truncate(s: unknown, n = 45): string {
@@ -91,7 +166,10 @@ function EstadoBadge({ estado }: { estado: unknown }) {
     BORRADOR: { background: '#fef3c7', color: '#92400e' },
     DEVUELTO: { background: '#fee2e2', color: '#991b1b' },
   };
-  const s = map[val] ?? { background: 'var(--bg-muted)', color: 'var(--text-muted)' };
+  const s = map[val] ?? {
+    background: 'var(--bg-muted)',
+    color: 'var(--text-muted)',
+  };
   return (
     <span
       className="inline-block rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap"
@@ -176,16 +254,22 @@ function PreviewSection({
 export default function GenerarInformeClient({ contratoId }: { contratoId: string }) {
   const today = new Date().toISOString().slice(0, 10);
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-  const [data, setData] = useState<InformeData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [fetchState, fetchDispatch] = useReducer(fetchReducer, {
+    data: null,
+    loading: true,
+    error: null,
+  });
+  const { data, loading, error } = fetchState;
 
-  const [fi, setFi] = useState(weekAgo);
-  const [ff, setFf] = useState(today);
-  const [estado, setEstado] = useState<EstadoFiltro>('Todos');
-  const [tramo, setTramo] = useState('');
-  const [usuario, setUsuario] = useState('');
-  const [tiposSel, setTiposSel] = useState<TipoFormulario[]>(['Cantidades de Obra']);
+  const [filterState, filterDispatch] = useReducer(filterReducer, {
+    fi: weekAgo,
+    ff: today,
+    estado: 'Todos' as EstadoFiltro,
+    tramo: '',
+    usuario: '',
+    tiposSel: ['Cantidades de Obra'] as TipoFormulario[],
+  });
+  const { fi, ff, estado, tramo, usuario, tiposSel } = filterState;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -203,8 +287,7 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
     let active = true;
 
     const fetchData = async () => {
-      setLoading(true);
-      setError(null);
+      fetchDispatch({ type: 'FETCH_START' });
 
       const supabase = createClient();
       const [
@@ -243,24 +326,25 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
       if (!active) return;
 
       if (firstError) {
-        setError(firstError.message);
-        setLoading(false);
+        fetchDispatch({ type: 'FETCH_ERROR', error: firstError.message });
         return;
       }
 
-      setData({
-        contrato,
-        cantidades: cantidades ?? [],
-        componentes: componentes ?? [],
-        diario: diario ?? [],
-        anotaciones: anotaciones ?? [],
-        clima: clima ?? [],
-        personal: personal ?? [],
-        maquinaria: maquinaria ?? [],
-        sst: sst ?? [],
-        generado_en: new Date().toISOString(),
+      fetchDispatch({
+        type: 'FETCH_SUCCESS',
+        data: {
+          contrato,
+          cantidades: cantidades ?? [],
+          componentes: componentes ?? [],
+          diario: diario ?? [],
+          anotaciones: anotaciones ?? [],
+          clima: clima ?? [],
+          personal: personal ?? [],
+          maquinaria: maquinaria ?? [],
+          sst: sst ?? [],
+          generado_en: new Date().toISOString(),
+        },
       });
-      setLoading(false);
     };
 
     fetchData();
@@ -314,14 +398,14 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
       );
     });
 
-    const useType = (tipo: TipoFormulario) => tiposSel.includes(tipo);
+    const checkType = (tipo: TipoFormulario) => tiposSel.includes(tipo);
 
     return {
       ...baseData,
-      cantidades: useType('Cantidades de Obra') ? cantidadesBase : [],
-      componentes: useType('Componentes Transversales') ? componentesBase : [],
-      diario: useType('Reporte Diario') ? diarioBase : [],
-      anotaciones: useType('Anotaciones') ? anotacionesBase : [],
+      cantidades: checkType('Cantidades de Obra') ? cantidadesBase : [],
+      componentes: checkType('Componentes Transversales') ? componentesBase : [],
+      diario: checkType('Reporte Diario') ? diarioBase : [],
+      anotaciones: checkType('Anotaciones') ? anotacionesBase : [],
       fi,
       ff,
     };
@@ -361,7 +445,7 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
   const borradores = Math.max(totalRegistros - aprobados - revisados - devueltos, 0);
 
   function toggleTipo(tipo: TipoFormulario) {
-    setTiposSel((prev) => (prev.includes(tipo) ? prev.filter((x) => x !== tipo) : [...prev, tipo]));
+    filterDispatch({ type: 'TOGGLE_TIPO', tipo });
   }
 
   const dropdownLabel =
@@ -377,7 +461,10 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
         <div className="h-7 w-48 rounded-lg bg-[var(--border)]" />
         <div
           className="rounded-xl p-5 space-y-4"
-          style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+          style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+          }}
         >
           <div className="h-4 w-64 rounded bg-[var(--border)]" />
           <div className="h-4 w-full rounded bg-[var(--border)]" />
@@ -415,7 +502,7 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
               type="date"
               className="mt-1 w-full rounded-md border px-3 py-2"
               value={fi}
-              onChange={(e) => setFi(e.target.value)}
+              onChange={(e) => filterDispatch({ type: 'SET_FI', value: e.target.value })}
             />
           </label>
           <label className="text-sm">
@@ -424,7 +511,7 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
               type="date"
               className="mt-1 w-full rounded-md border px-3 py-2"
               value={ff}
-              onChange={(e) => setFf(e.target.value)}
+              onChange={(e) => filterDispatch({ type: 'SET_FF', value: e.target.value })}
             />
           </label>
         </div>
@@ -435,7 +522,12 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
             <select
               className="mt-1 w-full rounded-md border px-3 py-2"
               value={estado}
-              onChange={(e) => setEstado(e.target.value as EstadoFiltro)}
+              onChange={(e) =>
+                filterDispatch({
+                  type: 'SET_ESTADO',
+                  value: e.target.value as EstadoFiltro,
+                })
+              }
             >
               {Object.keys(ESTADO_MAP).map((k) => (
                 <option key={k} value={k}>
@@ -449,7 +541,7 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
             <input
               className="mt-1 w-full rounded-md border px-3 py-2"
               value={tramo}
-              onChange={(e) => setTramo(e.target.value)}
+              onChange={(e) => filterDispatch({ type: 'SET_TRAMO', value: e.target.value })}
               placeholder="Ej: T-01"
             />
           </label>
@@ -458,7 +550,7 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
             <input
               className="mt-1 w-full rounded-md border px-3 py-2"
               value={usuario}
-              onChange={(e) => setUsuario(e.target.value)}
+              onChange={(e) => filterDispatch({ type: 'SET_USUARIO', value: e.target.value })}
               placeholder="Nombre"
             />
           </label>
@@ -493,7 +585,10 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
             {dropdownOpen && (
               <div
                 className="absolute z-20 mt-1 w-full rounded-md border shadow-lg overflow-hidden"
-                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+                style={{
+                  background: 'var(--bg-card)',
+                  borderColor: 'var(--border)',
+                }}
               >
                 {TIPOS.map((tipo, idx) => (
                   <label
@@ -524,7 +619,10 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
                 <span
                   key={tipo}
                   className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium"
-                  style={{ background: 'rgba(0, 118, 176, 0.12)', color: '#0076B0' }}
+                  style={{
+                    background: 'rgba(0, 118, 176, 0.12)',
+                    color: '#0076B0',
+                  }}
                 >
                   {tipo}
                   <button
@@ -553,7 +651,10 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
       {/* Vista previa con datos reales */}
       <div
         className="rounded-xl p-4 space-y-4"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+        style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+        }}
       >
         <h3 className="text-sm font-semibold">Vista previa</h3>
 
@@ -676,7 +777,10 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
 
       <div
         className="rounded-xl p-6 space-y-3"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+        style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+        }}
       >
         <p className="text-sm font-semibold">Generar Bitácora PDF</p>
         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
