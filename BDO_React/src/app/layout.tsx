@@ -1,4 +1,5 @@
 import { ReducedMotionProvider } from '@/components/layout/ReducedMotionProvider';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 import { IBM_Plex_Sans } from 'next/font/google';
 import './globals.css';
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ReducedMotionProvider />
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
