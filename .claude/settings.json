@@ -27,7 +27,12 @@
       "Bash(git -C 'C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\bdo_idu_react' commit -m ' *)",
       "Bash(git -C \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\bdo_idu_react\" log --oneline -3)",
       "Read(//c/c/Users/Victor Pulido/Documents/GIT/BDO-IDU-React/**)",
-      "Bash(grep -E \"\\\\.tsx$\")"
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(git diff *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SERVIALCO_RedesNeutras\\\\src\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object FullName)",
+      "Bash(Test-Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SERVIALCO_RedesNeutras\\\\.env.local\")",
+      "Bash(git -C \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SERVIALCO_RedesNeutras\" log --oneline -10)"
     ]
   }
 }
