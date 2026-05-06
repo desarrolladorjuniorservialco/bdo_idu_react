@@ -1,4 +1,5 @@
 import { ReducedMotionProvider } from '@/components/layout/ReducedMotionProvider';
+import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 import { IBM_Plex_Sans } from 'next/font/google';
