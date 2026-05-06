@@ -205,6 +205,61 @@ export default function AnotacionesClient({
         </div>
       </div>
 
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="rounded-xl p-4 space-y-3"
+        style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+        }}
+      >
+        <p
+          className="flex items-center gap-1.5 text-xs font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          <MessageSquarePlus size={14} />
+          Nueva anotación
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <Label htmlFor="anot-fecha">Fecha *</Label>
+            <Input id="anot-fecha" type="date" {...register('fecha')} />
+            {errors.fecha && <p className="text-xs text-red-600 mt-0.5">{errors.fecha.message}</p>}
+          </div>
+          <div>
+            <Label htmlFor="anot-tramo">Tramo</Label>
+            <Input id="anot-tramo" placeholder="Ej: Carrera 10" {...register('tramo')} />
+          </div>
+          <div>
+            <Label htmlFor="anot-civ">CIV</Label>
+            <Input id="anot-civ" placeholder="Código" {...register('civ')} />
+          </div>
+          <div>
+            <Label htmlFor="anot-pk">PK</Label>
+            <Input id="anot-pk" placeholder="PK 0+000" {...register('pk')} />
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="anot-texto">Anotación *</Label>
+          <Textarea
+            id="anot-texto"
+            rows={3}
+            maxLength={2000}
+            placeholder="Descripción de la novedad…"
+            {...register('anotacion')}
+          />
+          {errors.anotacion && (
+            <p className="text-xs text-red-600 mt-0.5">{errors.anotacion.message}</p>
+          )}
+        </div>
+        <div className="flex justify-end">
+          <Button type="submit" disabled={isSubmitting} size="sm">
+            {isSubmitting ? 'Guardando…' : 'Registrar anotación'}
+          </Button>
+        </div>
+        {submitError && <p className="text-xs text-red-600">{submitError}</p>}
+      </form>
+
       <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
         {filtered.length} anotación{filtered.length !== 1 ? 'es' : ''}
       </p>
@@ -316,61 +371,6 @@ export default function AnotacionesClient({
           </div>
         </LazyMotion>
       </MotionConfig>
-
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="rounded-xl p-4 space-y-3"
-        style={{
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border)',
-        }}
-      >
-        <p
-          className="flex items-center gap-1.5 text-xs font-semibold"
-          style={{ color: 'var(--text-primary)' }}
-        >
-          <MessageSquarePlus size={14} />
-          Nueva anotación
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div>
-            <Label htmlFor="anot-fecha">Fecha *</Label>
-            <Input id="anot-fecha" type="date" {...register('fecha')} />
-            {errors.fecha && <p className="text-xs text-red-600 mt-0.5">{errors.fecha.message}</p>}
-          </div>
-          <div>
-            <Label htmlFor="anot-tramo">Tramo</Label>
-            <Input id="anot-tramo" placeholder="Ej: Carrera 10" {...register('tramo')} />
-          </div>
-          <div>
-            <Label htmlFor="anot-civ">CIV</Label>
-            <Input id="anot-civ" placeholder="Código" {...register('civ')} />
-          </div>
-          <div>
-            <Label htmlFor="anot-pk">PK</Label>
-            <Input id="anot-pk" placeholder="PK 0+000" {...register('pk')} />
-          </div>
-        </div>
-        <div>
-          <Label htmlFor="anot-texto">Anotación *</Label>
-          <Textarea
-            id="anot-texto"
-            rows={3}
-            maxLength={2000}
-            placeholder="Descripción de la novedad…"
-            {...register('anotacion')}
-          />
-          {errors.anotacion && (
-            <p className="text-xs text-red-600 mt-0.5">{errors.anotacion.message}</p>
-          )}
-        </div>
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isSubmitting} size="sm">
-            {isSubmitting ? 'Guardando…' : 'Registrar anotación'}
-          </Button>
-        </div>
-        {submitError && <p className="text-xs text-red-600">{submitError}</p>}
-      </form>
     </div>
   );
 }

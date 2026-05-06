@@ -84,7 +84,7 @@ export function Header({ perfil }: HeaderProps) {
         <button
           type="button"
           onClick={handleLogout}
-          title="Cerrar sesiÃ³n"
+          title="Cerrar sesión"
           className="flex items-center justify-center h-9 w-9 rounded-md transition-colors duration-150 hover:bg-white/10"
           style={{ color: 'rgba(255,255,255,0.80)' }}
         >

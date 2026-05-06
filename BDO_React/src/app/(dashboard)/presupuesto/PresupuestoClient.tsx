@@ -57,8 +57,8 @@ const TIPOS: Record<
     accent: 'teal',
   },
   EP: {
-    nombre: 'Espacio PÃºblico',
-    und: 'mÂ²',
+    nombre: 'Espacio Público',
+    und: 'm²',
     colorMeta: IDU_BLUE,
     colorEjec: IDU_GREEN,
     accent: 'green',
@@ -75,7 +75,7 @@ const TIPOS: Record<
 // â”€â”€â”€ Anchos por defecto de la tabla presupuestal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const DEFAULT_COL_WIDTHS = [110, 220, 55, 95, 110, 120, 95, 120, 130];
 const COL_HEADERS = [
-  'CapÃ­tulo',
+  'Capítulo',
   'Actividad',
   'Und',
   'Cant. Prog.',
@@ -83,7 +83,7 @@ const COL_HEADERS = [
   'V. Programado',
   'Cant. Ejec.',
   'V. Ejecutado',
-  'EjecuciÃ³n',
+  'Ejecución',
 ];
 
 // â”€â”€â”€ Hook redimensionamiento de columnas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -300,11 +300,11 @@ export default function PresupuestoClient({
     return { total, ejecutado, pendiente: Math.max(total - ejecutado, 0), pct };
   }, [itemsFiltrados]);
 
-  // â”€â”€ GrÃ¡fica por capÃ­tulo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Gráfica por capítulo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const chartDataCap = useMemo(() => {
     const by: Record<string, { presupuestado: number; ejecutado: number }> = {};
     for (const i of itemsFiltrados) {
-      const key = String(i.capitulo ?? i.componente ?? i.compenente ?? 'Sin capÃ­tulo');
+      const key = String(i.capitulo ?? i.componente ?? i.compenente ?? 'Sin capítulo');
       if (!by[key]) by[key] = { presupuestado: 0, ejecutado: 0 };
       by[key].presupuestado +=
         toNumber(i.valor_total) || toNumber(i.cantidad) * toNumber(i.precio_unitario);
@@ -318,7 +318,7 @@ export default function PresupuestoClient({
   const { widths, startResize } = useColumnResize(DEFAULT_COL_WIDTHS);
   const totalTableWidth = widths.reduce((a, b) => a + b, 0);
 
-  // â”€â”€ Meta fÃ­sica â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Meta física â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const tramosData = useMemo(() => {
     return tramos
       .map((t) => {
@@ -399,7 +399,7 @@ export default function PresupuestoClient({
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <Label className="text-xs">Componente / CapÃ­tulo</Label>
+            <Label className="text-xs">Componente / Capítulo</Label>
             <Select value={compFilter} onValueChange={setCompFilter}>
               <SelectTrigger className="mt-1 h-8 text-xs">
                 <SelectValue />
@@ -414,10 +414,10 @@ export default function PresupuestoClient({
             </Select>
           </div>
           <div>
-            <Label className="text-xs">Buscar Ã­tem / descripciÃ³n</Label>
+            <Label className="text-xs">Buscar ítem / descripción</Label>
             <Input
               className="mt-1 h-8 text-xs"
-              placeholder="Actividad, unidad, Ã­temâ€¦"
+              placeholder="Actividad, unidad, ítem…"
               value={buscar}
               onChange={(e) => setBuscar(e.target.value)}
             />
@@ -446,23 +446,23 @@ export default function PresupuestoClient({
           sublabel={`${(100 - kpis.pct).toFixed(1)}% por ejecutar`}
         />
         <KpiCard
-          label="Ãtems con ejecuciÃ³n"
+          label="Ítems con ejecución"
           value={String(itemsFiltrados.filter((i) => toNumber(i.cantidad_ejecutada) > 0).length)}
           accent="teal"
-          sublabel={`de ${itemsFiltrados.length} Ã­tems`}
+          sublabel={`de ${itemsFiltrados.length} ítems`}
         />
       </div>
 
-      {/* â”€â”€ Barra de ejecuciÃ³n global â”€â”€ */}
+      {/* â”€â”€ Barra de ejecución global â”€â”€ */}
       <GlobalProgressBar
-        label="EjecuciÃ³n global del presupuesto"
+        label="Ejecución global del presupuesto"
         pct={kpis.pct}
         ejecutado={formatCOP(kpis.ejecutado)}
         pendiente={formatCOP(kpis.pendiente)}
         total={formatCOP(kpis.total)}
       />
 
-      {/* â”€â”€ GrÃ¡fica por capÃ­tulo â”€â”€ */}
+      {/* â”€â”€ Gráfica por capítulo â”€â”€ */}
       {chartDataCap.length > 0 && (
         <div
           className="rounded-xl p-4"
@@ -471,7 +471,7 @@ export default function PresupuestoClient({
             border: '1px solid var(--border)',
           }}
         >
-          <p className="text-sm font-semibold mb-3">Presupuesto vs Ejecutado por capÃ­tulo</p>
+          <p className="text-sm font-semibold mb-3">Presupuesto vs Ejecutado por capítulo</p>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart
               data={chartDataCap}
@@ -691,16 +691,16 @@ export default function PresupuestoClient({
         </div>
 
         <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-muted)' }}>
-          {itemsFiltrados.length} Ã­tems Â· arrastra el borde de la columna para redimensionar Â·
-          desplaza verticalmente para ver mÃ¡s
+          {itemsFiltrados.length} ítems Â· arrastra el borde de la columna para redimensionar Â·
+          desplaza verticalmente para ver más
         </p>
       </div>
 
       {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECCIÃ“N META FÃSICA â€” siempre visible
+          SECCIÓN META FÍSICA â€” siempre visible
           â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       <div className="pt-2">
-        <SectionBadge label="Seguimiento Avance Meta FÃ­sica General" page="presupuesto" />
+        <SectionBadge label="Seguimiento Avance Meta Física General" page="presupuesto" />
       </div>
 
       {tramos.length === 0 ? (
@@ -712,7 +712,7 @@ export default function PresupuestoClient({
           }}
         >
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Sin datos de meta fÃ­sica. Verifica la tabla <code>tramos_bd</code> en Supabase.
+            Sin datos de meta física. Verifica la tabla <code>tramos_bd</code> en Supabase.
           </p>
         </div>
       ) : tramosData.length === 0 ? (
@@ -724,7 +724,7 @@ export default function PresupuestoClient({
           }}
         >
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            NingÃºn tramo tiene meta fÃ­sica registrada (<code>meta_fisica</code>,{' '}
+            Ningún tramo tiene meta física registrada (<code>meta_fisica</code>,{' '}
             <code>cicloruta_km</code> o <code>esp_publico_m2</code>).
           </p>
         </div>
@@ -763,7 +763,7 @@ export default function PresupuestoClient({
 
           {/* â”€â”€ Dashboard por tramo con tabs â”€â”€ */}
           <div className="pt-1">
-            <SectionBadge label="Seguimiento Avance Meta FÃ­sica por Tramo" page="presupuesto" />
+            <SectionBadge label="Seguimiento Avance Meta Física por Tramo" page="presupuesto" />
           </div>
 
           <div
@@ -781,10 +781,10 @@ export default function PresupuestoClient({
               </p>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 pt-2">
-                {/* GrÃ¡fica barras */}
+                {/* Gráfica barras */}
                 <div className="lg:col-span-3">
                   <p className="text-xs font-semibold mb-3" style={{ color: 'var(--text-muted)' }}>
-                    Meta fÃ­sica vs Ejecutado â€” {activeTab} ({TIPOS[activeCodigo].und})
+                    Meta física vs Ejecutado â€” {activeTab} ({TIPOS[activeCodigo].und})
                   </p>
                   <ResponsiveContainer width="100%" height={320}>
                     <BarChart
@@ -828,12 +828,12 @@ export default function PresupuestoClient({
                         }}
                         formatter={(v: string | number, name: string) => [
                           `${toNumber(v).toLocaleString('es-CO', { maximumFractionDigits: 2 })} ${TIPOS[activeCodigo].und}`,
-                          name === 'meta' ? 'Meta fÃ­sica' : 'Ejecutado',
+                          name === 'meta' ? 'Meta física' : 'Ejecutado',
                         ]}
                       />
                       <Legend
                         wrapperStyle={{ fontSize: 11 }}
-                        formatter={(v: string) => (v === 'meta' ? 'Meta fÃ­sica' : 'Ejecutado')}
+                        formatter={(v: string) => (v === 'meta' ? 'Meta física' : 'Ejecutado')}
                       />
                       <Bar
                         dataKey="meta"

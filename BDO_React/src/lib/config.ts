@@ -3,8 +3,8 @@
 export const ROL_LABELS: Record<Rol, string> = {
   operativo: 'Inspector de Campo',
   obra: 'Residente de Obra',
-  interventoria: 'InterventorÃ­a IDU',
-  supervision: 'SupervisiÃ³n IDU',
+  interventoria: 'Interventoría IDU',
+  supervision: 'Supervisión IDU',
   admin: 'Administrador',
 };
 
@@ -39,7 +39,7 @@ export const NAV_CATEGORIES: NavCategory[] = [
     highlight: false,
     pages: [
       { label: 'Estado Actual', href: '/estado-actual' },
-      { label: 'Mapa EjecuciÃ³n', href: '/mapa-ejecucion' },
+      { label: 'Mapa Ejecución', href: '/mapa-ejecucion' },
       { label: 'Presupuesto', href: '/presupuesto' },
       { label: 'Correspondencia', href: '/correspondencia' },
     ],

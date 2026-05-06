@@ -10,7 +10,7 @@ export function PhotoGrid({ fotos }: { fotos: Foto[] }) {
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-        Registro fotogrÃ¡fico ({fotos.length})
+        Registro fotográfico ({fotos.length})
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
         {fotos.map((f, i) => (
