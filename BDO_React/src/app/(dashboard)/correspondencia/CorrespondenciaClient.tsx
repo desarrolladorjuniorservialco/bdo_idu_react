@@ -429,10 +429,11 @@ export default function CorrespondenciaClient({
 
     function onMove(ev: MouseEvent) {
       if (!resizing.current) return;
-      const newW = Math.max(50, resizing.current.startW + (ev.clientX - resizing.current.startX));
+      const { idx, startW, startX } = resizing.current;
+      const newW = Math.max(50, startW + (ev.clientX - startX));
       setColWidths((prev) => {
         const next = [...prev];
-        next[resizing.current!.idx] = newW;
+        next[idx] = newW;
         return next;
       });
     }
