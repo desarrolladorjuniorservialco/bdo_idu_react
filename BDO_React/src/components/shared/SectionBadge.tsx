@@ -1,8 +1,8 @@
 import { PAGE_COLOR } from '@/lib/config';
 
 const COLOR_MAP: Record<string, { bg: string; color: string }> = {
-  blue: { bg: 'var(--corp-green-lt)', color: 'var(--corp-dark)' },
-  green: { bg: 'var(--corp-green-lt)', color: 'var(--corp-primary)' },
+  blue: { bg: 'rgba(13,77,155,0.08)', color: 'var(--corp-mid)' },
+  green: { bg: 'rgba(122,201,67,0.10)', color: '#3D7A1A' },
   red: { bg: '#FEF2F2', color: 'var(--accent-red)' },
   orange: { bg: '#FFF7ED', color: 'var(--accent-orange)' },
   purple: { bg: '#F5F3FF', color: 'var(--accent-purple)' },
