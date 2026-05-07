@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+
+
+/* ── Variables CSS para componentes ─────────────────────────── */
+:root {
+  /* --- Identidad Corporativa --- */
+  --corp-primary: #6b8e23;
+  --corp-dark: #4a5d23;
+  --corp-gold: #d4a843;
+  --corp-gold-lt: #fffbeb;
+  --corp-green-lt: #f0fdf4;
+
+  /* --- Compatibilidad referencias IDU existentes ---
+     Algunos componentes siguen usando --idu-* directamente   */
+  --idu-blue: #002d57;
+  --idu-blue-dark: #001a33;
+  --idu-blue-lt: #e6f0f9;
+  --idu-red: #ed1c24;
+  --idu-red-lt: #fde8e9;
+  --idu-yellow: #ffd200;
+  --idu-yellow-lt: #fff9d6;
+  --idu-green: #6b8e23;
+  --idu-green-lt: #f0fdf4;
+  --idu-orange: #e07b39;
+
+  /* Foreground recomendados (accesibilidad WCAG) */
+  --idu-blue-fg: #ffffff;
+  --idu-blue-dark-fg: #ffffff;
+  --idu-blue-lt-fg: #002d57;
+  --idu-red-fg: #ffffff;
+  --idu-red-fg-text: #000000;
+  --idu-red-lt-fg: #001a33;
+  --idu-yellow-fg: #001a33;
+  --idu-yellow-lt-fg: #001a33;
+  --idu-green-fg: #ffffff;
+  --idu-green-lt-fg: #1e2d08;
+
+  /* --- Layout --- */
+  --bg-app: #f1f5f9;
+  --bg-sidebar: #2d3748;
+  --bg-card: #ffffff;
+
+  /* --- Sidebar (tokens específicos para la nav lateral oscura) --- */
+  --sidebar-header-bg: #1a2535; /* Cabecera institucional más oscura */
+  --sidebar-text: #cbd5e1; /* Texto items inactivos */
+  --sidebar-text-muted: #9ca3af; /* Labels de sección */
+  --sidebar-active-bg: rgba(107, 142, 35, 0.16); /* Fondo ítem activo */
+  --sidebar-active-border: #d4a843; /* Borde izquierdo dorado ítem activo */
+  --sidebar-footer-bg: #1a2535; /* Footer perfil */
+
+  /* --- Accents semánticos --- */
+  --accent-blue: #1e6fd9;
+  --accent-green: #6b8e23;
+  --accent-red: #c0392b;
+  --accent-orange: #e07b39;
+  --accent-purple: #7c3aed;
+  --accent-teal: #0d9488;
+
+  /* --- Tipografía y bordes --- */
+  --text-primary: #1f2937;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+
+  /* --- Shadcn / sistema (mapeados al corporativo) --- */
+  --card: #ffffff;
+  --card-foreground: #1f2937;
+  --background: #f1f5f9;
+  --foreground: #1f2937;
+  --muted: #f8fafc;
+  --muted-foreground: #6b7280;
+  --destructive: #ed1c24;
+  --primary: #6b8e23;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1f2937;
+  --input: #e5e7eb;
+  --ring: #6b8e23; /* Focus ring verde corporativo */
+  --radius: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --corp-primary: #8ab52e;
+    --corp-dark: #6b8e23;
+    --corp-gold: #e5b84d;
+    --corp-gold-lt: #2d2200;
+    --corp-green-lt: #0d2010;
+
+    --idu-blue-lt: #0d2744;
+    --idu-blue-lt-fg: #a8cfef;
+    --idu-red-lt: #3d0507;
+    --idu-red-lt-fg: #ff8c8c;
+    --idu-yellow-lt: #2d2400;
+    --idu-yellow-lt-fg: #ffd200;
+    --idu-green-lt: #1a2409;
+    --idu-green-lt-fg: #a8c46a;
+
+    --bg-app: #0d1520;
+    --bg-card: #12233d;
+    --bg-sidebar: #0a1628;
+
+    --sidebar-header-bg: #060e1a;
+    --sidebar-text: #94a3b8;
+    --sidebar-text-muted: #64748b;
+    --sidebar-active-bg: rgba(139, 181, 46, 0.15);
+    --sidebar-footer-bg: #060e1a;
+
+    --text-primary: #e8f0fb;
+    --text-muted: #699bd8;
+    --border: #1a2e4a;
+
+    --card: #12233d;
+    --card-foreground: #e8f0fb;
+    --background: #0d1520;
+    --foreground: #e8f0fb;
+    --muted: #12233d;
+    --muted-foreground: #7a96b8;
+    --primary: #8ab52e;
+    --primary-foreground: #0d1520;
+    --secondary: #12233d;
+    --secondary-foreground: #e8f0fb;
+    --input: #1a2e4a;
+    --ring: #8ab52e;
+  }
+}
+
+/* ── Base ───────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-sans, "IBM Plex Sans", system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ── Scrollbar personalizada ────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ── Animaciones ─────────────────────────────────────────────── */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% center;
+  }
+  to {
+    background-position: 200% center;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out both;
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out both;
+}
