@@ -96,6 +96,7 @@ export function Header({ perfil }: HeaderProps) {
           type="button"
           onClick={handleLogout}
           title="Cerrar sesión"
+          aria-label="Cerrar sesión"
           className="flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150 hover:bg-slate-100"
           style={{ color: 'var(--text-muted)' }}
         >

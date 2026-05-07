@@ -49,7 +49,7 @@ export function KpiCard({ label, value, accent = 'blue', sublabel, className }: 
         {value}
       </p>
       {sublabel && (
-        <p className="text-xs pl-2 mt-1 font-medium" style={{ color: 'var(--corp-green)' }}>
+        <p className="text-xs pl-2 mt-1 font-medium" style={{ color }}>
           {sublabel}
         </p>
       )}
