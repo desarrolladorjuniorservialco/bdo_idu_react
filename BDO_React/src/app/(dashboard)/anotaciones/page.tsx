@@ -1,8 +1,8 @@
-import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
+﻿import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import { createClient } from '@/lib/supabase/server';
 import AnotacionesClient from './AnotacionesClient';
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 export default async function AnotacionesPage() {
   const user = await getCachedUser();

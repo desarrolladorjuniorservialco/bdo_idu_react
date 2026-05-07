@@ -1,11 +1,11 @@
-import {
+﻿import {
   fetchReporteDiario,
   fetchSubtablasDiarioByContrato,
 } from '@/lib/supabase/actions/reporte-diario';
 import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import AnotacionesDiarioClient from './AnotacionesDiarioClient';
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 export default async function Page() {
   const user = await getCachedUser();

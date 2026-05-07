@@ -5,20 +5,14 @@ export async function fetchComponentes(contratoId: string, componente: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('registros_componentes')
-    .select('*')
+    .select(`
+      *,
+      residente:perfiles!aprobado_residente(nombre),
+      interventor:perfiles!aprobado_interventor(nombre)
+    `)
     .eq('contrato_id', contratoId)
     .eq('componente', componente)
     .order('fecha_creacion', { ascending: false });
-  return data ?? [];
-}
-
-export async function fetchFotosComponentes(registroIds: string[]) {
-  if (!registroIds.length) return [];
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('rf_componentes')
-    .select('registro_id, url, descripcion')
-    .in('registro_id', registroIds);
   return data ?? [];
 }
 

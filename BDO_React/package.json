@@ -11,7 +11,7 @@
     "format": "prettier --write \"**/*.{md,json,css}\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepare": "cd .. && husky"
+    "prepare": "node -e \"if (process.env.CI || process.env.VERCEL || process.env.NODE_ENV === 'production') process.exit(0)\" || (cd .. && husky)"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -35,6 +35,7 @@
     "lucide-react": "^0.503.0",
     "next": "^15.3.9",
     "react": "^19.0.0",
+    "react-doctor": "^0.0.47",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.55.0",
     "react-leaflet": "^4.2.1",
@@ -46,6 +47,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@tailwindcss/postcss": "^4.1.4",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",

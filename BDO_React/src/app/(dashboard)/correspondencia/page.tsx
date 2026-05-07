@@ -1,8 +1,8 @@
-import { fetchCorrespondencia } from '@/lib/supabase/actions/correspondencia';
+﻿import { fetchCorrespondencia } from '@/lib/supabase/actions/correspondencia';
 import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import CorrespondenciaClient from './CorrespondenciaClient';
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 export default async function Page() {
   const user = await getCachedUser();
