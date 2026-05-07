@@ -32,7 +32,13 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SERVIALCO_RedesNeutras\\\\src\" -Recurse -ErrorAction SilentlyContinue)",
       "Bash(Select-Object FullName)",
       "Bash(Test-Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SERVIALCO_RedesNeutras\\\\.env.local\")",
-      "Bash(git -C \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SERVIALCO_RedesNeutras\" log --oneline -10)"
+      "Bash(git -C \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SERVIALCO_RedesNeutras\" log --oneline -10)",
+      "Bash(git merge *)",
+      "Bash(git stash *)",
+      "Bash(git remote *)",
+      "Bash(git reset *)",
+      "Bash(git restore *)",
+      "Bash(git fetch *)"
     ]
   }
 }
