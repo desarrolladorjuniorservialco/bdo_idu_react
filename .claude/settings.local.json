@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"c:/Users/Victor Pulido/Documents/GIT/BDO-IDU-1556-2025\" log --oneline)",
+      "Bash(git -C \"c:/Users/Victor Pulido/Documents/GIT/SupaBaseSQLEditor\" log --oneline)",
+      "Bash(git -C \"c:/Users/Victor Pulido/Documents/GIT/BDO-IDU-React/bdo_idu_react\" log --oneline)",
+      "Bash(git -C \"c:/Users/Victor Pulido/Documents/GIT/BDO-IDU-React/bdo_idu_react\" reset --hard 80d03a6)",
+      "Bash(ls -d .worktrees)",
+      "Bash(ls -d worktrees)"
+    ]
+  }
+}

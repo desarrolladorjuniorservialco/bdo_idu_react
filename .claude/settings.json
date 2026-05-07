@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('next:', p.dependencies?.next, p.devDependencies?.next\\)\")",
+      "Bash(git checkout *)",
+      "Bash(npx vitest *)",
+      "Bash(npm install *)",
+      "Bash(npm test *)",
+      "Bash(xargs ls *)",
+      "Bash(xargs wc *)",
+      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(npm run *)",
+      "Bash(git push *)",
+      "Bash(npx biome *)",
+      "Bash(git -C \"c:/Users/Victor Pulido/Documents/GIT/BDO-IDU-React\" status)",
+      "Bash(npx next *)",
+      "Bash(git pull *)",
+      "Bash(git rebase *)",
+      "Bash(git rm *)",
+      "Bash(git check-ignore *)",
+      "Bash(git -C \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\bdo_idu_react\" status)",
+      "Bash(git -C \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\bdo_idu_react\" log --oneline -5)",
+      "Bash(git -C \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\bdo_idu_react\" add \"BDO_React/src/app/\\(dashboard\\)/cierre-semanal/\")",
+      "Bash(git -C 'C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\bdo_idu_react' commit -m ' *)",
+      "Bash(git -C \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\bdo_idu_react\" log --oneline -3)",
+      "Read(//c/c/Users/Victor Pulido/Documents/GIT/BDO-IDU-React/**)",
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(git diff *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SERVIALCO_RedesNeutras\\\\src\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object FullName)",
+      "Bash(Test-Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SERVIALCO_RedesNeutras\\\\.env.local\")",
+      "Bash(git -C \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SERVIALCO_RedesNeutras\" log --oneline -10)"
+    ]
+  }
+}
