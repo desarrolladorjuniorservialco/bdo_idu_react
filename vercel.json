@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd bdo_idu_react/BDO_React && npm install && npm run build",
-  "outputDirectory": "bdo_idu_react/BDO_React/.next",
-  "installCommand": "echo 'install handled in buildCommand'",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "installCommand": "cd BDO_React && npm install",
+  "buildCommand": "cd BDO_React && npm run build",
+  "outputDirectory": "BDO_React/.next"
 }
