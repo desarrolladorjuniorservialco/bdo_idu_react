@@ -1,5 +1,6 @@
 'use server';
 import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchCantidades(contratoId: string) {
   const supabase = await createClient();
@@ -18,4 +19,11 @@ export async function fetchFotosCantidadesByContrato(contratoId: string) {
     .select('registro_id, url, descripcion')
     .eq('contrato_id', contratoId);
   return data ?? [];
+}
+
+export async function eliminarRegistroCantidad(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('registros_cantidades').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/reporte-cantidades');
 }

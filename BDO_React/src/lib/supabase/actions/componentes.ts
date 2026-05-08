@@ -1,5 +1,6 @@
 'use server';
 import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchComponentes(contratoId: string, componente: string) {
   const supabase = await createClient();
@@ -33,4 +34,13 @@ export async function fetchFormularioPmt(contratoId: string) {
     .eq('contrato_id', contratoId)
     .order('fecha_creacion', { ascending: false });
   return data ?? [];
+}
+
+export async function eliminarRegistroComponente(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('registros_componentes').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/componente-ambiental');
+  revalidatePath('/componente-social');
+  revalidatePath('/componente-pmt');
 }

@@ -1,7 +1,7 @@
 'use server';
-import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { correspondenciaSchema } from '@/lib/validators/correspondencia.schema';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchCorrespondencia(contratoId: string) {
   const supabase = await createClient();
@@ -16,16 +16,18 @@ export async function fetchCorrespondencia(contratoId: string) {
 export async function insertarCorrespondencia(contratoId: string, input: unknown) {
   const parsed = correspondenciaSchema.parse(input);
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { error } = await supabase.from('correspondencia').insert({
     ...parsed,
-    contrato_id:           contratoId,
-    creado_por:            user!.id,
-    link:                  parsed.link || null,
-    componente:            parsed.componente || null,
-    plazo_respuesta:       parsed.plazo_respuesta || null,
+    contrato_id: contratoId,
+    creado_por: user!.id,
+    link: parsed.link || null,
+    componente: parsed.componente || null,
+    plazo_respuesta: parsed.plazo_respuesta || null,
     consecutivo_respuesta: parsed.consecutivo_respuesta || null,
-    fecha_respuesta:       parsed.fecha_respuesta || null,
+    fecha_respuesta: parsed.fecha_respuesta || null,
   });
   if (error) throw new Error(error.message);
   revalidatePath('/correspondencia');
@@ -39,15 +41,22 @@ export async function actualizarCorrespondencia(id: string, contratoId: string, 
     .from('correspondencia')
     .update({
       ...parsed,
-      link:                  parsed.link || null,
-      componente:            parsed.componente || null,
-      plazo_respuesta:       parsed.plazo_respuesta || null,
+      link: parsed.link || null,
+      componente: parsed.componente || null,
+      plazo_respuesta: parsed.plazo_respuesta || null,
       consecutivo_respuesta: parsed.consecutivo_respuesta || null,
-      fecha_respuesta:       parsed.fecha_respuesta || null,
+      fecha_respuesta: parsed.fecha_respuesta || null,
     })
     .eq('id', id)
     .eq('contrato_id', contratoId);
   if (error) throw new Error(error.message);
   revalidatePath('/correspondencia');
   return { ok: true };
+}
+
+export async function eliminarCorrespondencia(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('correspondencia').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/correspondencia');
 }
