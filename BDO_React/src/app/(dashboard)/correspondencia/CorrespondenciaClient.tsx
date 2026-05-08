@@ -12,10 +12,13 @@ import {
 } from '@/components/ui/dialog';
 import {
   actualizarCorrespondencia,
+  eliminarCorrespondencia,
   insertarCorrespondencia,
 } from '@/lib/supabase/actions/correspondencia';
 import type { CorrespondenciaInput } from '@/lib/validators/correspondencia.schema';
 import type { Rol } from '@/types/database';
+import { Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { CorrespondenciaForm } from './CorrespondenciaForm';
 
@@ -418,6 +421,22 @@ export default function CorrespondenciaClient({
   const resizing = useRef<{ idx: number; startX: number; startW: number } | null>(null);
 
   const canEdit = PUEDE_EDITAR.includes(rol);
+  const router = useRouter();
+
+  async function handleEliminar(id: string) {
+    if (
+      !window.confirm(
+        '¿Eliminar este registro de correspondencia? Esta acción no se puede deshacer.',
+      )
+    )
+      return;
+    try {
+      await eliminarCorrespondencia(id);
+      router.refresh();
+    } catch {
+      alert('Error al eliminar el registro.');
+    }
+  }
 
   const visibleCols = useMemo(() => (canEdit ? COL_DEFS : COL_DEFS.slice(0, -1)), [canEdit]);
 
@@ -865,6 +884,23 @@ export default function CorrespondenciaClient({
                         >
                           Editar
                         </button>
+                        {rol === 'admin' && (
+                          <button
+                            type="button"
+                            onClick={() => handleEliminar(r.id)}
+                            title="Eliminar registro"
+                            style={{
+                              color: '#dc2626',
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: 4,
+                              borderRadius: 4,
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </td>
                     )}
                   </tr>
