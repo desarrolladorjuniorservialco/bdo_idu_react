@@ -21,5 +21,5 @@ export default async function AnotacionesPage() {
 
   const anotaciones = [...(data ?? [])].reverse();
 
-  return <AnotacionesClient anotaciones={anotaciones} contratoId={contratoId} />;
+  return <AnotacionesClient anotaciones={anotaciones} contratoId={contratoId} rol={perfil!.rol} />;
 }
