@@ -5,7 +5,10 @@ import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
 import { FilterForm } from '@/components/shared/FilterForm';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PhotoGrid } from '@/components/shared/PhotoGrid';
+import { eliminarReporteDiario } from '@/lib/supabase/actions/reporte-diario';
 import type { FotoRegistro, Rol } from '@/types/database';
+import { Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useReducer, useState } from 'react';
 
 type Filters = { desde: string; hasta: string; estado: string; buscar: string };
@@ -48,26 +51,6 @@ interface Subtablas {
   fotos: FotoRegistro[];
 }
 
-function DiarioHeader({ item: r }: { item: DiarioRegistro }) {
-  return (
-    <div className="flex items-center gap-2 flex-wrap">
-      <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
-        {toText(r.fecha_reporte ?? r.fecha)}
-      </span>
-      <span className="text-xs">{toText(r.folio)}</span>
-      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-        {toText(r.tramo ?? r.id_tramo)}
-      </span>
-      <span
-        className="text-[10px] px-1.5 py-0.5 rounded-md"
-        style={{ background: 'var(--muted)', color: 'var(--text-muted)' }}
-      >
-        {String(r.estado ?? 'SIN ESTADO')}
-      </span>
-    </div>
-  );
-}
-
 export default function AnotacionesDiarioClient({
   registros,
   subtablas,
@@ -78,6 +61,17 @@ export default function AnotacionesDiarioClient({
   const [state, dispatch] = useReducer(reducer, initial);
   const filters = state.filters.hasta ? state.filters : { ...state.filters, hasta: today };
   const { selected } = state;
+  const router = useRouter();
+
+  async function handleEliminarDiario(id: string) {
+    if (!window.confirm('¿Eliminar este reporte diario? Esta acción no se puede deshacer.')) return;
+    try {
+      await eliminarReporteDiario(id);
+      router.refresh();
+    } catch {
+      alert('Error al eliminar el reporte.');
+    }
+  }
 
   const estadoOpts = useMemo(() => {
     const set = new Set<string>(['Todos']);
@@ -335,7 +329,43 @@ export default function AnotacionesDiarioClient({
           items={filtered}
           selected={selected}
           onSelect={(id) => dispatch({ type: 'SELECT', id })}
-          HeaderComponent={DiarioHeader}
+          renderHeader={(r) => (
+            <div className="flex items-center gap-2 flex-wrap w-full">
+              <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
+                {toText(r.fecha_reporte ?? r.fecha)}
+              </span>
+              <span className="text-xs">{toText(r.folio)}</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                {toText(r.tramo ?? r.id_tramo)}
+              </span>
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded-md"
+                style={{ background: 'var(--muted)', color: 'var(--text-muted)' }}
+              >
+                {String(r.estado ?? 'SIN ESTADO')}
+              </span>
+              {rol === 'admin' && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEliminarDiario(String(r.id));
+                  }}
+                  title="Eliminar reporte"
+                  className="ml-auto"
+                  style={{
+                    color: '#dc2626',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 4,
+                  }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
+          )}
           DetailComponent={DiarioDetail}
         />
       </div>

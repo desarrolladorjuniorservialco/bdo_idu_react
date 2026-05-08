@@ -6,8 +6,11 @@ import { FilterForm } from '@/components/shared/FilterForm';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PhotoGrid } from '@/components/shared/PhotoGrid';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { eliminarRegistroCantidad } from '@/lib/supabase/actions/cantidades';
 import { formatCOP } from '@/lib/utils';
 import type { FotoRegistro, RegistroCantidad, Rol } from '@/types/database';
+import { Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useMemo, useReducer } from 'react';
 
 type Filters = { desde: string; hasta: string; estado: string; buscar: string };
@@ -40,6 +43,18 @@ export default function ReporteCantidadesClient({
 }: { registros: RegistroCantidad[]; fotos: FotoRegistro[]; rol: Rol }) {
   const [state, dispatch] = useReducer(reducer, initial);
   const { filters, selected } = state;
+  const router = useRouter();
+
+  async function handleEliminarCantidad(id: string) {
+    if (!window.confirm('¿Eliminar este registro de cantidades? Esta acción no se puede deshacer.'))
+      return;
+    try {
+      await eliminarRegistroCantidad(id);
+      router.refresh();
+    } catch {
+      alert('Error al eliminar el registro.');
+    }
+  }
 
   const fotoMap = useMemo(() => {
     const m: Record<string, FotoRegistro[]> = {};
@@ -102,12 +117,32 @@ export default function ReporteCantidadesClient({
         selected={selected}
         onSelect={(id) => dispatch({ type: 'SELECT', id })}
         renderHeader={(r) => (
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap w-full">
             <StatusBadge estado={r.estado} />
             <span className="font-mono text-xs">{r.folio}</span>
             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
               {r.actividad}
             </span>
+            {rol === 'admin' && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEliminarCantidad(String(r.id));
+                }}
+                title="Eliminar registro"
+                className="ml-auto"
+                style={{
+                  color: '#dc2626',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 4,
+                }}
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
           </div>
         )}
         renderDetail={(r) => (
