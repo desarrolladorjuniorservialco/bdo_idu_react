@@ -72,7 +72,8 @@ export default function AnotacionesDiarioClient({
   registros,
   subtablas,
   rol,
-}: { registros: DiarioRegistro[]; subtablas: Subtablas; rol: Rol }) {
+  totalRegistros,
+}: { registros: DiarioRegistro[]; subtablas: Subtablas; rol: Rol; totalRegistros: number }) {
   const [today] = useState(() => new Date().toISOString().slice(0, 10));
   const [state, dispatch] = useReducer(reducer, initial);
   const filters = state.filters.hasta ? state.filters : { ...state.filters, hasta: today };
@@ -152,7 +153,6 @@ export default function AnotacionesDiarioClient({
     });
   }, [registros, filters]);
 
-  const totalPersonal = subtablas.personal.reduce((a, p) => a + toNumber(p.cantidad), 0);
   const totalAprobados = filtered.filter((r) => String(r.estado ?? '') === 'APROBADO').length;
 
   const DiarioDetail = useCallback(
@@ -304,10 +304,9 @@ export default function AnotacionesDiarioClient({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <KpiCard label="Registros diarios" value={filtered.length} accent="blue" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <KpiCard label="Registros diarios" value={totalRegistros} accent="blue" />
         <KpiCard label="Aprobados" value={totalAprobados} accent="green" />
-        <KpiCard label="Personal total" value={totalPersonal} accent="teal" />
       </div>
 
       <FilterForm
