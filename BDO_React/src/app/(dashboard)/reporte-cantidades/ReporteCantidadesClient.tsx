@@ -80,15 +80,14 @@ export default function ReporteCantidadesClient({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <KpiCard label="Total registros" value={kpis.total} accent="blue" />
         <KpiCard label="Aprobados" value={kpis.aprobados} accent="green" />
         <KpiCard
           label="Suma cantidades"
-          value={kpis.sumaCant.toLocaleString('es-CO', { maximumFractionDigits: 2 })}
+          value={kpis.sumaCant.toLocaleString('es-CO', { maximumFractionDigits: 3 })}
           accent="teal"
         />
-        <KpiCard label="Valor estimado" value={formatCOP(kpis.valorEst)} accent="purple" />
       </div>
       <FilterForm
         filters={filters}
