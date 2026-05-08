@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import { useMemo, useReducer, useState } from 'react';
 
 const MapaEjecucionFull = dynamic(() => import('@/components/maps/MapaEjecucionFull'), {
@@ -30,7 +31,7 @@ const MapaEjecucionFull = dynamic(() => import('@/components/maps/MapaEjecucionF
 
 // ─── Paleta de estados ────────────────────────────────────────────────────────
 const ESTADO_COLOR: Record<string, string> = {
-  BORRADOR: '#5bc0de',
+  BORRADOR: '#1a6faf',
   REVISADO: '#ffb71b',
   APROBADO: '#859226',
   DEVUELTO: '#ea273f',
@@ -255,6 +256,7 @@ export default function MapaClient({
   reporteDiario,
   formularioPmt,
 }: Props) {
+  const router = useRouter();
   const [filters, dispatch] = useReducer(reducer, initial);
   const [activeTab, setActiveTab] = useState<TabKey>('cantidades');
 
@@ -344,8 +346,8 @@ export default function MapaClient({
 
   // ── KPIs ──────────────────────────────────────────────────────────────────
   const cantAprobadas = useMemo(
-    () => filteredCant.filter((r) => r.estado === 'APROBADO').length,
-    [filteredCant],
+    () => cantidades.filter((r) => r.estado === 'APROBADO').length,
+    [cantidades],
   );
 
   // ── Datos de exportación (columnas relevantes por capa) ────────────────────
@@ -542,33 +544,33 @@ export default function MapaClient({
             </label>
           ))}
         </div>
+
+        <div className="flex justify-end pt-1">
+          <button
+            type="button"
+            onClick={() => router.refresh()}
+            className="text-xs px-3 py-1 rounded-md font-medium"
+            style={{
+              background: 'var(--muted)',
+              color: 'var(--text-muted)',
+              border: '1px solid var(--border)',
+            }}
+          >
+            Actualizar datos
+          </button>
+        </div>
       </div>
 
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard
-          label="Cantidades"
-          value={filteredCant.length}
-          accent="green"
-          sublabel={`${geoCant.length} con coordenadas`}
-        />
-        <KpiCard
-          label="Componentes"
-          value={filteredComp.length}
-          accent="orange"
-          sublabel={`${geoComp.length} con coordenadas`}
-        />
-        <KpiCard
-          label="Reporte Diario"
-          value={filteredDiario.length}
-          accent="blue"
-          sublabel={`${geoDiario.length} con coordenadas`}
-        />
+        <KpiCard label="Cantidades" value={cantidades.length} accent="green" />
+        <KpiCard label="Componentes" value={componentes.length} accent="orange" />
+        <KpiCard label="Reporte Diario" value={reporteDiario.length} accent="blue" />
         <KpiCard
           label="Cantidades Aprobadas"
           value={cantAprobadas}
           accent="teal"
-          sublabel="registros_cantidades · APROBADO"
+          sublabel="estado APROBADO"
         />
       </div>
 
