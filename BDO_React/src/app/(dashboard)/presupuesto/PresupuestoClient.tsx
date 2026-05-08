@@ -1,7 +1,6 @@
 ﻿'use client';
 import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
 import { KpiCard } from '@/components/shared/KpiCard';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -249,7 +248,7 @@ function TabBar({
 export default function PresupuestoClient({
   items,
   tramos,
-  rol,
+  rol: _rol,
 }: { items: BudgetItem[]; tramos: TramoItem[]; rol: Rol }) {
   // â”€â”€ Filtros â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [compFilter, setCompFilter] = useState<string>('Todos');
@@ -381,8 +380,6 @@ export default function PresupuestoClient({
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <div className="space-y-5">
-      <SectionBadge label="Seguimiento Presupuestal" page="presupuesto" />
-
       {/* â”€â”€ Filtros â”€â”€ */}
       <div
         className="rounded-xl p-4 space-y-3"
@@ -699,10 +696,6 @@ export default function PresupuestoClient({
       {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
           SECCIÓN META FÍSICA â€” siempre visible
           â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
-      <div className="pt-2">
-        <SectionBadge label="Seguimiento Avance Meta Física General" page="presupuesto" />
-      </div>
-
       {tramos.length === 0 ? (
         <div
           className="rounded-xl p-6 text-center"
@@ -762,10 +755,6 @@ export default function PresupuestoClient({
           </div>
 
           {/* â”€â”€ Dashboard por tramo con tabs â”€â”€ */}
-          <div className="pt-1">
-            <SectionBadge label="Seguimiento Avance Meta Física por Tramo" page="presupuesto" />
-          </div>
-
           <div
             className="rounded-xl p-4 space-y-4"
             style={{

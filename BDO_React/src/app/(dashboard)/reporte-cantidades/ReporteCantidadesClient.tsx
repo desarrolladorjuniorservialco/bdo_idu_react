@@ -5,7 +5,6 @@ import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
 import { FilterForm } from '@/components/shared/FilterForm';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PhotoGrid } from '@/components/shared/PhotoGrid';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { formatCOP } from '@/lib/utils';
 import type { FotoRegistro, RegistroCantidad, Rol } from '@/types/database';
@@ -81,7 +80,6 @@ export default function ReporteCantidadesClient({
 
   return (
     <div className="space-y-4">
-      <SectionBadge label="Reporte de Cantidades de Obra" page="reporte-cantidades" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard label="Total registros" value={kpis.total} accent="blue" />
         <KpiCard label="Aprobados" value={kpis.aprobados} accent="green" />

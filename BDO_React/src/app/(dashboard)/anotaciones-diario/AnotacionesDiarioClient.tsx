@@ -5,7 +5,6 @@ import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
 import { FilterForm } from '@/components/shared/FilterForm';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PhotoGrid } from '@/components/shared/PhotoGrid';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import type { FotoRegistro, Rol } from '@/types/database';
 import { useCallback, useMemo, useReducer, useState } from 'react';
 
@@ -305,8 +304,6 @@ export default function AnotacionesDiarioClient({
 
   return (
     <div className="space-y-4">
-      <SectionBadge label="Anotaciones Diario de Obra" page="anotaciones-diario" />
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <KpiCard label="Registros diarios" value={filtered.length} accent="blue" />
         <KpiCard label="Aprobados" value={totalAprobados} accent="green" />

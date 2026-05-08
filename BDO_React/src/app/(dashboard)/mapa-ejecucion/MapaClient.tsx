@@ -1,7 +1,6 @@
 'use client';
 import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
 import { KpiCard } from '@/components/shared/KpiCard';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -445,7 +444,6 @@ export default function MapaClient({
 
   return (
     <div className="space-y-4">
-      <SectionBadge label="Mapa de Ejecución" page="mapa-ejecucion" />
       <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
         Distribución Geográfica de Registros
       </h2>

@@ -1,5 +1,4 @@
 import { KpiCard } from '@/components/shared/KpiCard';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import { createClient } from '@/lib/supabase/server';
@@ -273,7 +272,6 @@ export default async function EstadoActualPage() {
 
       {/* ── Tabla de prórrogas ── */}
       <div>
-        <SectionBadge label="Seguimiento de Prórrogas" page="estado-actual" />
         <div className="rounded-[20px] p-4 mt-3" style={cardStyle}>
           {prorrogas.length === 0 ? (
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -322,7 +320,6 @@ export default async function EstadoActualPage() {
 
       {/* ── Tabla de adiciones ── */}
       <div>
-        <SectionBadge label="Seguimiento de Adiciones Presupuestales" page="estado-actual" />
         <div className="rounded-[20px] p-4 mt-3" style={cardStyle}>
           {adiciones.length === 0 ? (
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>

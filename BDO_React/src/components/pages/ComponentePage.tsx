@@ -5,7 +5,6 @@ import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
 import { FilterForm } from '@/components/shared/FilterForm';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PhotoGrid } from '@/components/shared/PhotoGrid';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import type { FotoRegistro, RegistroComponente, Rol } from '@/types/database';
 import { useMemo, useReducer } from 'react';
@@ -49,7 +48,7 @@ interface ComponentePageProps {
 }
 
 export default function ComponentePage({
-  title,
+  title: _title,
   page,
   tabla,
   registros,
@@ -90,7 +89,6 @@ export default function ComponentePage({
 
   return (
     <div className="space-y-4">
-      <SectionBadge label={title} page={page} />
       <div className="grid grid-cols-2 gap-3">
         <KpiCard label="Total registros" value={filtered.length} accent="blue" />
         <KpiCard label="Aprobados" value={aprobados} accent="green" />

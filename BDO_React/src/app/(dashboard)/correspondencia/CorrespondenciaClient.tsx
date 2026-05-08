@@ -1,7 +1,6 @@
 'use client';
 import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
 import { KpiCard } from '@/components/shared/KpiCard';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Button } from '@/components/ui/button';
 import {
@@ -536,8 +535,6 @@ export default function CorrespondenciaClient({
 
   return (
     <div className="space-y-4">
-      <SectionBadge label="Correspondencia" page="correspondencia" />
-
       {/* ── KPI Cards ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <KpiCard label="Total" value={kpis.total} accent="teal" />

@@ -1,6 +1,5 @@
 ﻿'use client';
 import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -120,7 +119,6 @@ export default function AnotacionesClient({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <SectionBadge label="Anotaciones Generales" page="anotaciones" />
         <ExportCsvButton data={filtered} filename="anotaciones" />
       </div>
 
