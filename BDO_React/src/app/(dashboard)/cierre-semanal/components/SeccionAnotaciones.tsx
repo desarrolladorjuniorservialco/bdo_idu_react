@@ -1,5 +1,3 @@
-import { SectionBadge } from '@/components/shared/SectionBadge';
-
 const MAX = 10;
 
 interface Row {
@@ -21,7 +19,6 @@ export function SeccionAnotaciones({ items, total }: Props) {
   return (
     <section>
       <div className="flex items-center justify-between mb-3">
-        <SectionBadge label="Anotaciones" page="cierre-semanal" />
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
           {total} registro{total !== 1 ? 's' : ''}
         </span>

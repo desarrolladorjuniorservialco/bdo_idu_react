@@ -9,7 +9,6 @@ import type {
 } from '@/components/pdf/InformePdf';
 import { InformePdfDownload } from '@/components/pdf/InformePdf';
 import { KpiCard } from '@/components/shared/KpiCard';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { createClient } from '@/lib/supabase/client';
 import {
   type ReactElement,
@@ -477,7 +476,6 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
   if (error || !data) {
     return (
       <div className="space-y-6">
-        <SectionBadge label="Generar Informe" page="generar-informe" />
         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
           No se pudieron cargar los datos del informe.
         </p>
@@ -487,8 +485,6 @@ export default function GenerarInformeClient({ contratoId }: { contratoId: strin
 
   return (
     <div className="space-y-6">
-      <SectionBadge label="Generar Informe" page="generar-informe" />
-
       <div
         className="rounded-2xl border p-5 md:p-6 space-y-4"
         style={{ borderColor: 'var(--border)', background: 'var(--bg-card)' }}

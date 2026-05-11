@@ -1,7 +1,6 @@
 ﻿'use client';
 import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
 import { KpiCard } from '@/components/shared/KpiCard';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -249,8 +248,18 @@ function TabBar({
 export default function PresupuestoClient({
   items,
   tramos,
-  rol,
-}: { items: BudgetItem[]; tramos: TramoItem[]; rol: Rol }) {
+  rol: _rol,
+  valorContrato,
+  valorEjecutado,
+  itemsConEjecucion,
+}: {
+  items: BudgetItem[];
+  tramos: TramoItem[];
+  rol: Rol;
+  valorContrato: number;
+  valorEjecutado: number;
+  itemsConEjecucion: number;
+}) {
   // â”€â”€ Filtros â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [compFilter, setCompFilter] = useState<string>('Todos');
   const [buscar, setBuscar] = useState('');
@@ -285,20 +294,14 @@ export default function PresupuestoClient({
 
   // â”€â”€ KPIs financieros â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const kpis = useMemo(() => {
-    const total = itemsFiltrados.reduce(
-      (a, i) => a + (toNumber(i.valor_total) || toNumber(i.cantidad) * toNumber(i.precio_unitario)),
-      0,
-    );
-    const ejecutado = itemsFiltrados.reduce(
-      (a, i) =>
-        a +
-        (toNumber(i.valor_ejecutado) ||
-          toNumber(i.cantidad_ejecutada) * toNumber(i.precio_unitario)),
-      0,
-    );
-    const pct = total > 0 ? (ejecutado / total) * 100 : 0;
-    return { total, ejecutado, pendiente: Math.max(total - ejecutado, 0), pct };
-  }, [itemsFiltrados]);
+    const pct = valorContrato > 0 ? (valorEjecutado / valorContrato) * 100 : 0;
+    return {
+      total: valorContrato,
+      ejecutado: valorEjecutado,
+      pendiente: Math.max(valorContrato - valorEjecutado, 0),
+      pct,
+    };
+  }, [valorContrato, valorEjecutado]);
 
   // â”€â”€ Gráfica por capítulo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const chartDataCap = useMemo(() => {
@@ -340,7 +343,7 @@ export default function PresupuestoClient({
         const pct = meta > 0 ? Math.min((ejec / meta) * 100, 100) : 0;
         return { ...t, _meta: meta, _ejec: ejec, _pct: pct, _infra: infra };
       })
-      .filter((t) => t._meta > 0);
+      .filter((t) => t._meta > 0 || t._ejec > 0);
   }, [tramos]);
 
   const metaKpis = useMemo(() => {
@@ -381,8 +384,6 @@ export default function PresupuestoClient({
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <div className="space-y-5">
-      <SectionBadge label="Seguimiento Presupuestal" page="presupuesto" />
-
       {/* â”€â”€ Filtros â”€â”€ */}
       <div
         className="rounded-xl p-4 space-y-3"
@@ -447,9 +448,9 @@ export default function PresupuestoClient({
         />
         <KpiCard
           label="Ítems con ejecución"
-          value={String(itemsFiltrados.filter((i) => toNumber(i.cantidad_ejecutada) > 0).length)}
+          value={String(itemsConEjecucion)}
           accent="teal"
-          sublabel={`de ${itemsFiltrados.length} ítems`}
+          sublabel="items únicos en registros_cantidades"
         />
       </div>
 
@@ -699,10 +700,6 @@ export default function PresupuestoClient({
       {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
           SECCIÓN META FÍSICA â€” siempre visible
           â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
-      <div className="pt-2">
-        <SectionBadge label="Seguimiento Avance Meta Física General" page="presupuesto" />
-      </div>
-
       {tramos.length === 0 ? (
         <div
           className="rounded-xl p-6 text-center"
@@ -762,10 +759,6 @@ export default function PresupuestoClient({
           </div>
 
           {/* â”€â”€ Dashboard por tramo con tabs â”€â”€ */}
-          <div className="pt-1">
-            <SectionBadge label="Seguimiento Avance Meta Física por Tramo" page="presupuesto" />
-          </div>
-
           <div
             className="rounded-xl p-4 space-y-4"
             style={{

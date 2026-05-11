@@ -1,5 +1,4 @@
 import { KpiCard } from '@/components/shared/KpiCard';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { computeMetaKpis, computePresupuestoKpis, formatCOP } from '../cierre-semanal.utils';
 
 const TIPOS = {
@@ -36,10 +35,6 @@ export function SeccionPresupuesto({ items, tramos }: Props) {
 
   return (
     <section>
-      <div className="mb-3">
-        <SectionBadge label="Estado del Presupuesto" page="cierre-semanal" />
-      </div>
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <KpiCard
           label="Valor total contrato"

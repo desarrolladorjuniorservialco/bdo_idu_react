@@ -5,9 +5,11 @@ import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
 import { FilterForm } from '@/components/shared/FilterForm';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { PhotoGrid } from '@/components/shared/PhotoGrid';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { eliminarRegistroComponente } from '@/lib/supabase/actions/componentes';
 import type { FotoRegistro, RegistroComponente, Rol } from '@/types/database';
+import { Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useMemo, useReducer } from 'react';
 
 type Filters = { desde: string; hasta: string; estado: string; buscar: string };
@@ -49,7 +51,7 @@ interface ComponentePageProps {
 }
 
 export default function ComponentePage({
-  title,
+  title: _title,
   page,
   tabla,
   registros,
@@ -58,6 +60,17 @@ export default function ComponentePage({
 }: ComponentePageProps) {
   const [state, dispatch] = useReducer(reducer, undefined, getInitialState);
   const { filters, selected } = state;
+  const router = useRouter();
+
+  async function handleEliminarComponente(id: string) {
+    if (!window.confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+    try {
+      await eliminarRegistroComponente(id);
+      router.refresh();
+    } catch {
+      alert('Error al eliminar el registro.');
+    }
+  }
 
   const fotoMap = useMemo(() => {
     const m: Record<string, FotoRegistro[]> = {};
@@ -90,7 +103,6 @@ export default function ComponentePage({
 
   return (
     <div className="space-y-4">
-      <SectionBadge label={title} page={page} />
       <div className="grid grid-cols-2 gap-3">
         <KpiCard label="Total registros" value={filtered.length} accent="blue" />
         <KpiCard label="Aprobados" value={aprobados} accent="green" />
@@ -108,12 +120,32 @@ export default function ComponentePage({
         selected={selected}
         onSelect={(id) => dispatch({ type: 'SELECT', id })}
         renderHeader={(r) => (
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap w-full">
             <StatusBadge estado={r.estado} />
             <span className="font-mono text-xs">{r.folio}</span>
             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
               {r.tipo_actividad ?? r.actividad}
             </span>
+            {rol === 'admin' && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEliminarComponente(String(r.id));
+                }}
+                title="Eliminar registro"
+                className="ml-auto"
+                style={{
+                  color: '#dc2626',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 4,
+                }}
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
           </div>
         )}
         renderDetail={(r) => (

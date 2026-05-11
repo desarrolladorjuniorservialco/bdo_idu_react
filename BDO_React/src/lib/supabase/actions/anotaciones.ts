@@ -44,3 +44,10 @@ export async function insertarAnotacion(contratoId: string, input: unknown) {
   revalidatePath('/anotaciones');
   return { ok: true, anotacion: data };
 }
+
+export async function eliminarAnotacion(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('anotaciones_generales').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/anotaciones');
+}

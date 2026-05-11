@@ -1,5 +1,6 @@
 'use server';
 import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchReporteDiario(contratoId: string) {
   const supabase = await createClient();
@@ -34,4 +35,11 @@ export async function fetchSubtablasDiarioByContrato(contratoId: string) {
     sst: sst.data ?? [],
     fotos: fotos.data ?? [],
   };
+}
+
+export async function eliminarReporteDiario(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('registros_reporte_diario').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/anotaciones-diario');
 }

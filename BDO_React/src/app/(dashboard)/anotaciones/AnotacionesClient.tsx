@@ -1,14 +1,13 @@
 ﻿'use client';
 import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
-import { SectionBadge } from '@/components/shared/SectionBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ROL_LABELS } from '@/lib/config';
-import { insertarAnotacion } from '@/lib/supabase/actions/anotaciones';
+import { eliminarAnotacion, insertarAnotacion } from '@/lib/supabase/actions/anotaciones';
 import { type AnotacionInput, anotacionSchema } from '@/lib/validators/anotacion.schema';
-import type { AnotacionGeneral } from '@/types/database';
+import type { AnotacionGeneral, Rol } from '@/types/database';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LazyMotion, MotionConfig, domAnimation, m, useReducedMotion } from 'framer-motion';
 import {
@@ -19,8 +18,10 @@ import {
   Navigation,
   SlidersHorizontal,
   Tag,
+  Trash2,
   X,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useMemo, useReducer, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -74,15 +75,28 @@ export function applyFilters(anotaciones: AnotacionGeneral[], f: FiltersState): 
 export default function AnotacionesClient({
   anotaciones,
   contratoId,
+  rol,
 }: {
   anotaciones: AnotacionGeneral[];
   contratoId: string;
+  rol: Rol;
 }) {
   const [filters, dispatch] = useReducer(reducer, FILTERS_INIT);
   const [newItems, setNewItems] = useState<AnotacionGeneral[]>([]);
   const reducedMotion = useReducedMotion();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [today] = useState(() => new Date().toISOString().slice(0, 10));
+  const router = useRouter();
+
+  async function handleEliminar(id: string) {
+    if (!window.confirm('¿Eliminar esta anotación? Esta acción no se puede deshacer.')) return;
+    try {
+      await eliminarAnotacion(id);
+      router.refresh();
+    } catch {
+      alert('Error al eliminar la anotación.');
+    }
+  }
 
   const {
     register,
@@ -120,7 +134,6 @@ export default function AnotacionesClient({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <SectionBadge label="Anotaciones Generales" page="anotaciones" />
         <ExportCsvButton data={filtered} filename="anotaciones" />
       </div>
 
@@ -365,6 +378,23 @@ export default function AnotacionesClient({
                       )}
                     </div>
                   </div>
+
+                  {rol === 'admin' && (
+                    <button
+                      type="button"
+                      onClick={() => handleEliminar(a.id)}
+                      title="Eliminar anotación"
+                      style={{
+                        color: '#dc2626',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 4,
+                      }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </m.article>
               );
             })}

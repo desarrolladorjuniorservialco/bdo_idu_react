@@ -45,7 +45,7 @@ L.Icon.Default.mergeOptions({
 });
 
 const ESTADO_COLOR: Record<string, string> = {
-  BORRADOR: '#5bc0de',
+  BORRADOR: '#1a6faf',
   REVISADO: '#ffb71b',
   APROBADO: '#859226',
   DEVUELTO: '#ea273f',
