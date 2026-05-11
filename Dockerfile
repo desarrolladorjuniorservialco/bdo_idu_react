@@ -1,12 +1,12 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
-COPY bdo_idu_react/BDO_React/package.json bdo_idu_react/BDO_React/package-lock.json ./
+COPY BDO_React/package.json BDO_React/package-lock.json ./
 RUN npm ci
 
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY bdo_idu_react/BDO_React/ ./
+COPY BDO_React/ ./
 RUN npm run build
 
 FROM node:20-alpine AS runner
