@@ -421,9 +421,8 @@ const Footer = () => (
 const Card = ({
   title,
   children,
-  accent = true,
-}: { title: string; children: ReactNode; accent?: boolean }) => (
-  <View style={accent ? [styles.card, styles.cardAccent] : styles.card} wrap={false}>
+}: { title: string; children: ReactNode }) => (
+  <View style={styles.card} wrap={false}>
     <View style={styles.cardHeader}>
       <View style={styles.cardDot} />
       <Text style={styles.cardTitle}>{title}</Text>
@@ -434,7 +433,7 @@ const Card = ({
 
 const Divider = ({ label }: { label: string }) => (
   <View style={styles.sectionDivider}>
-    <View style={styles.dividerLine} />
+    <View style={styles.dividerBar} />
     <Text style={styles.dividerLabel}>{label}</Text>
     <View style={styles.dividerLine} />
   </View>
