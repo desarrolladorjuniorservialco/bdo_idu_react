@@ -178,9 +178,9 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   tableHeaderColValue: {
-    fontSize: 8.5,
+    fontSize: 11,
     color: COLORS.white,
-    fontWeight: 700,
+    fontWeight: 800,
   },
   tableRow: {
     paddingVertical: 12,
@@ -233,7 +233,8 @@ const styles = StyleSheet.create({
   },
   coverContent: {
     paddingHorizontal: 48,
-    paddingVertical: 56,
+    paddingTop: 40,
+    paddingBottom: 32,
     flex: 1,
   },
   coverEyebrow: {
@@ -368,9 +369,11 @@ function DotGrid() {
     }
   }
   return (
-    <Svg style={{ position: 'absolute', top: 0, left: 0 }} width={W} height={H}>
-      {dots}
-    </Svg>
+    <View style={{ position: 'absolute', top: 0, left: 0, width: W, height: H }}>
+      <Svg width={W} height={H}>
+        {dots}
+      </Svg>
+    </View>
   );
 }
 
@@ -382,32 +385,34 @@ function CornerBrackets() {
   const stroke = 'rgba(193,255,114,0.25)';
   const sw = 1.5;
   return (
-    <Svg style={{ position: 'absolute', top: 0, left: 0 }} width={W} height={H}>
-      <Path
-        d={`M ${o} ${o + s} L ${o} ${o} L ${o + s} ${o}`}
-        stroke={stroke}
-        strokeWidth={sw}
-        fill="none"
-      />
-      <Path
-        d={`M ${W - o - s} ${o} L ${W - o} ${o} L ${W - o} ${o + s}`}
-        stroke={stroke}
-        strokeWidth={sw}
-        fill="none"
-      />
-      <Path
-        d={`M ${o} ${H - o - s} L ${o} ${H - o} L ${o + s} ${H - o}`}
-        stroke={stroke}
-        strokeWidth={sw}
-        fill="none"
-      />
-      <Path
-        d={`M ${W - o - s} ${H - o} L ${W - o} ${H - o} L ${W - o} ${H - o - s}`}
-        stroke={stroke}
-        strokeWidth={sw}
-        fill="none"
-      />
-    </Svg>
+    <View style={{ position: 'absolute', top: 0, left: 0, width: W, height: H }}>
+      <Svg width={W} height={H}>
+        <Path
+          d={`M ${o} ${o + s} L ${o} ${o} L ${o + s} ${o}`}
+          stroke={stroke}
+          strokeWidth={sw}
+          fill="none"
+        />
+        <Path
+          d={`M ${W - o - s} ${o} L ${W - o} ${o} L ${W - o} ${o + s}`}
+          stroke={stroke}
+          strokeWidth={sw}
+          fill="none"
+        />
+        <Path
+          d={`M ${o} ${H - o - s} L ${o} ${H - o} L ${o + s} ${H - o}`}
+          stroke={stroke}
+          strokeWidth={sw}
+          fill="none"
+        />
+        <Path
+          d={`M ${W - o - s} ${H - o} L ${W - o} ${H - o} L ${W - o} ${H - o - s}`}
+          stroke={stroke}
+          strokeWidth={sw}
+          fill="none"
+        />
+      </Svg>
+    </View>
   );
 }
 
@@ -629,7 +634,10 @@ function pkFromRow(row: unknown): string {
 }
 
 function tramoFromRow(row: unknown): string {
-  return str(readField(row, 'id_tramo', 'tramo', 'nombre_tramo'));
+  const raw = str(readField(row, 'tramo', 'nombre_tramo', 'id_tramo'));
+  if (raw === '—') return raw;
+  if (/^\d+$/.test(raw)) return `T-${raw.padStart(2, '0')}`;
+  return raw;
 }
 
 function fileTimestamp(d = new Date()): string {
@@ -678,7 +686,7 @@ function ActivityTable({
 
 function CoverTimeline({ sections }: { sections: string[] }) {
   return (
-    <View style={{ marginTop: 32, flexDirection: 'row', gap: 12 }}>
+    <View style={{ marginTop: 20, flexDirection: 'row', gap: 12 }}>
       {/* Continuous rail */}
       <View
         style={{
@@ -760,10 +768,6 @@ function CoverPage({ data }: { data: FilteredData }) {
         <Text style={styles.coverSubtitle}>
           {str(contrato.nombre_contrato, 'Sistema Bitácora')}
         </Text>
-        <Text style={styles.coverMeta}>
-          Período: {fmtD(data.fi)} – {fmtD(data.ff)}
-        </Text>
-        <Text style={styles.coverMeta}>Generado: {fmtD(generado)}</Text>
         {sections.length > 0 && <CoverTimeline sections={sections} />}
         <CoverInfoGrid data={data} />
       </View>
