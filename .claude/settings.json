@@ -39,7 +39,11 @@
       "Bash(Get-ChildItem -Path \"src/app\" -Recurse -Filter \"page.tsx\")",
       "Bash(python -c ' *)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\" -Force)",
-      "Bash(npm ls *)"
+      "Bash(npm ls *)",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\BDO_React\\\\public\\\\fonts\")",
+      "PowerShell(Invoke-WebRequest -Uri \"https://github.com/google/fonts/raw/main/ofl/sora/Sora%5Bwght%5D.ttf\" -OutFile \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\BDO_React\\\\public\\\\fonts\\\\Sora.ttf\")",
+      "PowerShell(\\(Get-Item \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\BDO_React\\\\public\\\\fonts\\\\Sora.ttf\"\\).Length)",
+      "Bash(node -e ' *)"
     ]
   }
 }
