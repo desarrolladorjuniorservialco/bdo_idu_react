@@ -609,7 +609,7 @@ function fileTimestamp(d = new Date()): string {
   return `${yyyy}${mm}${dd}${hh}${mi}${ss}`;
 }
 
-function GroupFrame({
+function ActivityTable({
   fecha,
   civ,
   tramo,
@@ -621,11 +621,11 @@ function GroupFrame({
   children: ReactNode;
 }) {
   return (
-    <View style={styles.groupFrame}>
-      <View style={styles.groupHeader}>
-        <Text style={styles.groupHeaderText}>Fecha: {fecha}</Text>
-        <Text style={styles.groupHeaderText}>CIV: {civ}</Text>
-        {tramo ? <Text style={styles.groupHeaderText}>Tramo: {tramo}</Text> : null}
+    <View style={styles.tableFrame}>
+      <View style={styles.tableHeader}>
+        <Text style={styles.tableHeaderText}>Fecha: {fecha}</Text>
+        <Text style={styles.tableHeaderText}>CIV: {civ}</Text>
+        {tramo ? <Text style={styles.tableHeaderText}>Tramo: {tramo}</Text> : null}
       </View>
       {children}
     </View>
