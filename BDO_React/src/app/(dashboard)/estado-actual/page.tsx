@@ -4,6 +4,7 @@ import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import { createClient } from '@/lib/supabase/server';
 import { formatCOP, formatDateDMY } from '@/lib/utils';
 import type { Adicion, Contrato, Prorroga } from '@/types/database';
+import { calcularPlazos } from './estado-actual.utils';
 import {
   Banknote,
   Building,
@@ -16,11 +17,6 @@ import {
 } from 'lucide-react';
 
 export const revalidate = 60;
-
-function parseDateUTC(iso: string): Date {
-  const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, d));
-}
 
 function TimelineBar({
   pct,
@@ -134,29 +130,8 @@ export default async function EstadoActualPage() {
   }
 
   // ── Cálculos de tiempo ──────────────────────────────────
-  const now = new Date();
-  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-
-  const fechaInicio = parseDateUTC(contrato.fecha_inicio);
-  const fechaFinOrig = parseDateUTC(contrato.fecha_fin);
-  const fechaFinVig = parseDateUTC(contrato.plazo_actual ?? contrato.fecha_fin);
-
-  const MS_POR_DIA = 1000 * 60 * 60 * 24;
-  const diasTranscurridos = Math.max(
-    Math.floor((today.getTime() - fechaInicio.getTime()) / MS_POR_DIA),
-    0,
-  );
-  const plazoOriginal = Math.floor((fechaFinOrig.getTime() - fechaInicio.getTime()) / MS_POR_DIA);
-  const plazoTotal = Math.max(
-    Math.floor((fechaFinVig.getTime() - fechaInicio.getTime()) / MS_POR_DIA),
-    1,
-  );
-  const diasRestantes = Math.max(
-    Math.floor((fechaFinVig.getTime() - today.getTime()) / MS_POR_DIA),
-    0,
-  );
-  const pctTiempo = Math.min((diasTranscurridos / plazoTotal) * 100, 100);
-  const diasExtension = Math.floor((fechaFinVig.getTime() - fechaFinOrig.getTime()) / MS_POR_DIA);
+  const { plazoOriginal, plazoTotal, diasTranscurridos, diasRestantes, pctTiempo, diasExtension } =
+    calcularPlazos(contrato.fecha_inicio, contrato.fecha_fin, contrato.plazo_actual);
 
   const totalDiasAdicionados = prorrogas.reduce((a, p) => a + (p.plazo_dias ?? 0), 0);
   const totalAdicionado = adiciones.reduce((a, ad) => a + (ad.adicion ?? 0), 0);
@@ -247,13 +222,13 @@ export default async function EstadoActualPage() {
             label="Días Transcurridos"
             value={diasTranscurridos}
             accent={kpiAccent}
-            sublabel={`${pctTiempo.toFixed(1)}% del plazo vigente`}
+            sublabel={`${pctTiempo.toFixed(1)}% de ${plazoTotal} días vigentes`}
           />
           <KpiCard
             label="Días Restantes"
             value={diasRestantes}
             accent="blue"
-            sublabel={`Fin: ${formatDateDMY(contrato.plazo_actual ?? contrato.fecha_fin)}`}
+            sublabel={`Plazo vigente: ${plazoTotal} días en total`}
           />
           <KpiCard
             label="Plazo Original"
