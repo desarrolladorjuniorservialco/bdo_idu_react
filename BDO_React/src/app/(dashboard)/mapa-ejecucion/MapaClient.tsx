@@ -658,7 +658,7 @@ export default function MapaClient({
         {/* Tab content */}
         {activeTab === 'cantidades' && (
           <RecordTable
-            records={totalCantidades}
+            records={cantidades}
             columns={[
               'folio',
               'fecha',
@@ -698,7 +698,7 @@ export default function MapaClient({
         )}
         {activeTab === 'componentes' && (
           <RecordTable
-            records={totalComponentes}
+            records={componentes}
             columns={[
               'folio',
               'fecha',
@@ -734,7 +734,7 @@ export default function MapaClient({
         )}
         {activeTab === 'diario' && (
           <RecordTable
-            records={totalDiario}
+            records={reporteDiario}
             columns={[
               'folio',
               'fecha',
