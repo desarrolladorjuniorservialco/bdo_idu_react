@@ -191,10 +191,16 @@ function RecordTable({
   const available = columns.filter((c) => records.some((r) => r[c] != null));
 
   return (
-    <div className="overflow-x-auto rounded-lg border" style={{ borderColor: 'var(--border)' }}>
+    <div
+      className="rounded-lg border overflow-x-auto overflow-y-auto"
+      style={{ borderColor: 'var(--border)', maxHeight: '520px' }}
+    >
       <table className="w-full text-sm border-collapse">
         <thead>
-          <tr style={{ background: 'var(--muted, #f8f9fa)' }}>
+          <tr
+            className="sticky top-0 z-10"
+            style={{ background: 'var(--bg-card, #f8f9fa)' }}
+          >
             {available.map((c) => (
               <th
                 key={c}
@@ -346,8 +352,8 @@ export default function MapaClient({
 
   // ── KPIs ──────────────────────────────────────────────────────────────────
   const cantAprobadas = useMemo(
-    () => cantidades.filter((r) => r.estado === 'APROBADO').length,
-    [cantidades],
+    () => filteredCant.filter((r) => r.estado === 'APROBADO').length,
+    [filteredCant],
   );
 
   // ── Datos de exportación (columnas relevantes por capa) ────────────────────
@@ -563,9 +569,9 @@ export default function MapaClient({
 
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard label="Cantidades" value={cantidades.length} accent="green" />
-        <KpiCard label="Componentes" value={componentes.length} accent="orange" />
-        <KpiCard label="Reporte Diario" value={reporteDiario.length} accent="blue" />
+        <KpiCard label="Cantidades" value={filteredCant.length} accent="green" />
+        <KpiCard label="Componentes" value={filteredComp.length} accent="orange" />
+        <KpiCard label="Reporte Diario" value={filteredDiario.length} accent="blue" />
         <KpiCard
           label="Cantidades Aprobadas"
           value={cantAprobadas}
@@ -724,7 +730,6 @@ export default function MapaClient({
             records={geoDiario}
             columns={[
               'folio',
-              'fecha_reporte',
               'fecha',
               'id_tramo',
               'tramo',
@@ -736,7 +741,6 @@ export default function MapaClient({
             ]}
             labels={{
               folio: 'Folio',
-              fecha_reporte: 'F. Reporte',
               fecha: 'Fecha',
               id_tramo: 'Tramo',
               tramo: 'Tramo',
