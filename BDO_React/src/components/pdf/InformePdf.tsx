@@ -164,16 +164,23 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 8,
   },
-  tableHeaderText: {
-    fontSize: 8,
+  tableHeaderCol: {
+    flex: 1,
+  },
+  tableHeaderColLabel: {
+    fontSize: 6.5,
+    color: 'rgba(193,255,114,0.55)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 2,
+  },
+  tableHeaderColValue: {
+    fontSize: 8.5,
     color: COLORS.white,
     fontWeight: 700,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
   },
   tableRow: {
     paddingVertical: 12,
@@ -624,9 +631,20 @@ function ActivityTable({
   return (
     <View style={styles.tableFrame}>
       <View style={styles.tableHeader}>
-        <Text style={styles.tableHeaderText}>Fecha: {fecha}</Text>
-        <Text style={styles.tableHeaderText}>CIV: {civ}</Text>
-        {tramo ? <Text style={styles.tableHeaderText}>Tramo: {tramo}</Text> : null}
+        <View style={styles.tableHeaderCol}>
+          <Text style={styles.tableHeaderColLabel}>Fecha</Text>
+          <Text style={styles.tableHeaderColValue}>{fecha}</Text>
+        </View>
+        <View style={styles.tableHeaderCol}>
+          <Text style={styles.tableHeaderColLabel}>CIV</Text>
+          <Text style={styles.tableHeaderColValue}>{civ}</Text>
+        </View>
+        {tramo ? (
+          <View style={styles.tableHeaderCol}>
+            <Text style={styles.tableHeaderColLabel}>Tramo</Text>
+            <Text style={styles.tableHeaderColValue}>{tramo}</Text>
+          </View>
+        ) : null}
       </View>
       {children}
     </View>
