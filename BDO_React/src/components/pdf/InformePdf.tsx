@@ -270,6 +270,31 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 4,
   },
+  coverInfoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(193,255,114,0.2)',
+    paddingTop: 16,
+  },
+  coverInfoItem: {
+    width: '50%',
+    paddingBottom: 10,
+    paddingRight: 8,
+  },
+  coverInfoLabel: {
+    fontSize: 6.5,
+    color: 'rgba(193,255,114,0.55)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 3,
+  },
+  coverInfoValue: {
+    fontSize: 9,
+    color: COLORS.white,
+    fontWeight: 600,
+  },
 
   // ── Signature Page ───────────────────────────────────────────────
   signaturePage: {
@@ -694,6 +719,27 @@ function CoverTimeline({ sections }: { sections: string[] }) {
   );
 }
 
+function CoverInfoGrid({ data }: { data: FilteredData }) {
+  const contrato = data.contrato ?? {};
+  const generado = data.generado_en ?? new Date().toISOString();
+  const items = [
+    { label: 'Período', value: `${fmtD(data.fi)} – ${fmtD(data.ff)}` },
+    { label: 'Generado', value: fmtD(generado) },
+    { label: 'Contrato', value: str(contrato.id) },
+    { label: 'Contratista', value: str(contrato.contratista) },
+  ];
+  return (
+    <View style={styles.coverInfoGrid}>
+      {items.map(({ label, value }) => (
+        <View key={label} style={styles.coverInfoItem}>
+          <Text style={styles.coverInfoLabel}>{label}</Text>
+          <Text style={styles.coverInfoValue}>{value}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function CoverPage({ data }: { data: FilteredData }) {
   const contrato = data.contrato ?? {};
   const generado = data.generado_en ?? new Date().toISOString();
@@ -719,6 +765,7 @@ function CoverPage({ data }: { data: FilteredData }) {
         </Text>
         <Text style={styles.coverMeta}>Generado: {fmtD(generado)}</Text>
         {sections.length > 0 && <CoverTimeline sections={sections} />}
+        <CoverInfoGrid data={data} />
       </View>
     </Page>
   );
@@ -759,7 +806,6 @@ function SignaturePage({ generado }: { generado: string }) {
 }
 
 function InformePdfDocument({ data }: { data: FilteredData }) {
-  const contrato = data.contrato ?? {};
   const generado = data.generado_en ?? new Date().toISOString();
   return (
     <Document>
@@ -768,29 +814,6 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
       <Page size="A4" style={styles.page}>
         <Header fi={data.fi} ff={data.ff} generado={generado} />
         <Footer />
-
-        <Card title="Información General">
-          <View style={styles.infoGrid}>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Período</Text>
-              <Text style={styles.infoValue}>
-                {fmtD(data.fi)} – {fmtD(data.ff)}
-              </Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Contrato</Text>
-              <Text style={styles.infoValue}>{str(contrato.id)}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Contratista</Text>
-              <Text style={styles.infoValue}>{str(contrato.contratista)}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Generado</Text>
-              <Text style={styles.infoValue}>{fmtD(generado)}</Text>
-            </View>
-          </View>
-        </Card>
 
         {(data.cantidades?.length ?? 0) > 0 && (
           <>
