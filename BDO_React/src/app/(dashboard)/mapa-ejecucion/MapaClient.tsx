@@ -658,7 +658,7 @@ export default function MapaClient({
         {/* Tab content */}
         {activeTab === 'cantidades' && (
           <RecordTable
-            records={geoCant}
+            records={totalCantidades}
             columns={[
               'folio',
               'fecha',
@@ -698,7 +698,7 @@ export default function MapaClient({
         )}
         {activeTab === 'componentes' && (
           <RecordTable
-            records={geoComp}
+            records={totalComponentes}
             columns={[
               'folio',
               'fecha',
@@ -734,7 +734,7 @@ export default function MapaClient({
         )}
         {activeTab === 'diario' && (
           <RecordTable
-            records={geoDiario}
+            records={totalDiario}
             columns={[
               'folio',
               'fecha',
