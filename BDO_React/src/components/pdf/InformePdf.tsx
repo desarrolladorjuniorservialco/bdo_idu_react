@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   sigEyebrow: {
     fontSize: 8,
     letterSpacing: 2,
-    color: COLORS.lime,
+    color: #1BCC1B,
     textTransform: 'uppercase',
     fontWeight: 700,
     marginBottom: 8,
