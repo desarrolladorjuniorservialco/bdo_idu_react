@@ -151,37 +151,89 @@ const styles = StyleSheet.create({
   },
   infoValue: { fontSize: 10, color: COLORS.ink, fontWeight: 700 },
 
-  // ── Activity Table (reemplaza GroupFrame) ────────────────────────
-  tableFrame: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 8,
-    marginBottom: 10,
-    backgroundColor: COLORS.white,
-  },
-  tableHeader: {
+  // ── Tree grouping: Fecha > Tramo > CIV ──────────────────────────
+  groupDateBlock: {
     backgroundColor: COLORS.navy,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
-  tableHeaderCol: {
-    flex: 1,
+  groupDateDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: COLORS.lime,
+    flexShrink: 0,
   },
-  tableHeaderColLabel: {
-    fontSize: 7.5,
+  groupDateLabel: {
+    fontSize: 7,
+    color: 'rgba(193,255,114,0.6)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  groupDateValue: {
+    fontSize: 14,
+    fontWeight: 800,
+    color: COLORS.white,
+  },
+  groupTramoOuter: {
+    marginLeft: 16,
+    marginBottom: 10,
+    borderLeftWidth: 2,
+    borderLeftColor: 'rgba(193,255,114,0.3)',
+  },
+  groupTramoHeader: {
+    marginLeft: 10,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    backgroundColor: '#003875',
+    borderRadius: 6,
+    marginBottom: 6,
+  },
+  groupTramoLabel: {
+    fontSize: 6.5,
     color: 'rgba(193,255,114,0.55)',
     textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    letterSpacing: 0.8,
     marginBottom: 2,
-    fontWeight: 1500,
   },
-  tableHeaderColValue: {
-    fontSize: 9,
+  groupTramoValue: {
+    fontSize: 11,
+    fontWeight: 700,
     color: COLORS.white,
-    fontWeight: 1500,
+  },
+  groupCivOuter: {
+    marginLeft: 26,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 6,
+    backgroundColor: COLORS.white,
+  },
+  groupCivHeader: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.lime,
+  },
+  groupCivLabel: {
+    fontSize: 6,
+    color: COLORS.muted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 1,
+  },
+  groupCivValue: {
+    fontSize: 9.5,
+    fontWeight: 700,
+    color: COLORS.navy,
   },
   tableRow: {
     paddingVertical: 10,
@@ -566,14 +618,11 @@ function str(v: unknown, fallback = '—'): string {
   return !s || s === 'undefined' || s === 'null' ? fallback : s;
 }
 
-type GroupedItem<T> = { row: T; rowKey: string };
-type GroupedEntry<T> = {
-  groupKey: string;
-  fecha: string;
-  civ: string;
-  tramo: string;
-  items: GroupedItem<T>[];
-};
+type RowItem<T> = { row: T; rowKey: string };
+type CivGroup<T> = { civ: string; items: RowItem<T>[] };
+type TramoGroup<T> = { tramo: string; civs: CivGroup<T>[] };
+type DateGroup<T> = { fecha: string; tramos: TramoGroup<T>[] };
+
 function stableRowKey(row: unknown, scope: string): string {
   const base = [
     readField(row, 'id'),
@@ -590,31 +639,37 @@ function stableRowKey(row: unknown, scope: string): string {
   return `${scope}:${base || 'sin-clave'}`;
 }
 
-function groupByFechaCivTramo<T>(
+function groupHierarchical<T>(
   rows: T[],
   getFecha: (r: T) => unknown,
   getCiv: (r: T) => unknown,
   getTramo: (r: T) => unknown,
-) {
-  const map = new Map<string, GroupedEntry<T>>();
+): DateGroup<T>[] {
+  const fechaMap = new Map<string, Map<string, Map<string, RowItem<T>[]>>>();
   const repeats = new Map<string, number>();
   for (const row of rows) {
     const fecha = fmtD(getFecha(row));
-    const civ = str(getCiv(row));
     const tramo = str(getTramo(row));
-    const key = `${fecha}__${civ}__${tramo}`;
-    const prev = map.get(key);
-    const baseRowKey = stableRowKey(row, key);
+    const civ = str(getCiv(row));
+    const scope = `${fecha}__${tramo}__${civ}`;
+    if (!fechaMap.has(fecha)) fechaMap.set(fecha, new Map());
+    const tramoMap = fechaMap.get(fecha)!;
+    if (!tramoMap.has(tramo)) tramoMap.set(tramo, new Map());
+    const civMap = tramoMap.get(tramo)!;
+    if (!civMap.has(civ)) civMap.set(civ, []);
+    const baseRowKey = stableRowKey(row, scope);
     const seen = repeats.get(baseRowKey) ?? 0;
     repeats.set(baseRowKey, seen + 1);
     const rowKey = seen === 0 ? baseRowKey : `${baseRowKey}#${seen + 1}`;
-    if (prev) {
-      prev.items.push({ row, rowKey });
-    } else {
-      map.set(key, { groupKey: key, fecha, civ, tramo, items: [{ row, rowKey }] });
-    }
+    civMap.get(civ)!.push({ row, rowKey });
   }
-  return Array.from(map.values());
+  return Array.from(fechaMap.entries()).map(([fecha, tramoMap]) => ({
+    fecha,
+    tramos: Array.from(tramoMap.entries()).map(([tramo, civMap]) => ({
+      tramo,
+      civs: Array.from(civMap.entries()).map(([civ, items]) => ({ civ, items })),
+    })),
+  }));
 }
 
 function readField(row: unknown, ...keys: string[]): unknown {
@@ -651,38 +706,43 @@ function fileTimestamp(d = new Date()): string {
   return `${yyyy}${mm}${dd}${hh}${mi}${ss}`;
 }
 
-function ActivityTable({
-  fecha,
-  civ,
-  tramo,
-  children,
+function TreeGroup<T extends object>({
+  groups,
+  kp,
+  renderRows,
 }: {
-  fecha: string;
-  civ: string;
-  tramo?: string;
-  children: ReactNode;
-}) {
-  return (
-    <View style={styles.tableFrame}>
-      <View style={styles.tableHeader}>
-        <View style={styles.tableHeaderCol}>
-          <Text style={styles.tableHeaderColLabel}>Fecha</Text>
-          <Text style={styles.tableHeaderColValue}>{fecha}</Text>
+  groups: DateGroup<T>[];
+  kp: string;
+  renderRows: (items: RowItem<T>[]) => ReactNode;
+}): ReactNode {
+  return groups.map((dg) => (
+    <View key={`${kp}-d-${dg.fecha}`}>
+      <View style={styles.groupDateBlock} wrap={false}>
+        <View style={styles.groupDateDot} />
+        <View>
+          <Text style={styles.groupDateLabel}>Fecha</Text>
+          <Text style={styles.groupDateValue}>{dg.fecha}</Text>
         </View>
-        <View style={styles.tableHeaderCol}>
-          <Text style={styles.tableHeaderColLabel}>CIV</Text>
-          <Text style={styles.tableHeaderColValue}>{civ}</Text>
-        </View>
-        {tramo ? (
-          <View style={styles.tableHeaderCol}>
-            <Text style={styles.tableHeaderColLabel}>Tramo</Text>
-            <Text style={styles.tableHeaderColValue}>{tramo}</Text>
-          </View>
-        ) : null}
       </View>
-      {children}
+      {dg.tramos.map((tg) => (
+        <View key={`${kp}-t-${dg.fecha}-${tg.tramo}`} style={styles.groupTramoOuter}>
+          <View style={styles.groupTramoHeader} wrap={false}>
+            <Text style={styles.groupTramoLabel}>Tramo</Text>
+            <Text style={styles.groupTramoValue}>{tg.tramo}</Text>
+          </View>
+          {tg.civs.map((cg) => (
+            <View key={`${kp}-c-${dg.fecha}-${tg.tramo}-${cg.civ}`} style={styles.groupCivOuter}>
+              <View style={styles.groupCivHeader} wrap={false}>
+                <Text style={styles.groupCivLabel}>CIV</Text>
+                <Text style={styles.groupCivValue}>{cg.civ}</Text>
+              </View>
+              {renderRows(cg.items)}
+            </View>
+          ))}
+        </View>
+      ))}
     </View>
-  );
+  ));
 }
 
 function CoverTimeline({ sections }: { sections: string[] }) {
@@ -823,19 +883,16 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
         {(data.cantidades?.length ?? 0) > 0 && (
           <>
             <Divider label="Cantidades de Obra" />
-            {groupByFechaCivTramo(
-              data.cantidades!,
-              (r) => r.fecha,
-              (r) => civFromRow(r),
-              (r) => tramoFromRow(r),
-            ).map((g) => (
-              <ActivityTable
-                key={`cant-group-${g.groupKey}`}
-                fecha={g.fecha}
-                civ={g.civ}
-                tramo={g.tramo}
-              >
-                {g.items.map(({ row: r, rowKey }) => (
+            <TreeGroup
+              groups={groupHierarchical(
+                data.cantidades!,
+                (r) => r.fecha,
+                (r) => civFromRow(r),
+                (r) => tramoFromRow(r),
+              )}
+              kp="cant"
+              renderRows={(items) =>
+                items.map(({ row: r, rowKey }) => (
                   <View key={`cant-${rowKey}`} style={styles.tableRow} wrap={false}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
@@ -850,28 +907,25 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
                       <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
                     </View>
                   </View>
-                ))}
-              </ActivityTable>
-            ))}
+                ))
+              }
+            />
           </>
         )}
 
         {(data.componentes?.length ?? 0) > 0 && (
           <>
             <Divider label="Componentes Transversales" />
-            {groupByFechaCivTramo(
-              data.componentes!,
-              (r) => r.fecha,
-              (r) => civFromRow(r),
-              (r) => tramoFromRow(r),
-            ).map((g) => (
-              <ActivityTable
-                key={`comp-group-${g.groupKey}`}
-                fecha={g.fecha}
-                civ={civFromRow(g.items[0]?.row)}
-                tramo={g.tramo}
-              >
-                {g.items.map(({ row: r, rowKey }) => (
+            <TreeGroup
+              groups={groupHierarchical(
+                data.componentes!,
+                (r) => r.fecha,
+                (r) => civFromRow(r),
+                (r) => tramoFromRow(r),
+              )}
+              kp="comp"
+              renderRows={(items) =>
+                items.map(({ row: r, rowKey }) => (
                   <View key={`comp-${rowKey}`} style={styles.tableRow} wrap={false}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
@@ -890,28 +944,25 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
                       <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
                     </View>
                   </View>
-                ))}
-              </ActivityTable>
-            ))}
+                ))
+              }
+            />
           </>
         )}
 
         {(data.diario?.length ?? 0) > 0 && (
           <>
             <Divider label="Reporte Diario" />
-            {groupByFechaCivTramo(
-              data.diario!,
-              (r) => r.fecha_reporte ?? r.fecha,
-              (r) => civFromRow(r),
-              (r) => tramoFromRow(r),
-            ).map((g) => (
-              <ActivityTable
-                key={`diario-group-${g.groupKey}`}
-                fecha={g.fecha}
-                civ={civFromRow(g.items[0]?.row)}
-                tramo={g.tramo}
-              >
-                {g.items.map(({ row: r, rowKey }) => (
+            <TreeGroup
+              groups={groupHierarchical(
+                data.diario!,
+                (r) => r.fecha_reporte ?? r.fecha,
+                (r) => civFromRow(r),
+                (r) => tramoFromRow(r),
+              )}
+              kp="diario"
+              renderRows={(items) =>
+                items.map(({ row: r, rowKey }) => (
                   <View key={`diario-${rowKey}`} style={styles.tableRow} wrap={false}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
@@ -924,28 +975,25 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
                       <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
                     </View>
                   </View>
-                ))}
-              </ActivityTable>
-            ))}
+                ))
+              }
+            />
           </>
         )}
 
         {(data.anotaciones?.length ?? 0) > 0 && (
           <>
             <Divider label="Anotaciones" />
-            {groupByFechaCivTramo(
-              data.anotaciones!,
-              (r) => r.fecha,
-              (r) => civFromRow(r),
-              (r) => tramoFromRow(r),
-            ).map((g) => (
-              <ActivityTable
-                key={`anot-group-${g.groupKey}`}
-                fecha={g.fecha}
-                civ={g.civ}
-                tramo={g.tramo}
-              >
-                {g.items.map(({ row: r, rowKey }) => (
+            <TreeGroup
+              groups={groupHierarchical(
+                data.anotaciones!,
+                (r) => r.fecha,
+                (r) => civFromRow(r),
+                (r) => tramoFromRow(r),
+              )}
+              kp="anot"
+              renderRows={(items) =>
+                items.map(({ row: r, rowKey }) => (
                   <View key={`anot-${rowKey}`} style={styles.tableRow} wrap={false}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_nombre ?? r.usuario_qfield)}
@@ -956,9 +1004,9 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
                       <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
                     </View>
                   </View>
-                ))}
-              </ActivityTable>
-            ))}
+                ))
+              }
+            />
           </>
         )}
       </Page>
