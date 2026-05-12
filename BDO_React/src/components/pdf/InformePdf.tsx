@@ -161,11 +161,11 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     backgroundColor: COLORS.navy,
-    paddingVertical: 10,
+    paddingVertical: 7,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 5,
   },
   tableHeaderCol: {
     flex: 1,
