@@ -457,18 +457,6 @@ const Footer = () => (
   </View>
 );
 
-const Card = ({
-  title,
-  children,
-}: { title: string; children: ReactNode }) => (
-  <View style={styles.card} wrap={false}>
-    <View style={styles.cardHeader}>
-      <View style={styles.cardDot} />
-      <Text style={styles.cardTitle}>{title}</Text>
-    </View>
-    {children}
-  </View>
-);
 
 const Divider = ({ label }: { label: string }) => (
   <View style={styles.sectionDivider}>
@@ -637,7 +625,8 @@ function pkFromRow(row: unknown): string {
 function tramoFromRow(row: unknown): string {
   const raw = str(readField(row, 'tramo', 'nombre_tramo', 'id_tramo'));
   if (raw === '—') return raw;
-  if (/^\d+$/.test(raw)) return `T-${raw.padStart(2, '0')}`;
+  const numMatch = raw.match(/^(\d+)(?:\.0+)?$/);
+  if (numMatch) return `T-${numMatch[1].padStart(2, '0')}`;
   return raw;
 }
 
@@ -751,7 +740,6 @@ function CoverInfoGrid({ data }: { data: FilteredData }) {
 
 function CoverPage({ data }: { data: FilteredData }) {
   const contrato = data.contrato ?? {};
-  const generado = data.generado_en ?? new Date().toISOString();
   const sections: string[] = [];
   if ((data.cantidades?.length ?? 0) > 0) sections.push('Cantidades de Obra');
   if ((data.componentes?.length ?? 0) > 0) sections.push('Componentes Transversales');
