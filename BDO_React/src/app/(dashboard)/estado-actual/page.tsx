@@ -4,7 +4,6 @@ import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import { createClient } from '@/lib/supabase/server';
 import { formatCOP, formatDateDMY } from '@/lib/utils';
 import type { Adicion, Contrato, Prorroga } from '@/types/database';
-import { calcularPlazos } from './estado-actual.utils';
 import {
   Banknote,
   Building,
@@ -15,6 +14,7 @@ import {
   Hash,
   UserCheck,
 } from 'lucide-react';
+import { calcularPlazos } from './estado-actual.utils';
 
 export const revalidate = 60;
 
