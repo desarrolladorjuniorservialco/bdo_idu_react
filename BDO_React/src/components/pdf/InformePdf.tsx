@@ -740,15 +740,14 @@ function SignaturePage({ generado }: { generado: string }) {
 
 function InformePdfDocument({ data }: { data: FilteredData }) {
   const contrato = data.contrato ?? {};
+  const generado = data.generado_en ?? new Date().toISOString();
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        <Header />
-        <Footer />
+      <CoverPage data={data} />
 
-        <Text style={styles.eyebrow}>Bitácora de Obra</Text>
-        <Text style={styles.h1}>{str(contrato.nombre_contrato, 'Informe de Actividades')}</Text>
-        <View style={styles.h1Rule} />
+      <Page size="A4" style={styles.page}>
+        <Header fi={data.fi} ff={data.ff} generado={generado} />
+        <Footer />
 
         <Card title="Información General">
           <View style={styles.infoGrid}>
@@ -768,9 +767,7 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
             </View>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Generado</Text>
-              <Text style={styles.infoValue}>
-                {fmtD(data.generado_en ?? new Date().toISOString())}
-              </Text>
+              <Text style={styles.infoValue}>{fmtD(generado)}</Text>
             </View>
           </View>
         </Card>
@@ -784,26 +781,29 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
               (r) => r.id_tramo ?? r.tramo,
               (r) => r.tramo ?? r.id_tramo,
             ).map((g) => (
-              <GroupFrame
+              <ActivityTable
                 key={`cant-group-${g.groupKey}`}
                 fecha={g.fecha}
                 civ={g.civ}
                 tramo={g.tramo}
               >
                 {g.items.map(({ row: r, rowKey }) => (
-                  <View key={`cant-${rowKey}`} style={styles.reportItem}>
+                  <View key={`cant-${rowKey}`} style={styles.tableRow}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
                     </Text>
                     <Text style={styles.reportText}>{str(r.item_descripcion)}</Text>
                     <View style={styles.reportMetaRow}>
+                      <View style={styles.reportMetaDot} />
                       <Text style={styles.reportMeta}>Cantidad: {str(r.cantidad)}</Text>
+                      <View style={styles.reportMetaDot} />
                       <Text style={styles.reportMeta}>Unidad: {str(r.unidad)}</Text>
+                      <View style={styles.reportMetaDot} />
                       <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
                     </View>
                   </View>
                 ))}
-              </GroupFrame>
+              </ActivityTable>
             ))}
           </>
         )}
@@ -817,14 +817,14 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
               (r) => civFromRow(r),
               (r) => tramoFromRow(r),
             ).map((g) => (
-              <GroupFrame
+              <ActivityTable
                 key={`comp-group-${g.groupKey}`}
                 fecha={g.fecha}
                 civ={civFromRow(g.items[0]?.row)}
                 tramo={g.tramo}
               >
                 {g.items.map(({ row: r, rowKey }) => (
-                  <View key={`comp-${rowKey}`} style={styles.reportItem}>
+                  <View key={`comp-${rowKey}`} style={styles.tableRow}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
                     </Text>
@@ -832,14 +832,18 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
                       Componente: {str(r.tipo_componente)} | Actividad: {str(r.tipo_actividad)}
                     </Text>
                     <View style={styles.reportMetaRow}>
+                      <View style={styles.reportMetaDot} />
                       <Text style={styles.reportMeta}>PK: {pkFromRow(r)}</Text>
+                      <View style={styles.reportMetaDot} />
                       <Text style={styles.reportMeta}>Cantidad: {str(r.cantidad)}</Text>
+                      <View style={styles.reportMetaDot} />
                       <Text style={styles.reportMeta}>Unidad: {str(r.unidad)}</Text>
+                      <View style={styles.reportMetaDot} />
                       <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
                     </View>
                   </View>
                 ))}
-              </GroupFrame>
+              </ActivityTable>
             ))}
           </>
         )}
@@ -853,25 +857,27 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
               (r) => civFromRow(r),
               (r) => tramoFromRow(r),
             ).map((g) => (
-              <GroupFrame
+              <ActivityTable
                 key={`diario-group-${g.groupKey}`}
                 fecha={g.fecha}
                 civ={civFromRow(g.items[0]?.row)}
                 tramo={g.tramo}
               >
                 {g.items.map(({ row: r, rowKey }) => (
-                  <View key={`diario-${rowKey}`} style={styles.reportItem}>
+                  <View key={`diario-${rowKey}`} style={styles.tableRow}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
                     </Text>
                     <Text style={styles.reportText}>{str(r.observaciones)}</Text>
                     <View style={styles.reportMetaRow}>
+                      <View style={styles.reportMetaDot} />
                       <Text style={styles.reportMeta}>PK: {pkFromRow(r)}</Text>
+                      <View style={styles.reportMetaDot} />
                       <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
                     </View>
                   </View>
                 ))}
-              </GroupFrame>
+              </ActivityTable>
             ))}
           </>
         )}
@@ -885,28 +891,31 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
               (r) => r.id_tramo ?? r.tramo,
               (r) => r.tramo ?? r.id_tramo,
             ).map((g) => (
-              <GroupFrame
+              <ActivityTable
                 key={`anot-group-${g.groupKey}`}
                 fecha={g.fecha}
                 civ={g.civ}
                 tramo={g.tramo}
               >
                 {g.items.map(({ row: r, rowKey }) => (
-                  <View key={`anot-${rowKey}`} style={styles.reportItem}>
+                  <View key={`anot-${rowKey}`} style={styles.tableRow}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_nombre ?? r.usuario_qfield)}
                     </Text>
                     <Text style={styles.reportText}>{str(r.anotacion)}</Text>
                     <View style={styles.reportMetaRow}>
+                      <View style={styles.reportMetaDot} />
                       <Text style={styles.reportMeta}>Estado: {str(r.estado)}</Text>
                     </View>
                   </View>
                 ))}
-              </GroupFrame>
+              </ActivityTable>
             ))}
           </>
         )}
       </Page>
+
+      <SignaturePage generado={generado} />
     </Document>
   );
 }
