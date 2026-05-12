@@ -25,22 +25,26 @@ export default async function Page() {
       .from('registros_cantidades')
       .select('*')
       .eq('contrato_id', contratoId)
-      .order('fecha_creacion', { ascending: false }),
+      .order('fecha_creacion', { ascending: false })
+      .range(0, 9999),
     supabase
       .from('registros_componentes')
       .select('*')
       .eq('contrato_id', contratoId)
-      .order('fecha_creacion', { ascending: false }),
+      .order('fecha_creacion', { ascending: false })
+      .range(0, 9999),
     supabase
       .from('registros_reporte_diario')
       .select('*')
       .eq('contrato_id', contratoId)
-      .order('fecha', { ascending: false }),
+      .order('fecha', { ascending: false })
+      .range(0, 9999),
     supabase
       .from('formulario_pmt')
       .select('*')
       .eq('contrato_id', contratoId)
-      .order('fecha_creacion', { ascending: false }),
+      .order('fecha_creacion', { ascending: false })
+      .range(0, 9999),
   ]);
 
   return (
