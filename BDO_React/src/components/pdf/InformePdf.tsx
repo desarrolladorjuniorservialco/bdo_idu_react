@@ -513,7 +513,7 @@ export type InformeData = {
   ff?: string;
 };
 
-type FilteredData = InformeData & { fi: string; ff: string };
+export type FilteredData = InformeData & { fi: string; ff: string };
 
 function fmtD(raw: unknown): string {
   if (!raw) return '—';
@@ -621,7 +621,7 @@ function ActivityTable({
   children: ReactNode;
 }) {
   return (
-    <View style={styles.tableFrame}>
+    <View style={styles.tableFrame} wrap={false}>
       <View style={styles.tableHeader}>
         <Text style={styles.tableHeaderText}>Fecha: {fecha}</Text>
         <Text style={styles.tableHeaderText}>CIV: {civ}</Text>
@@ -779,8 +779,8 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
             {groupByFechaCivTramo(
               data.cantidades!,
               (r) => r.fecha,
-              (r) => r.id_tramo ?? r.tramo,
-              (r) => r.tramo ?? r.id_tramo,
+              (r) => civFromRow(r),
+              (r) => tramoFromRow(r),
             ).map((g) => (
               <ActivityTable
                 key={`cant-group-${g.groupKey}`}
@@ -889,8 +889,8 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
             {groupByFechaCivTramo(
               data.anotaciones!,
               (r) => r.fecha,
-              (r) => r.id_tramo ?? r.tramo,
-              (r) => r.tramo ?? r.id_tramo,
+              (r) => civFromRow(r),
+              (r) => tramoFromRow(r),
             ).map((g) => (
               <ActivityTable
                 key={`anot-group-${g.groupKey}`}
@@ -946,7 +946,7 @@ export function InformePdfDownload({
       <button
         type="button"
         disabled
-        style={{ ...dlStyle, opacity: 0.4, cursor: 'not-allowed' } as CSSProperties}
+        style={{ ...dlStyle, opacity: 0.4, cursor: 'not-allowed' }}
       >
         Descargar PDF
       </button>
