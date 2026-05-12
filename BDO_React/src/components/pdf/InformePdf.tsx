@@ -156,7 +156,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 8,
-    overflow: 'hidden',
     marginBottom: 10,
     backgroundColor: COLORS.white,
   },
@@ -177,10 +176,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   tableRow: {
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingHorizontal: 12,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
+    flexDirection: 'column',
+    gap: 4,
   },
   reportUser: {
     fontSize: 7.5,
@@ -621,7 +622,7 @@ function ActivityTable({
   children: ReactNode;
 }) {
   return (
-    <View style={styles.tableFrame} wrap={false}>
+    <View style={styles.tableFrame}>
       <View style={styles.tableHeader}>
         <Text style={styles.tableHeaderText}>Fecha: {fecha}</Text>
         <Text style={styles.tableHeaderText}>CIV: {civ}</Text>
@@ -789,7 +790,7 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
                 tramo={g.tramo}
               >
                 {g.items.map(({ row: r, rowKey }) => (
-                  <View key={`cant-${rowKey}`} style={styles.tableRow}>
+                  <View key={`cant-${rowKey}`} style={styles.tableRow} wrap={false}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
                     </Text>
@@ -825,7 +826,7 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
                 tramo={g.tramo}
               >
                 {g.items.map(({ row: r, rowKey }) => (
-                  <View key={`comp-${rowKey}`} style={styles.tableRow}>
+                  <View key={`comp-${rowKey}`} style={styles.tableRow} wrap={false}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
                     </Text>
@@ -865,7 +866,7 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
                 tramo={g.tramo}
               >
                 {g.items.map(({ row: r, rowKey }) => (
-                  <View key={`diario-${rowKey}`} style={styles.tableRow}>
+                  <View key={`diario-${rowKey}`} style={styles.tableRow} wrap={false}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_qfield ?? r.usuario_nombre)}
                     </Text>
@@ -899,7 +900,7 @@ function InformePdfDocument({ data }: { data: FilteredData }) {
                 tramo={g.tramo}
               >
                 {g.items.map(({ row: r, rowKey }) => (
-                  <View key={`anot-${rowKey}`} style={styles.tableRow}>
+                  <View key={`anot-${rowKey}`} style={styles.tableRow} wrap={false}>
                     <Text style={styles.reportUser}>
                       Usuario: {str(r.usuario_nombre ?? r.usuario_qfield)}
                     </Text>
