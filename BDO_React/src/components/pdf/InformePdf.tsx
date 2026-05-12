@@ -378,16 +378,26 @@ function CornerBrackets() {
   );
 }
 
-const Header = () => (
+const Header = ({
+  fi,
+  ff,
+  generado,
+}: { fi: string; ff: string; generado: string }) => (
   <View style={styles.header} fixed>
-    <View style={styles.brandBlock}>
-      <View style={styles.brandMark}>
-        <Text style={styles.brandMarkTxt}>BOB</Text>
+    <View style={styles.headerBrandBlock}>
+      <View style={styles.headerMark}>
+        <Text style={styles.headerMarkTxt}>BOB</Text>
       </View>
       <View>
-        <Text style={styles.brandName}>BOB - Sistema Bitacora</Text>
-        <Text style={styles.brandSub}>Bitácora oficial de obra</Text>
+        <Text style={styles.headerBrandName}>BOB — Sistema Bitácora</Text>
+        <Text style={styles.headerBrandSub}>Bitácora oficial de obra</Text>
       </View>
+    </View>
+    <View style={styles.headerMeta}>
+      <Text style={styles.headerMetaPeriod}>
+        Período: {fmtD(fi)} – {fmtD(ff)}
+      </Text>
+      <Text style={styles.headerMetaDate}>Generado: {fmtD(generado)}</Text>
     </View>
     <View style={styles.headerAccent} />
   </View>
@@ -395,15 +405,16 @@ const Header = () => (
 
 const Footer = () => (
   <View style={styles.footer} fixed>
-    <View style={styles.footerStripe}>
-      <View style={styles.footerStripeBlue} />
-      <View style={styles.footerStripeGreen} />
+    <View style={styles.footerLeft}>
+      <Text style={styles.footerTxt}>BOB · Documento controlado · Vigencia 29/07/2025</Text>
     </View>
-    <Text style={styles.footerTxt}>Vigencia desde 29/07/2025 · Documento controlado</Text>
-    <Text
-      style={styles.footerPage}
-      render={({ pageNumber, totalPages }) => `Página ${pageNumber} de ${totalPages}`}
-    />
+    <View style={styles.footerCenter}>
+      <Text
+        style={styles.footerPage}
+        render={({ pageNumber, totalPages }) => `Página ${pageNumber} de ${totalPages}`}
+      />
+    </View>
+    <View style={styles.footerRight} />
   </View>
 );
 
