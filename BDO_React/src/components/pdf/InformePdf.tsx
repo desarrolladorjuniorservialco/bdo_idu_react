@@ -314,6 +314,70 @@ const styles = StyleSheet.create({
   sigFooterPage: { fontSize: 10, color: COLORS.muted },
 });
 
+function DotGrid() {
+  const W = 595;
+  const H = 842;
+  const spacing = 24;
+  const dots: ReactNode[] = [];
+  const cols = Math.ceil(W / spacing);
+  const rows = Math.ceil(H / spacing);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      dots.push(
+        <Circle
+          key={`${r}-${c}`}
+          cx={c * spacing + spacing / 2}
+          cy={r * spacing + spacing / 2}
+          r={1}
+          fill="rgba(193,255,114,0.08)"
+        />,
+      );
+    }
+  }
+  return (
+    <Svg style={{ position: 'absolute', top: 0, left: 0 }} width={W} height={H}>
+      {dots}
+    </Svg>
+  );
+}
+
+function CornerBrackets() {
+  const W = 595;
+  const H = 842;
+  const o = 28;
+  const s = 20;
+  const stroke = 'rgba(193,255,114,0.25)';
+  const sw = 1.5;
+  return (
+    <Svg style={{ position: 'absolute', top: 0, left: 0 }} width={W} height={H}>
+      <Path
+        d={`M ${o} ${o + s} L ${o} ${o} L ${o + s} ${o}`}
+        stroke={stroke}
+        strokeWidth={sw}
+        fill="none"
+      />
+      <Path
+        d={`M ${W - o - s} ${o} L ${W - o} ${o} L ${W - o} ${o + s}`}
+        stroke={stroke}
+        strokeWidth={sw}
+        fill="none"
+      />
+      <Path
+        d={`M ${o} ${H - o - s} L ${o} ${H - o} L ${o + s} ${H - o}`}
+        stroke={stroke}
+        strokeWidth={sw}
+        fill="none"
+      />
+      <Path
+        d={`M ${W - o - s} ${H - o} L ${W - o} ${H - o} L ${W - o} ${H - o - s}`}
+        stroke={stroke}
+        strokeWidth={sw}
+        fill="none"
+      />
+    </Svg>
+  );
+}
+
 const Header = () => (
   <View style={styles.header} fixed>
     <View style={styles.brandBlock}>
