@@ -253,6 +253,10 @@ interface Props {
   componentes: Row[];
   reporteDiario: Row[];
   formularioPmt: Row[];
+  totalCantidades: number;
+  totalComponentes: number;
+  totalDiario: number;
+  totalPmt: number;
 }
 
 export default function MapaClient({
@@ -261,6 +265,9 @@ export default function MapaClient({
   componentes,
   reporteDiario,
   formularioPmt,
+  totalCantidades,
+  totalComponentes,
+  totalDiario,
 }: Props) {
   const router = useRouter();
   const [filters, dispatch] = useReducer(reducer, initial);
@@ -569,9 +576,9 @@ export default function MapaClient({
 
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard label="Cantidades" value={filteredCant.length} accent="green" />
-        <KpiCard label="Componentes" value={filteredComp.length} accent="orange" />
-        <KpiCard label="Reporte Diario" value={filteredDiario.length} accent="blue" />
+        <KpiCard label="Cantidades" value={totalCantidades} accent="green" />
+        <KpiCard label="Componentes" value={totalComponentes} accent="orange" />
+        <KpiCard label="Reporte Diario" value={totalDiario} accent="blue" />
         <KpiCard
           label="Cantidades Aprobadas"
           value={cantAprobadas}

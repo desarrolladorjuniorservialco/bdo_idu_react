@@ -41,7 +41,11 @@
       "Bash(git -C \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\" diff 3d156d854738bc4bcd6943bafc52b33aaf76b2fe..17ba96a62e95a4f660fa6497df21c88eff04fb4c -- \"BDO_React/src/app/\\(dashboard\\)/estado-actual/estado-actual.test.ts\")",
       "Bash(node -e ' *)",
       "Bash(echo \"EXIT_CODE:$?\")",
-      "Bash(npx --prefix BDO_React tsc --noEmit)"
+      "Bash(npx --prefix BDO_React tsc --noEmit)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\BDO_React\\\\src\\\\app\\\\\\(dashboard\\)\\\\anotaciones\" -Recurse)",
+      "Bash(Select-Object -Property FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\BDO_React\\\\src\\\\app\\\\\\(dashboard\\)\" -Directory)",
+      "Bash(Select-Object Name)"
     ]
   }
 }

@@ -1,4 +1,4 @@
-﻿import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
+import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import { createClient } from '@/lib/supabase/server';
 import MapaClient from './MapaClient';
 
@@ -16,6 +16,10 @@ export default async function Page() {
     { data: componentes },
     { data: reporteDiario },
     { data: formularioPmt },
+    { count: totalCantidades },
+    { count: totalComponentes },
+    { count: totalDiario },
+    { count: totalPmt },
   ] = await Promise.all([
     supabase
       .from('tramos_bd')
@@ -45,6 +49,22 @@ export default async function Page() {
       .eq('contrato_id', contratoId)
       .order('fecha_creacion', { ascending: false })
       .range(0, 9999),
+    supabase
+      .from('registros_cantidades')
+      .select('*', { count: 'exact', head: true })
+      .eq('contrato_id', contratoId),
+    supabase
+      .from('registros_componentes')
+      .select('*', { count: 'exact', head: true })
+      .eq('contrato_id', contratoId),
+    supabase
+      .from('registros_reporte_diario')
+      .select('*', { count: 'exact', head: true })
+      .eq('contrato_id', contratoId),
+    supabase
+      .from('formulario_pmt')
+      .select('*', { count: 'exact', head: true })
+      .eq('contrato_id', contratoId),
   ]);
 
   return (
@@ -54,6 +74,10 @@ export default async function Page() {
       componentes={componentes ?? []}
       reporteDiario={reporteDiario ?? []}
       formularioPmt={formularioPmt ?? []}
+      totalCantidades={totalCantidades ?? cantidades?.length ?? 0}
+      totalComponentes={totalComponentes ?? componentes?.length ?? 0}
+      totalDiario={totalDiario ?? reporteDiario?.length ?? 0}
+      totalPmt={totalPmt ?? formularioPmt?.length ?? 0}
     />
   );
 }
