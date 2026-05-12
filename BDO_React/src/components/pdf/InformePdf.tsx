@@ -1,19 +1,36 @@
-﻿import { Document, PDFDownloadLink, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
+﻿import {
+  Circle,
+  Document,
+  Font,
+  Page,
+  PDFDownloadLink,
+  Path,
+  StyleSheet,
+  Svg,
+  Text,
+  View,
+} from '@react-pdf/renderer';
 import type { CSSProperties, ReactNode } from 'react';
 
+const SORA_SRC = '/fonts/Sora.ttf';
+Font.register({
+  family: 'Sora',
+  fonts: [
+    { src: SORA_SRC, fontWeight: 400 },
+    { src: SORA_SRC, fontWeight: 600 },
+    { src: SORA_SRC, fontWeight: 700 },
+    { src: SORA_SRC, fontWeight: 800 },
+  ],
+});
+
 const COLORS = {
-  blue: '#1E5BA8',
-  blueDark: '#103D7A',
-  blueSoft: '#E8F0FB',
-  green: '#5BB85C',
-  greenDark: '#3F8E40',
-  greenSoft: '#E8F6E9',
-  yellow: '#FACC15',
+  navy: '#002855',
+  lime: '#C1FF72',
+  bgPage: '#FFFFFF',
+  bgCard: '#F8FAFC',
+  border: '#E2E8F0',
+  muted: '#64748B',
   ink: '#0F172A',
-  text: '#1F2937',
-  muted: '#6B7280',
-  line: '#E5E7EB',
-  bgPage: '#F7F9FC',
   white: '#FFFFFF',
 };
 
