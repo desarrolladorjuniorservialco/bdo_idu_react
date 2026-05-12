@@ -45,7 +45,10 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\BDO_React\\\\src\\\\app\\\\\\(dashboard\\)\\\\anotaciones\" -Recurse)",
       "Bash(Select-Object -Property FullName)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\BDO_React\\\\src\\\\app\\\\\\(dashboard\\)\" -Directory)",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "Bash(Get-Content \"C:\\\\Users\\\\VICTOR~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Victor-Pulido-Documents-GIT-BDO-IDU-React\\\\5510b2d3-8dff-41f1-9e71-f6117430e5dc\\\\tasks\\\\ba6ln3zsb.output\" -Wait)",
+      "Bash(Select-String -Pattern \"ready|Local:|error|Error|EADDRINUSE\")",
+      "Bash(Get-Content \"C:\\\\Users\\\\VICTOR~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Victor-Pulido-Documents-GIT-BDO-IDU-React\\\\5510b2d3-8dff-41f1-9e71-f6117430e5dc\\\\tasks\\\\ba6ln3zsb.output\" -Tail 20)"
     ]
   }
 }

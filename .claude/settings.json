@@ -37,7 +37,9 @@
       "Bash(git branch *)",
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('react:', d.get\\('dependencies',{}\\).get\\('react','N/A'\\)\\); print\\('react-dom:', d.get\\('dependencies',{}\\).get\\('react-dom','N/A'\\)\\); print\\('next:', d.get\\('dependencies',{}\\).get\\('next','N/A'\\)\\)\")",
       "Bash(Get-ChildItem -Path \"src/app\" -Recurse -Filter \"page.tsx\")",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\" -Force)",
+      "Bash(npm ls *)"
     ]
   }
 }

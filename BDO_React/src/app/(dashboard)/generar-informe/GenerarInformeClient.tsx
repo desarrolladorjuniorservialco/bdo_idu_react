@@ -7,9 +7,9 @@ import type {
   InformeData,
   InformeDiario,
 } from '@/components/pdf/InformePdf';
-import { InformePdfDownload } from '@/components/pdf/InformePdf';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { createClient } from '@/lib/supabase/client';
+import dynamic from 'next/dynamic';
 import {
   type ReactElement,
   type ReactNode,
@@ -19,6 +19,12 @@ import {
   useRef,
   useState,
 } from 'react';
+
+// @react-pdf/renderer is ~400 KB — load it only when this page is visited
+const InformePdfDownload = dynamic(
+  () => import('@/components/pdf/InformePdf').then((m) => ({ default: m.InformePdfDownload })),
+  { ssr: false },
+);
 
 type EstadoFiltro =
   | 'Todos'

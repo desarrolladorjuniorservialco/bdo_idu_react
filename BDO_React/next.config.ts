@@ -2,6 +2,16 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  // Reduce JS bundle size by tree-shaking large icon/chart packages
+  // Only the symbols actually imported are included in the build
+  experimental: {
+    optimizePackageImports: [
+      '@icons-pack/react-simple-icons',
+      'lucide-react',
+      'recharts',
+      'framer-motion',
+    ],
+  },
   images: {
     remotePatterns: [
       {
