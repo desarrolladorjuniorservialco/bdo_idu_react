@@ -704,6 +704,40 @@ function CoverPage({ data }: { data: FilteredData }) {
   );
 }
 
+function SignaturePage({ generado }: { generado: string }) {
+  return (
+    <Page size="A4" style={styles.signaturePage}>
+      <Text style={styles.sigEyebrow}>Conformidad y Aprobación</Text>
+      <Text style={styles.sigTitle}>Firmas de Conformidad</Text>
+      <View style={styles.sigAccentLine} />
+      <Text style={styles.sigIntro}>
+        Los abajo firmantes certifican que las actividades registradas en el presente informe han
+        sido revisadas y están conformes.
+      </Text>
+      <View style={styles.sigGrid}>
+        {(['Interventoría', 'Contratista'] as const).map((cargo) => (
+          <View key={cargo} style={styles.sigCol}>
+            <View style={styles.sigZone} />
+            <View style={styles.sigLine}>
+              <Text style={styles.sigName}>___________________</Text>
+              <Text style={styles.sigCargo}>{cargo}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+      <View style={styles.sigFooter}>
+        <Text style={styles.sigFooterTxt}>
+          Documento generado el {fmtD(generado)} · BOB Sistema Bitácora
+        </Text>
+        <Text
+          style={styles.sigFooterPage}
+          render={({ pageNumber, totalPages }) => `Página ${pageNumber} de ${totalPages}`}
+        />
+      </View>
+    </Page>
+  );
+}
+
 function InformePdfDocument({ data }: { data: FilteredData }) {
   const contrato = data.contrato ?? {};
   return (
