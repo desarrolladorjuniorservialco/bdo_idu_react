@@ -176,12 +176,12 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     marginBottom: 2,
-    fontWeight: 1000,
+    fontWeight: 1500,
   },
   tableHeaderColValue: {
     fontSize: 9,
     color: COLORS.white,
-    fontWeight: 1000,
+    fontWeight: 1500,
   },
   tableRow: {
     paddingVertical: 10,
@@ -370,7 +370,7 @@ function DotGrid() {
     }
   }
   return (
-    <View style={{ position: 'absolute', top: 0, left: 0, width: W, height: H }}>
+    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
       <Svg width={W} height={H}>
         {dots}
       </Svg>
@@ -386,7 +386,7 @@ function CornerBrackets() {
   const stroke = 'rgba(193,255,114,0.25)';
   const sw = 1.5;
   return (
-    <View style={{ position: 'absolute', top: 0, left: 0, width: W, height: H }}>
+    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
       <Svg width={W} height={H}>
         <Path
           d={`M ${o} ${o + s} L ${o} ${o} L ${o + s} ${o}`}
