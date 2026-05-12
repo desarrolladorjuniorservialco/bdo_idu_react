@@ -65,12 +65,9 @@ type Filters = {
 type Action = { type: 'SET'; payload: Partial<Filters> };
 type Row = Record<string, unknown>;
 
-const today = new Date().toISOString().slice(0, 10);
-const thirtyAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-
 const initial: Filters = {
-  desde: thirtyAgo,
-  hasta: today,
+  desde: '',
+  hasta: '',
   estado: 'Todos',
   buscar: '',
   tramo: '',
