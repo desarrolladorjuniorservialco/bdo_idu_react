@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     fontWeight: 1500,
   },
   tableHeaderColValue: {
-    fontSize: 9,
+    fontSize: 8,
     color: COLORS.white,
     fontWeight: 1500,
   },
