@@ -634,42 +634,43 @@ function ActivityTable({
 
 function CoverTimeline({ sections }: { sections: string[] }) {
   return (
-    <View style={{ marginTop: 32 }}>
-      {sections.map((label, i) => (
-        <View key={label} style={{ flexDirection: 'row' }}>
-          <View style={{ alignItems: 'center', width: 14, marginRight: 12 }}>
+    <View style={{ marginTop: 32, flexDirection: 'row', gap: 12 }}>
+      {/* Continuous rail */}
+      <View
+        style={{
+          width: 2,
+          backgroundColor: COLORS.lime,
+          borderRadius: 1,
+          opacity: 0.7,
+          alignSelf: 'stretch',
+        }}
+      />
+      {/* Items column */}
+      <View style={{ gap: 16, paddingVertical: 4 }}>
+        {sections.map((label) => (
+          <View key={label} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <View
               style={{
                 width: 6,
                 height: 6,
                 borderRadius: 3,
                 backgroundColor: COLORS.lime,
+                marginLeft: -17,
               }}
             />
-            {i < sections.length - 1 && (
-              <View
-                style={{
-                  width: 2,
-                  height: 22,
-                  backgroundColor: COLORS.lime,
-                  opacity: 0.4,
-                }}
-              />
-            )}
+            <Text
+              style={{
+                color: COLORS.white,
+                fontSize: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+              }}
+            >
+              {label}
+            </Text>
           </View>
-          <Text
-            style={{
-              color: COLORS.white,
-              fontSize: 8,
-              textTransform: 'uppercase',
-              letterSpacing: 1,
-              paddingBottom: i < sections.length - 1 ? 22 : 0,
-            }}
-          >
-            {label}
-          </Text>
-        </View>
-      ))}
+        ))}
+      </View>
     </View>
   );
 }
