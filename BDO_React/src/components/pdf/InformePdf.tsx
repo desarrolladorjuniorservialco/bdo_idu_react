@@ -632,6 +632,78 @@ function ActivityTable({
   );
 }
 
+function CoverTimeline({ sections }: { sections: string[] }) {
+  return (
+    <View style={{ marginTop: 32 }}>
+      {sections.map((label, i) => (
+        <View key={label} style={{ flexDirection: 'row' }}>
+          <View style={{ alignItems: 'center', width: 14, marginRight: 12 }}>
+            <View
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: COLORS.lime,
+              }}
+            />
+            {i < sections.length - 1 && (
+              <View
+                style={{
+                  width: 2,
+                  height: 22,
+                  backgroundColor: COLORS.lime,
+                  opacity: 0.4,
+                }}
+              />
+            )}
+          </View>
+          <Text
+            style={{
+              color: COLORS.white,
+              fontSize: 8,
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+              paddingBottom: i < sections.length - 1 ? 22 : 0,
+            }}
+          >
+            {label}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function CoverPage({ data }: { data: FilteredData }) {
+  const contrato = data.contrato ?? {};
+  const generado = data.generado_en ?? new Date().toISOString();
+  const sections: string[] = [];
+  if ((data.cantidades?.length ?? 0) > 0) sections.push('Cantidades de Obra');
+  if ((data.componentes?.length ?? 0) > 0) sections.push('Componentes Transversales');
+  if ((data.diario?.length ?? 0) > 0) sections.push('Reporte Diario');
+  if ((data.anotaciones?.length ?? 0) > 0) sections.push('Anotaciones');
+
+  return (
+    <Page size="A4" style={styles.coverPage}>
+      <DotGrid />
+      <CornerBrackets />
+      <View style={styles.coverContent}>
+        <Text style={styles.coverEyebrow}>Bitácora de Obra</Text>
+        <Text style={styles.coverTitle}>BOB</Text>
+        <View style={styles.coverAccentLine} />
+        <Text style={styles.coverSubtitle}>
+          {str(contrato.nombre_contrato, 'Sistema Bitácora')}
+        </Text>
+        <Text style={styles.coverMeta}>
+          Período: {fmtD(data.fi)} – {fmtD(data.ff)}
+        </Text>
+        <Text style={styles.coverMeta}>Generado: {fmtD(generado)}</Text>
+        {sections.length > 0 && <CoverTimeline sections={sections} />}
+      </View>
+    </Page>
+  );
+}
+
 function InformePdfDocument({ data }: { data: FilteredData }) {
   const contrato = data.contrato ?? {};
   return (
