@@ -4,7 +4,7 @@ import { useInactivityTimeout } from './useInactivityTimeout';
 
 describe('useInactivityTimeout', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
   });
 
   afterEach(() => {

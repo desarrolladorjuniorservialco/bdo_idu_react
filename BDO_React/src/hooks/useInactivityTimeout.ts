@@ -12,6 +12,8 @@ export function useInactivityTimeout(timeoutMs: number, onTimeout: () => void): 
   }, [onTimeout]);
 
   useEffect(() => {
+    lastActivityRef.current = Date.now();
+
     function startTimer(delay: number): void {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
