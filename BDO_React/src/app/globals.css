@@ -126,6 +126,8 @@
     --input: #334155;
     --ring: #7ac943;
 
+    --accent-orange: #fb923c;
+
     --corp-dark: #060f1a;
     --corp-gold: #f59e0b;
     --corp-gold-lt: #2d2400;
@@ -176,6 +178,8 @@ html[data-theme="dark"] {
   --secondary-foreground: #f1f5f9;
   --input: #334155;
   --ring: #7ac943;
+
+  --accent-orange: #fb923c;
 
   --corp-dark: #060f1a;
   --corp-gold: #f59e0b;

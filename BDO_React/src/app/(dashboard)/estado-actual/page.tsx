@@ -269,6 +269,12 @@ export default async function EstadoActualPage() {
       {/* ── Tabla de prórrogas ── */}
       <div>
         <div className="rounded-[20px] p-4 mt-3" style={cardStyle}>
+          <p
+            className="text-[10px] font-semibold uppercase tracking-widest mb-3"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Prórrogas
+          </p>
           {prorrogas.length === 0 ? (
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
               Sin prórrogas registradas para este contrato.
@@ -279,13 +285,13 @@ export default async function EstadoActualPage() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="text-left" style={{ color: 'var(--text-muted)' }}>
-                      <th className="pb-2 font-medium">No.</th>
-                      <th className="pb-2 font-medium">Días adicionados</th>
-                      <th className="pb-2 font-medium">Nueva fecha fin</th>
-                      <th className="pb-2 font-medium">Fecha firma</th>
-                      <th className="pb-2 font-medium">Acta</th>
-                      <th className="pb-2 font-medium">Objeto</th>
-                      <th className="pb-2 font-medium">Observaciones</th>
+                      <th scope="col" className="pb-2 font-medium">No.</th>
+                      <th scope="col" className="pb-2 font-medium">Días adicionados</th>
+                      <th scope="col" className="pb-2 font-medium">Nueva fecha fin</th>
+                      <th scope="col" className="pb-2 font-medium">Fecha firma</th>
+                      <th scope="col" className="pb-2 font-medium">Acta</th>
+                      <th scope="col" className="pb-2 font-medium">Objeto</th>
+                      <th scope="col" className="pb-2 font-medium">Observaciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border)]">
@@ -317,6 +323,12 @@ export default async function EstadoActualPage() {
       {/* ── Tabla de adiciones ── */}
       <div>
         <div className="rounded-[20px] p-4 mt-3" style={cardStyle}>
+          <p
+            className="text-[10px] font-semibold uppercase tracking-widest mb-3"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Adiciones presupuestales
+          </p>
           {adiciones.length === 0 ? (
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
               Sin adiciones presupuestales registradas para este contrato.
@@ -327,13 +339,13 @@ export default async function EstadoActualPage() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="text-left" style={{ color: 'var(--text-muted)' }}>
-                      <th className="pb-2 font-medium">No.</th>
-                      <th className="pb-2 font-medium">Adición</th>
-                      <th className="pb-2 font-medium">Valor acumulado</th>
-                      <th className="pb-2 font-medium">Fecha firma</th>
-                      <th className="pb-2 font-medium">Acta</th>
-                      <th className="pb-2 font-medium">Objeto</th>
-                      <th className="pb-2 font-medium">Observaciones</th>
+                      <th scope="col" className="pb-2 font-medium">No.</th>
+                      <th scope="col" className="pb-2 font-medium">Adición</th>
+                      <th scope="col" className="pb-2 font-medium">Valor acumulado</th>
+                      <th scope="col" className="pb-2 font-medium">Fecha firma</th>
+                      <th scope="col" className="pb-2 font-medium">Acta</th>
+                      <th scope="col" className="pb-2 font-medium">Objeto</th>
+                      <th scope="col" className="pb-2 font-medium">Observaciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border)]">

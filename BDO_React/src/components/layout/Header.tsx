@@ -62,9 +62,9 @@ export function Header({ perfil }: HeaderProps) {
         <span
           className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase shrink-0"
           style={{
-            background: 'rgba(122,201,67,0.12)',
-            color: '#5A9A32',
-            border: '1px solid rgba(122,201,67,0.25)',
+            background: 'var(--idu-green-lt)',
+            color: 'var(--idu-green-lt-fg)',
+            border: '1px solid color-mix(in oklch, var(--corp-green) 25%, transparent)',
           }}
         >
           {ROL_LABELS[perfil.rol]}
@@ -98,7 +98,7 @@ export function Header({ perfil }: HeaderProps) {
           title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           aria-pressed={theme === 'dark'}
-          className="flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150 hover:bg-slate-100"
+          className="flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150 hover:bg-[var(--muted)]"
           style={{ color: 'var(--text-muted)' }}
         >
           {theme === 'dark' ? (
@@ -112,7 +112,7 @@ export function Header({ perfil }: HeaderProps) {
           onClick={handleLogout}
           title="Cerrar sesión"
           aria-label="Cerrar sesión"
-          className="flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150 hover:bg-slate-100"
+          className="flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150 hover:bg-[var(--muted)]"
           style={{ color: 'var(--text-muted)' }}
         >
           <LogOut className="h-4 w-4" />
