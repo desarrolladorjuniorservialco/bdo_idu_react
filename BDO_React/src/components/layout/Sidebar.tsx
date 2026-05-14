@@ -287,6 +287,7 @@ export function Sidebar({ perfil }: SidebarProps) {
           </div>
           {/* Botón toggle circular */}
           <m.button
+            type="button"
             onClick={toggle}
             aria-label={collapsed ? 'Expandir panel' : 'Colapsar panel'}
             whileHover={{ scale: 1.12 }}
