@@ -11,9 +11,13 @@ export function InactivityGuard(): null {
   const router = useRouter();
   const clearAuth = useAuthStore((s) => s.clearAuth);
 
-  async function handleTimeout() {
+  async function handleTimeout(): Promise<void> {
     const supabase = createClient();
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // signOut failed (network error or session already gone) — redirect anyway
+    }
     clearAuth();
     router.push('/login');
   }

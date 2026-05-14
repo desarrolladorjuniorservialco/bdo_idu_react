@@ -74,4 +74,16 @@ describe('InactivityGuard', () => {
 
     expect(mockSignOut).not.toHaveBeenCalled();
   });
+
+  it('still calls clearAuth and router.push if signOut throws', async () => {
+    mockSignOut.mockRejectedValueOnce(new Error('network'));
+    render(<InactivityGuard />);
+
+    await act(async () => {
+      vi.advanceTimersByTime(30 * 60 * 1000);
+    });
+
+    expect(mockClearAuth).toHaveBeenCalledOnce();
+    expect(mockPush).toHaveBeenCalledWith('/login');
+  });
 });
