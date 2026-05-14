@@ -20,10 +20,10 @@ export const NAV_ACCESS: Record<string, Rol[]> = {
   'componente-social': TODOS,
   'componente-pmt': TODOS,
   'seguimiento-pmts': TODOS,
-  'mapa-ejecucion': GESTION,
+  'mapa-ejecucion': TODOS,
   presupuesto: GESTION,
   correspondencia: GESTION,
-  'generar-informe': GESTION,
+  'generar-informe': TODOS,
   'cierre-semanal': TODOS,
 };
 
