@@ -51,7 +51,16 @@
       "Bash(Get-Content \"C:\\\\Users\\\\VICTOR~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Victor-Pulido-Documents-GIT-BDO-IDU-React\\\\5510b2d3-8dff-41f1-9e71-f6117430e5dc\\\\tasks\\\\ba6ln3zsb.output\" -Tail 20)",
       "Bash(grep -i \"worktree.*director\" CLAUDE.md)",
       "Bash(git worktree *)",
-      "Bash(findstr vitest *)"
+      "Bash(findstr vitest *)",
+      "Bash(npx skills *)",
+      "Skill(superpowers:brainstorming)",
+      "Skill(superpowers:brainstorming:*)",
+      "Skill(superpowers:writing-plans)",
+      "Skill(superpowers:writing-plans:*)",
+      "Skill(superpowers:subagent-driven-development)",
+      "Skill(superpowers:subagent-driven-development:*)",
+      "Skill(superpowers:finishing-a-development-branch)",
+      "Skill(superpowers:finishing-a-development-branch:*)"
     ]
   }
 }
