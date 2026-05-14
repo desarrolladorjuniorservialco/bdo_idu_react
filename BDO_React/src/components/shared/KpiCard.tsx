@@ -24,32 +24,27 @@ export function KpiCard({ label, value, accent = 'blue', sublabel, className }: 
   const color = ACCENT_MAP[accent];
   return (
     <div
-      className={cn('relative rounded-[20px] p-4 overflow-hidden', className)}
+      className={cn('rounded-[20px] p-4', className)}
       style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
         boxShadow: '0 4px 20px rgba(6,43,91,0.07)',
       }}
     >
-      {/* Borde izquierdo de acento */}
-      <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-[20px]"
-        style={{ background: color }}
-      />
       <p
-        className="text-[11px] font-semibold tracking-wide uppercase pl-2"
+        className="text-[11px] font-semibold tracking-wide uppercase"
         style={{ color: 'var(--text-muted)' }}
       >
         {label}
       </p>
       <p
-        className="text-2xl font-bold tabular-nums mt-1.5 pl-2"
-        style={{ color: 'var(--text-primary)' }}
+        className="text-2xl font-bold tabular-nums mt-1.5"
+        style={{ color }}
       >
         {value}
       </p>
       {sublabel && (
-        <p className="text-xs pl-2 mt-1 font-medium" style={{ color }}>
+        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
           {sublabel}
         </p>
       )}

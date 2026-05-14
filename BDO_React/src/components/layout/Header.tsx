@@ -1,25 +1,32 @@
 'use client';
-import { ROL_LABELS } from '@/lib/config';
+import { NAV_CATEGORIES, ROL_LABELS } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotifStore } from '@/stores/notifStore';
 import { useThemeStore } from '@/stores/themeStore';
 import type { Perfil } from '@/types/database';
 import { Bell, ChevronRight, LogOut, Moon, Sun } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface HeaderProps {
   perfil: Perfil;
 }
 
+const ALL_NAV_PAGES = NAV_CATEGORIES.flatMap((c) => c.pages);
+
 export function Header({ perfil }: HeaderProps) {
   const { push, refresh } = useRouter();
+  const pathname = usePathname();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const clearNotifs = useNotifStore((s) => s.clearNotifs);
   const notifs = useNotifStore((s) => s.notifs);
   const unread = notifs.filter((n) => !n.leida).length;
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggle);
+
+  const currentPage = ALL_NAV_PAGES.find(
+    (p) => pathname === p.href || pathname.startsWith(`${p.href}/`),
+  );
 
   async function handleLogout() {
     const supabase = createClient();
@@ -47,13 +54,13 @@ export function Header({ perfil }: HeaderProps) {
       }}
     >
       {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-sm">
-        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+      <div className="flex items-center gap-1.5 text-sm min-w-0">
+        <span className="font-medium shrink-0" style={{ color: 'var(--text-primary)' }}>
           {perfil.nombre}
         </span>
-        <ChevronRight className="h-3.5 w-3.5" style={{ color: 'var(--text-muted)' }} />
+        <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color: 'var(--text-muted)' }} />
         <span
-          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase"
+          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase shrink-0"
           style={{
             background: 'rgba(122,201,67,0.12)',
             color: '#5A9A32',
@@ -62,6 +69,14 @@ export function Header({ perfil }: HeaderProps) {
         >
           {ROL_LABELS[perfil.rol]}
         </span>
+        {currentPage && (
+          <>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color: 'var(--text-muted)' }} />
+            <span className="font-medium truncate" style={{ color: 'var(--text-muted)' }}>
+              {currentPage.label}
+            </span>
+          </>
+        )}
       </div>
 
       {/* Acciones */}

@@ -786,8 +786,7 @@ export default function LoginPage() {
                       animate={{ opacity: 1, y: 0 }}
                       style={{
                         background: '#FEF2F2',
-                        border: '1px solid rgba(239,68,68,0.2)',
-                        borderLeft: '3px solid #ef4444',
+                        border: '1.5px solid rgba(239,68,68,0.35)',
                         borderRadius: 9,
                         padding: '11px 15px',
                         fontSize: 13,
@@ -844,6 +843,18 @@ export default function LoginPage() {
                         e.currentTarget.style.transform = 'translateY(0)';
                       }
                     }}
+                    onFocus={(e) => {
+                      if (!isSubmitting) {
+                        e.currentTarget.style.outline = 'none';
+                        e.currentTarget.style.boxShadow =
+                          '0 0 0 3px rgba(200,169,106,0.4), 0 4px 18px rgba(11,42,74,0.28)';
+                      }
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.boxShadow = isSubmitting
+                        ? 'none'
+                        : '0 4px 18px rgba(11,42,74,0.28)';
+                    }}
                   >
                     {/* Gold shimmer top edge */}
                     <div
@@ -895,19 +906,6 @@ export default function LoginPage() {
                 </form>
               </m.div>
 
-              {/* Footer */}
-              <p
-                style={{
-                  marginTop: 22,
-                  textAlign: 'center',
-                  fontSize: 11,
-                  color: '#6B7C93',
-                  letterSpacing: '0.07em',
-                  fontWeight: 500,
-                  fontFamily: ff,
-                }}
-              >
-              </p>
             </div>
           </m.div>
         </div>

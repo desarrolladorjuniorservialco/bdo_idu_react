@@ -2,21 +2,21 @@
 import { NAV_ACCESS, NAV_CATEGORIES, ROL_LABELS } from '@/lib/config';
 import { cn } from '@/lib/utils';
 import type { Perfil } from '@/types/database';
-import {
-  SiAsana,
-  SiDatadog,
-  SiGmail,
-  SiGoogleanalytics,
-  SiGooglecalendar,
-  SiGoogledocs,
-  SiGooglemaps,
-  SiGooglesheets,
-  SiHandshake,
-  SiLeaflet,
-  SiMapbox,
-  SiNotion,
-} from '@icons-pack/react-simple-icons';
 import { LazyMotion, MotionConfig, domAnimation, m, useReducedMotion } from 'framer-motion';
+import {
+  Activity,
+  BarChart2,
+  Calculator,
+  CalendarDays,
+  FileDown,
+  LayoutDashboard,
+  Leaf,
+  Mail,
+  Map,
+  Network,
+  NotebookPen,
+  Users,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -28,18 +28,18 @@ const PAGE_ICONS: Record<
   string,
   React.ComponentType<{ size?: number; color?: string; className?: string }>
 > = {
-  'estado-actual': SiAsana,
-  'mapa-ejecucion': SiGooglemaps,
-  presupuesto: SiGooglesheets,
-  correspondencia: SiGmail,
-  anotaciones: SiNotion,
-  'anotaciones-diario': SiGooglecalendar,
-  'reporte-cantidades': SiGoogleanalytics,
-  'componente-ambiental': SiLeaflet,
-  'componente-social': SiHandshake,
-  'componente-pmt': SiMapbox,
-  'seguimiento-pmts': SiDatadog,
-  'generar-informe': SiGoogledocs,
+  'estado-actual': LayoutDashboard,
+  'mapa-ejecucion': Map,
+  presupuesto: Calculator,
+  correspondencia: Mail,
+  anotaciones: NotebookPen,
+  'anotaciones-diario': CalendarDays,
+  'reporte-cantidades': BarChart2,
+  'componente-ambiental': Leaf,
+  'componente-social': Users,
+  'componente-pmt': Network,
+  'seguimiento-pmts': Activity,
+  'generar-informe': FileDown,
 };
 
 export function Sidebar({ perfil }: SidebarProps) {

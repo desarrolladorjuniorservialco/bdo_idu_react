@@ -5,12 +5,14 @@ import { createClient } from '@/lib/supabase/server';
 import { formatCOP, formatDateDMY } from '@/lib/utils';
 import type { Adicion, Contrato, Prorroga } from '@/types/database';
 import {
+  AlertTriangle,
   Banknote,
   Building,
   Building2,
   Calendar,
   CalendarCheck,
   CalendarX,
+  FileSearch,
   Hash,
   UserCheck,
 } from 'lucide-react';
@@ -96,9 +98,21 @@ export default async function EstadoActualPage() {
             Resumen general del estado y avance del contrato de obra.
           </p>
         </div>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          Sin datos de contrato. Verifica la sincronización.
-        </p>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
+            style={{ background: 'var(--idu-blue-lt)' }}
+          >
+            <FileSearch className="h-6 w-6" style={{ color: 'var(--corp-primary)' }} />
+          </div>
+          <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+            Sin contrato asignado
+          </h2>
+          <p className="text-sm max-w-sm" style={{ color: 'var(--text-muted)' }}>
+            Tu perfil no tiene un contrato vinculado. Contacta al administrador del sistema para
+            completar la configuración.
+          </p>
+        </div>
       </div>
     );
   }
@@ -122,9 +136,21 @@ export default async function EstadoActualPage() {
             Estado actual del contrato
           </h1>
         </div>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          Sin datos de contrato. Verifica la sincronización.
-        </p>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
+            style={{ background: 'var(--idu-yellow-lt)' }}
+          >
+            <AlertTriangle className="h-6 w-6" style={{ color: 'var(--idu-yellow)' }} />
+          </div>
+          <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+            Datos del contrato no disponibles
+          </h2>
+          <p className="text-sm max-w-sm" style={{ color: 'var(--text-muted)' }}>
+            El contrato vinculado a tu perfil no pudo cargarse. Verifica la sincronización con el
+            administrador del sistema.
+          </p>
+        </div>
       </div>
     );
   }
@@ -152,13 +178,8 @@ export default async function EstadoActualPage() {
       </div>
 
       {/* ── Frame 1: Identificación del contrato ── */}
-      <div className="rounded-[20px] p-5 relative overflow-hidden" style={cardStyle}>
-        <div
-          className="absolute left-0 top-0 bottom-0 w-1 rounded-l-[20px]"
-          style={{ background: 'var(--corp-primary)' }}
-        />
-
-        <div className="flex items-start justify-between gap-4 flex-wrap pl-3">
+      <div className="rounded-[20px] p-5" style={cardStyle}>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <p
               className="text-[10px] font-mono uppercase tracking-widest mb-0.5"
@@ -176,7 +197,7 @@ export default async function EstadoActualPage() {
           <StatusBadge estado={contrato.estado ?? 'ACTIVO'} />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4 mt-5 pl-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4 mt-5">
           {contractFields(contrato).map(({ label, value, icon: Icon }) => (
             <div key={label}>
               <div className="flex items-center gap-1 mb-0.5">
