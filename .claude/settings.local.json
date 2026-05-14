@@ -48,7 +48,10 @@
       "Bash(Select-Object Name)",
       "Bash(Get-Content \"C:\\\\Users\\\\VICTOR~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Victor-Pulido-Documents-GIT-BDO-IDU-React\\\\5510b2d3-8dff-41f1-9e71-f6117430e5dc\\\\tasks\\\\ba6ln3zsb.output\" -Wait)",
       "Bash(Select-String -Pattern \"ready|Local:|error|Error|EADDRINUSE\")",
-      "Bash(Get-Content \"C:\\\\Users\\\\VICTOR~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Victor-Pulido-Documents-GIT-BDO-IDU-React\\\\5510b2d3-8dff-41f1-9e71-f6117430e5dc\\\\tasks\\\\ba6ln3zsb.output\" -Tail 20)"
+      "Bash(Get-Content \"C:\\\\Users\\\\VICTOR~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Victor-Pulido-Documents-GIT-BDO-IDU-React\\\\5510b2d3-8dff-41f1-9e71-f6117430e5dc\\\\tasks\\\\ba6ln3zsb.output\" -Tail 20)",
+      "Bash(grep -i \"worktree.*director\" CLAUDE.md)",
+      "Bash(git worktree *)",
+      "Bash(findstr vitest *)"
     ]
   }
 }

@@ -907,7 +907,6 @@ export default function LoginPage() {
                   fontFamily: ff,
                 }}
               >
-                Acceso restringido · Solo personal autorizado
               </p>
             </div>
           </m.div>

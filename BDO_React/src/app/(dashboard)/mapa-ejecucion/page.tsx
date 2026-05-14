@@ -4,6 +4,34 @@ import MapaClient from './MapaClient';
 
 export const revalidate = 30;
 
+const PAGE_SIZE = 1000;
+
+async function fetchAllRows(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  table: string,
+  contratoId: string,
+  orderField: string,
+): Promise<Record<string, unknown>[]> {
+  const all: Record<string, unknown>[] = [];
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from(table)
+      .select('*')
+      .eq('contrato_id', contratoId)
+      .order(orderField, { ascending: false })
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error || !data || data.length === 0) break;
+    all.push(...(data as Record<string, unknown>[]));
+    if (data.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+
+  return all;
+}
+
 export default async function Page() {
   const user = await getCachedUser();
   const perfil = await getCachedPerfil(user!.id);
@@ -12,10 +40,10 @@ export default async function Page() {
 
   const [
     { data: tramos },
-    { data: cantidades },
-    { data: componentes },
-    { data: reporteDiario },
-    { data: formularioPmt },
+    cantidades,
+    componentes,
+    reporteDiario,
+    formularioPmt,
     { count: totalCantidades },
     { count: totalComponentes },
     { count: totalDiario },
@@ -25,30 +53,10 @@ export default async function Page() {
       .from('tramos_bd')
       .select('id, nombre, estado_ejecucion, avance_pct, geojson')
       .eq('contrato_id', contratoId),
-    supabase
-      .from('registros_cantidades')
-      .select('*')
-      .eq('contrato_id', contratoId)
-      .order('fecha_creacion', { ascending: false })
-      .range(0, 9999),
-    supabase
-      .from('registros_componentes')
-      .select('*')
-      .eq('contrato_id', contratoId)
-      .order('fecha_creacion', { ascending: false })
-      .range(0, 9999),
-    supabase
-      .from('registros_reporte_diario')
-      .select('*')
-      .eq('contrato_id', contratoId)
-      .order('fecha', { ascending: false })
-      .range(0, 9999),
-    supabase
-      .from('formulario_pmt')
-      .select('*')
-      .eq('contrato_id', contratoId)
-      .order('fecha_creacion', { ascending: false })
-      .range(0, 9999),
+    fetchAllRows(supabase, 'registros_cantidades', contratoId, 'fecha_creacion'),
+    fetchAllRows(supabase, 'registros_componentes', contratoId, 'fecha_creacion'),
+    fetchAllRows(supabase, 'registros_reporte_diario', contratoId, 'fecha'),
+    fetchAllRows(supabase, 'formulario_pmt', contratoId, 'fecha_creacion'),
     supabase
       .from('registros_cantidades')
       .select('*', { count: 'exact', head: true })
@@ -70,14 +78,14 @@ export default async function Page() {
   return (
     <MapaClient
       tramos={tramos ?? []}
-      cantidades={cantidades ?? []}
-      componentes={componentes ?? []}
-      reporteDiario={reporteDiario ?? []}
-      formularioPmt={formularioPmt ?? []}
-      totalCantidades={totalCantidades ?? cantidades?.length ?? 0}
-      totalComponentes={totalComponentes ?? componentes?.length ?? 0}
-      totalDiario={totalDiario ?? reporteDiario?.length ?? 0}
-      totalPmt={totalPmt ?? formularioPmt?.length ?? 0}
+      cantidades={cantidades}
+      componentes={componentes}
+      reporteDiario={reporteDiario}
+      formularioPmt={formularioPmt}
+      totalCantidades={totalCantidades ?? cantidades.length}
+      totalComponentes={totalComponentes ?? componentes.length}
+      totalDiario={totalDiario ?? reporteDiario.length}
+      totalPmt={totalPmt ?? formularioPmt.length}
     />
   );
 }
