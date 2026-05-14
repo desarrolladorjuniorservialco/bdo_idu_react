@@ -24,16 +24,15 @@ export function KpiCard({ label, value, accent = 'blue', sublabel, className }: 
   const color = ACCENT_MAP[accent];
   return (
     <div
-      className={cn('relative rounded-[20px] p-4 overflow-hidden', className)}
+      className={cn('hover-elevate relative rounded-[12px] p-4 overflow-hidden', className)}
       style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
-        boxShadow: '0 4px 20px rgba(6,43,91,0.07)',
+        boxShadow: 'var(--shadow-md)',
       }}
     >
-      {/* Borde izquierdo de acento */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-[20px]"
+        className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[12px]"
         style={{ background: color }}
       />
       <p
