@@ -123,7 +123,7 @@ export function Sidebar({ perfil }: SidebarProps) {
                   </p>
                   <div
                     className="mb-2 mx-2 h-px"
-                    style={{ background: 'rgba(255,255,255,0.06)' }}
+                    style={{ background: 'rgba(255,255,255,0.09)' }}
                   />
 
                   <div className="space-y-0.5">
