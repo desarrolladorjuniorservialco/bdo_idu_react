@@ -17,7 +17,7 @@ import {
 } from '@/lib/supabase/actions/correspondencia';
 import type { CorrespondenciaInput } from '@/lib/validators/correspondencia.schema';
 import type { Rol } from '@/types/database';
-import { Trash2 } from 'lucide-react';
+import { Maximize2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { CorrespondenciaForm } from './CorrespondenciaForm';
@@ -397,6 +397,264 @@ function FilterPanel({
   );
 }
 
+// ─── Tabla reutilizable ──────────────────────────────────────────────────────
+interface CorrespondenciaTableProps {
+  filtered: CorrespondenciaRow[];
+  visibleCols: typeof COL_DEFS;
+  colWidths: number[];
+  startResize: (e: React.MouseEvent, idx: number) => void;
+  canEdit: boolean;
+  rol: Rol;
+  setEditando: (r: CorrespondenciaRow) => void;
+  handleEliminar: (id: string) => void;
+  cellBase: React.CSSProperties;
+  registros: CorrespondenciaRow[];
+}
+
+function CorrespondenciaTable({
+  filtered,
+  visibleCols,
+  colWidths,
+  startResize,
+  canEdit,
+  rol,
+  setEditando,
+  handleEliminar,
+  cellBase,
+  registros,
+}: CorrespondenciaTableProps) {
+  return (
+    <div className="rounded-xl overflow-x-auto" style={{ border: '1px solid var(--border)' }}>
+      <table
+        className="table-fixed"
+        style={{
+          width: `${visibleCols.reduce((sum, _, i) => sum + colWidths[i], 0)}px`,
+          minWidth: '100%',
+          borderCollapse: 'collapse',
+          fontSize: '14px',
+        }}
+      >
+        <colgroup>
+          {visibleCols.map((col, i) => (
+            <col key={col.key} style={{ width: `${colWidths[i]}px` }} />
+          ))}
+        </colgroup>
+
+        <thead style={{ background: 'var(--muted)' }}>
+          <tr>
+            {visibleCols.map((col, i) => (
+              <th
+                key={col.key}
+                style={{
+                  position: 'relative',
+                  width: `${colWidths[i]}px`,
+                  padding: '9px 12px',
+                  textAlign: 'left',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  letterSpacing: '0.03em',
+                  color: 'var(--text-muted)',
+                  whiteSpace: 'nowrap',
+                  userSelect: 'none',
+                  overflow: 'hidden',
+                }}
+              >
+                {col.label}
+                <button
+                  type="button"
+                  aria-label={`Redimensionar columna ${col.label}`}
+                  onMouseDown={(e) => startResize(e, i)}
+                  title="Arrastrar para redimensionar"
+                  className="hover:opacity-100 hover:bg-[var(--accent-teal)]"
+                  style={{
+                    position: 'absolute',
+                    right: 0,
+                    top: '15%',
+                    bottom: '15%',
+                    width: '4px',
+                    cursor: 'col-resize',
+                    background: 'var(--border)',
+                    borderRadius: '2px',
+                    opacity: 0.5,
+                    transition: 'opacity 0.15s, background 0.15s',
+                    border: 'none',
+                    padding: 0,
+                  }}
+                />
+              </th>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody>
+          {filtered.length === 0 ? (
+            <tr>
+              <td
+                colSpan={visibleCols.length}
+                style={{
+                  padding: '32px 12px',
+                  textAlign: 'center',
+                  fontSize: '14px',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                {registros.length === 0
+                  ? 'Sin registros de correspondencia.'
+                  : 'No hay registros que coincidan con los filtros aplicados.'}
+              </td>
+            </tr>
+          ) : (
+            filtered.map((r) => {
+              const vencida = isVencida(r);
+              return (
+                <tr
+                  key={r.id}
+                  style={{
+                    borderTop: '1px solid var(--border)',
+                    background: vencida ? 'rgba(255,210,0,0.13)' : undefined,
+                  }}
+                >
+                  <td
+                    style={{
+                      ...cellBase,
+                      fontFamily: 'monospace',
+                      fontWeight: 500,
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {r.consecutivo}
+                  </td>
+                  <td style={{ ...cellBase, fontVariantNumeric: 'tabular-nums' }}>
+                    {formatDate(r.fecha)}
+                  </td>
+                  <td style={cellBase} title={r.emisor ?? undefined}>
+                    {r.emisor}
+                  </td>
+                  <td style={cellBase} title={r.receptor ?? undefined}>
+                    {r.receptor}
+                  </td>
+                  <td style={cellBase}>
+                    {r.componente ? (
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          background: 'var(--idu-blue-lt)',
+                          color: 'var(--idu-blue)',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {r.componente}
+                      </span>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)' }}>—</span>
+                    )}
+                  </td>
+                  <td style={cellBase} title={r.asunto ?? undefined}>
+                    {r.asunto}
+                  </td>
+                  <td style={{ ...cellBase, fontVariantNumeric: 'tabular-nums' }}>
+                    {r.plazo_respuesta ? (
+                      <span
+                        style={{
+                          color: vencida ? 'var(--accent-red)' : 'var(--text-primary)',
+                          fontWeight: vencida ? 700 : 400,
+                        }}
+                      >
+                        {formatDate(r.plazo_respuesta)}
+                        {vencida && (
+                          <span style={{ marginLeft: '4px', fontSize: '12px' }}>⚠</span>
+                        )}
+                      </span>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)' }}>—</span>
+                    )}
+                  </td>
+                  <td style={cellBase}>
+                    <StatusBadge estado={r.estado} />
+                  </td>
+                  <td style={{ ...cellBase, fontFamily: 'monospace' }}>
+                    {r.consecutivo_respuesta || (
+                      <span style={{ color: 'var(--text-muted)' }}>—</span>
+                    )}
+                  </td>
+                  <td style={{ ...cellBase, fontVariantNumeric: 'tabular-nums' }}>
+                    {r.fecha_respuesta ? (
+                      formatDate(r.fecha_respuesta)
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)' }}>—</span>
+                    )}
+                  </td>
+                  <td style={cellBase}>
+                    {r.link ? (
+                      <a
+                        href={r.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: 'var(--accent-teal)',
+                          textDecoration: 'underline',
+                          textUnderlineOffset: '2px',
+                          fontSize: '14px',
+                        }}
+                      >
+                        Ver ↗
+                      </a>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)' }}>—</span>
+                    )}
+                  </td>
+                  {canEdit && (
+                    <td style={{ ...cellBase, padding: '6px 8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setEditando(r)}
+                        className="hover:bg-[var(--muted)]"
+                        style={{
+                          height: '28px',
+                          padding: '0 8px',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          border: 'none',
+                          borderRadius: 'var(--radius)',
+                          background: 'transparent',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        Editar
+                      </button>
+                      {rol === 'admin' && (
+                        <button
+                          type="button"
+                          onClick={() => handleEliminar(r.id)}
+                          title="Eliminar registro"
+                          style={{
+                            color: '#dc2626',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 4,
+                            borderRadius: 4,
+                          }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function CorrespondenciaClient({
   registros,
@@ -406,6 +664,7 @@ export default function CorrespondenciaClient({
   const [openNueva, setOpenNueva] = useState(false);
   const [editando, setEditando] = useState<CorrespondenciaRow | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [openTableModal, setOpenTableModal] = useState(false);
 
   // Filter state
   const [showFilters, setShowFilters] = useState(true);
@@ -635,6 +894,14 @@ export default function CorrespondenciaClient({
             : `${filtered.length} de ${registros.length} registros`}
         </p>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="h-8 px-3 text-[14px] flex items-center gap-1.5"
+            onClick={() => setOpenTableModal(true)}
+          >
+            <Maximize2 size={14} />
+            Tabla completa
+          </Button>
           <ExportCsvButton data={filtered} filename="Correspondencia_IDU-1556-2025" />
           {canEdit && (
             <Dialog open={openNueva} onOpenChange={setOpenNueva}>
@@ -658,258 +925,18 @@ export default function CorrespondenciaClient({
       </div>
 
       {/* ── Resizable Table ──────────────────────────────────────────────────── */}
-      <div className="rounded-xl overflow-x-auto" style={{ border: '1px solid var(--border)' }}>
-        <table
-          className="table-fixed"
-          style={{
-            width: `${visibleCols.reduce((sum, _, i) => sum + colWidths[i], 0)}px`,
-            minWidth: '100%',
-            borderCollapse: 'collapse',
-            fontSize: '14px',
-          }}
-        >
-          <colgroup>
-            {visibleCols.map((col, i) => (
-              <col key={col.key} style={{ width: `${colWidths[i]}px` }} />
-            ))}
-          </colgroup>
-
-          <thead style={{ background: 'var(--muted)' }}>
-            <tr>
-              {visibleCols.map((col, i) => (
-                <th
-                  key={col.key}
-                  style={{
-                    position: 'relative',
-                    width: `${colWidths[i]}px`,
-                    padding: '9px 12px',
-                    textAlign: 'left',
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    letterSpacing: '0.03em',
-                    color: 'var(--text-muted)',
-                    whiteSpace: 'nowrap',
-                    userSelect: 'none',
-                    overflow: 'hidden',
-                  }}
-                >
-                  {col.label}
-                  {/* Drag-to-resize handle */}
-                  <button
-                    type="button"
-                    aria-label={`Redimensionar columna ${col.label}`}
-                    onMouseDown={(e) => startResize(e, i)}
-                    title="Arrastrar para redimensionar"
-                    className="hover:opacity-100 hover:bg-[var(--accent-teal)]"
-                    style={{
-                      position: 'absolute',
-                      right: 0,
-                      top: '15%',
-                      bottom: '15%',
-                      width: '4px',
-                      cursor: 'col-resize',
-                      background: 'var(--border)',
-                      borderRadius: '2px',
-                      opacity: 0.5,
-                      transition: 'opacity 0.15s, background 0.15s',
-                      border: 'none',
-                      padding: 0,
-                    }}
-                  />
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={visibleCols.length}
-                  style={{
-                    padding: '32px 12px',
-                    textAlign: 'center',
-                    fontSize: '14px',
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  {registros.length === 0
-                    ? 'Sin registros de correspondencia.'
-                    : 'No hay registros que coincidan con los filtros aplicados.'}
-                </td>
-              </tr>
-            ) : (
-              filtered.map((r) => {
-                const vencida = isVencida(r);
-                return (
-                  <tr
-                    key={r.id}
-                    style={{
-                      borderTop: '1px solid var(--border)',
-                      background: vencida ? 'rgba(255,210,0,0.13)' : undefined,
-                    }}
-                  >
-                    {/* Consecutivo */}
-                    <td
-                      style={{
-                        ...cellBase,
-                        fontFamily: 'monospace',
-                        fontWeight: 500,
-                        color: 'var(--text-primary)',
-                      }}
-                    >
-                      {r.consecutivo}
-                    </td>
-
-                    {/* Fecha */}
-                    <td style={{ ...cellBase, fontVariantNumeric: 'tabular-nums' }}>
-                      {formatDate(r.fecha)}
-                    </td>
-
-                    {/* Emisor */}
-                    <td style={cellBase} title={r.emisor ?? undefined}>
-                      {r.emisor}
-                    </td>
-
-                    {/* Receptor */}
-                    <td style={cellBase} title={r.receptor ?? undefined}>
-                      {r.receptor}
-                    </td>
-
-                    {/* Componente */}
-                    <td style={cellBase}>
-                      {r.componente ? (
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 500,
-                            background: 'var(--idu-blue-lt)',
-                            color: 'var(--idu-blue)',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {r.componente}
-                        </span>
-                      ) : (
-                        <span style={{ color: 'var(--text-muted)' }}>—</span>
-                      )}
-                    </td>
-
-                    {/* Asunto */}
-                    <td style={cellBase} title={r.asunto ?? undefined}>
-                      {r.asunto}
-                    </td>
-
-                    {/* Plazo respuesta */}
-                    <td style={{ ...cellBase, fontVariantNumeric: 'tabular-nums' }}>
-                      {r.plazo_respuesta ? (
-                        <span
-                          style={{
-                            color: vencida ? 'var(--accent-red)' : 'var(--text-primary)',
-                            fontWeight: vencida ? 700 : 400,
-                          }}
-                        >
-                          {formatDate(r.plazo_respuesta)}
-                          {vencida && (
-                            <span style={{ marginLeft: '4px', fontSize: '12px' }}>⚠</span>
-                          )}
-                        </span>
-                      ) : (
-                        <span style={{ color: 'var(--text-muted)' }}>—</span>
-                      )}
-                    </td>
-
-                    {/* Estado */}
-                    <td style={cellBase}>
-                      <StatusBadge estado={r.estado} />
-                    </td>
-
-                    {/* Consecutivo Respuesta */}
-                    <td style={{ ...cellBase, fontFamily: 'monospace' }}>
-                      {r.consecutivo_respuesta || (
-                        <span style={{ color: 'var(--text-muted)' }}>—</span>
-                      )}
-                    </td>
-
-                    {/* Fecha Respuesta */}
-                    <td style={{ ...cellBase, fontVariantNumeric: 'tabular-nums' }}>
-                      {r.fecha_respuesta ? (
-                        formatDate(r.fecha_respuesta)
-                      ) : (
-                        <span style={{ color: 'var(--text-muted)' }}>—</span>
-                      )}
-                    </td>
-
-                    {/* Link */}
-                    <td style={cellBase}>
-                      {r.link ? (
-                        <a
-                          href={r.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            color: 'var(--accent-teal)',
-                            textDecoration: 'underline',
-                            textUnderlineOffset: '2px',
-                            fontSize: '14px',
-                          }}
-                        >
-                          Ver ↗
-                        </a>
-                      ) : (
-                        <span style={{ color: 'var(--text-muted)' }}>—</span>
-                      )}
-                    </td>
-
-                    {/* Acciones */}
-                    {canEdit && (
-                      <td style={{ ...cellBase, padding: '6px 8px' }}>
-                        <button
-                          type="button"
-                          onClick={() => setEditando(r)}
-                          className="hover:bg-[var(--muted)]"
-                          style={{
-                            height: '28px',
-                            padding: '0 8px',
-                            fontSize: '13px',
-                            cursor: 'pointer',
-                            border: 'none',
-                            borderRadius: 'var(--radius)',
-                            background: 'transparent',
-                            color: 'var(--text-muted)',
-                          }}
-                        >
-                          Editar
-                        </button>
-                        {rol === 'admin' && (
-                          <button
-                            type="button"
-                            onClick={() => handleEliminar(r.id)}
-                            title="Eliminar registro"
-                            style={{
-                              color: '#dc2626',
-                              background: 'none',
-                              border: 'none',
-                              cursor: 'pointer',
-                              padding: 4,
-                              borderRadius: 4,
-                            }}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
-                      </td>
-                    )}
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      <CorrespondenciaTable
+        filtered={filtered}
+        visibleCols={visibleCols}
+        colWidths={colWidths}
+        startResize={startResize}
+        canEdit={canEdit}
+        rol={rol}
+        setEditando={setEditando}
+        handleEliminar={handleEliminar}
+        cellBase={cellBase}
+        registros={registros}
+      />
 
       {/* ── Overdue legend ──────────────────────────────────────────────────── */}
       {nVencidasVisible > 0 && (
@@ -968,6 +995,73 @@ export default function CorrespondenciaClient({
           </DialogContent>
         </Dialog>
       )}
+
+      {/* ── Table Full-Screen Dialog ─────────────────────────────────────────────── */}
+      <Dialog open={openTableModal} onOpenChange={setOpenTableModal}>
+        <DialogContent
+          className="max-w-7xl w-full"
+          style={{ height: '90vh', display: 'flex', flexDirection: 'column', gap: 0, padding: 0 }}
+        >
+          <DialogHeader
+            style={{
+              padding: '20px 24px 16px',
+              flexShrink: 0,
+              borderBottom: '1px solid var(--border)',
+            }}
+          >
+            <DialogTitle>
+              Correspondencia —{' '}
+              {filtered.length === registros.length
+                ? `${registros.length} registro${registros.length !== 1 ? 's' : ''}`
+                : `${filtered.length} de ${registros.length} registros`}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div style={{ flex: 1, overflow: 'auto', padding: '16px 24px' }}>
+            <CorrespondenciaTable
+              filtered={filtered}
+              visibleCols={visibleCols}
+              colWidths={colWidths}
+              startResize={startResize}
+              canEdit={canEdit}
+              rol={rol}
+              setEditando={setEditando}
+              handleEliminar={handleEliminar}
+              cellBase={cellBase}
+              registros={registros}
+            />
+          </div>
+
+          {nVencidasVisible > 0 && (
+            <div
+              style={{
+                padding: '12px 24px',
+                borderTop: '1px solid var(--border)',
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: '16px',
+                  height: '16px',
+                  background: 'rgba(255,210,0,0.35)',
+                  border: '1px solid #c8a800',
+                  borderRadius: '3px',
+                  flexShrink: 0,
+                }}
+              />
+              {nVencidasVisible} registro{nVencidasVisible > 1 ? 's' : ''} PENDIENTE
+              {nVencidasVisible > 1 ? 'S' : ''} con plazo de respuesta vencido
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
