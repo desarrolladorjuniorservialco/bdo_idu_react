@@ -43,7 +43,7 @@ export function Header({ perfil }: HeaderProps) {
       style={{
         background: 'var(--bg-card)',
         borderBottom: '1px solid var(--border)',
-        boxShadow: '0 1px 4px rgba(6,43,91,0.06)',
+        boxShadow: 'var(--shadow-sm)',
       }}
     >
       {/* Breadcrumb */}
@@ -83,7 +83,7 @@ export function Header({ perfil }: HeaderProps) {
           title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           aria-pressed={theme === 'dark'}
-          className="flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150 hover:bg-slate-100"
+          className="flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150 hover:bg-[var(--muted)]"
           style={{ color: 'var(--text-muted)' }}
         >
           {theme === 'dark' ? (
@@ -97,14 +97,14 @@ export function Header({ perfil }: HeaderProps) {
           onClick={handleLogout}
           title="Cerrar sesión"
           aria-label="Cerrar sesión"
-          className="flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150 hover:bg-slate-100"
+          className="flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150 hover:bg-[var(--muted)]"
           style={{ color: 'var(--text-muted)' }}
         >
           <LogOut className="h-4 w-4" />
         </button>
         <div
           className="ml-1 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-          style={{ background: 'var(--corp-primary)', color: '#fff' }}
+          style={{ background: 'var(--corp-mid)', color: '#fff' }}
         >
           {initials}
         </div>
