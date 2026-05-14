@@ -155,7 +155,7 @@ Todas las clases `transition-colors duration-150` dispersas en el código pasan 
 | `src/components/shared/KpiCard.tsx` | Sombra calibrada, hover elevation, radio semántico |
 | `src/components/shared/StatusBadge.tsx` | Padding, borde, tipografía consistente |
 | `src/components/shared/SectionBadge.tsx` | Padding, borde, tipografía consistente |
-| `src/components/layout/Sidebar.tsx` | Color activo azul, separadores |
+| `src/components/layout/Sidebar.tsx` | Solo separadores hardcodeados — el color activo se maneja vía `--sidebar-active-bg` en globals.css |
 | `src/components/layout/Header.tsx` | Hover muted, avatar color, shadow token |
 | `src/components/shared/FilterForm.tsx` | Labels, espaciado |
 | `src/components/layout/PageWrapper.tsx` | Aplicar `animate-fade-in-up` consistente |
