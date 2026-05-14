@@ -20,7 +20,7 @@ export function SectionBadge({ label, page }: SectionBadgeProps) {
   return (
     <div className="flex items-center gap-2 mb-1">
       <span
-        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase"
+        className="inline-flex items-center px-2.5 py-0.5 rounded-[var(--radius-sm)] text-[11px] font-semibold tracking-wide uppercase"
         style={{ background: bg, color, border: `1px solid ${border}` }}
       >
         {label}

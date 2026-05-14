@@ -124,7 +124,7 @@
     --sidebar-header-bg: #060f1a;
     --sidebar-text: rgba(255, 255, 255, 0.65);
     --sidebar-text-muted: rgba(255, 255, 255, 0.35);
-    --sidebar-active-bg: #7ac943;
+    --sidebar-active-bg: #0d4d9b;
     --sidebar-footer-bg: #060f1a;
 
     --text-primary: #f1f5f9;
@@ -177,7 +177,7 @@ html[data-theme="dark"] {
   --sidebar-header-bg: #060f1a;
   --sidebar-text: rgba(255, 255, 255, 0.65);
   --sidebar-text-muted: rgba(255, 255, 255, 0.35);
-  --sidebar-active-bg: #7ac943;
+  --sidebar-active-bg: #0d4d9b;
   --sidebar-footer-bg: #060f1a;
 
   --text-primary: #f1f5f9;
@@ -248,6 +248,9 @@ body {
 
 .focus-ring {
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.focus-ring:hover:not(:focus-visible) {
+  border-color: color-mix(in srgb, var(--text-muted) 40%, transparent);
 }
 .focus-ring:focus-visible {
   outline: none;

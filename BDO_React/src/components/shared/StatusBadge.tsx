@@ -17,7 +17,7 @@ export function StatusBadge({ estado }: { estado: string }) {
   const s = ESTADO_STYLES[estado] ?? { bg: '#F1F5F9', color: '#64748B', label: estado };
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase whitespace-nowrap"
+      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--radius-sm)] text-[11px] font-semibold tracking-wide uppercase whitespace-nowrap"
       style={{
         background: s.bg,
         color: s.color,
