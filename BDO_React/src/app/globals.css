@@ -72,7 +72,7 @@
   --secondary: #f1f5f9;
   --secondary-foreground: #1e293b;
   --input: #e2e8f0;
-  --ring: #0d4d9b;
+  --ring: var(--corp-mid);
   --radius: 0.5rem;
 
   /* --- Legacy aliases (algunos componentes los usan) --- */
@@ -142,7 +142,6 @@
     --secondary: #1e293b;
     --secondary-foreground: #f1f5f9;
     --input: #334155;
-    --ring: #7ac943;
 
     --corp-dark: #060f1a;
     --corp-gold: #f59e0b;
@@ -196,7 +195,6 @@ html[data-theme="dark"] {
   --secondary: #1e293b;
   --secondary-foreground: #f1f5f9;
   --input: #334155;
-  --ring: #7ac943;
 
   --corp-dark: #060f1a;
   --corp-gold: #f59e0b;
@@ -245,7 +243,7 @@ body {
 }
 .hover-elevate:hover {
   box-shadow: var(--shadow-lg);
-  border-color: rgba(13, 77, 155, 0.20);
+  border-color: color-mix(in srgb, var(--corp-mid) 20%, transparent);
 }
 
 .focus-ring {
