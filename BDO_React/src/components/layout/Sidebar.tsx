@@ -86,7 +86,7 @@ export function Sidebar({ perfil }: SidebarProps) {
         <m.aside
           animate={{ width: collapsed ? 56 : 240 }}
           transition={transition}
-          className="flex flex-col min-h-screen shrink-0 overflow-hidden"
+          className="flex flex-col min-h-screen shrink-0 overflow-visible relative"
           style={{
             background: 'var(--bg-sidebar)',
             borderRight: '1px solid rgba(0,0,0,0.20)',
@@ -137,28 +137,6 @@ export function Sidebar({ perfil }: SidebarProps) {
               </p>
             </m.div>
           </div>
-
-          {/* Botón toggle */}
-          <button
-            onClick={toggle}
-            aria-label={collapsed ? 'Expandir panel' : 'Colapsar panel'}
-            className="flex items-center justify-center h-7 w-full shrink-0 transition-colors duration-150 active:scale-95"
-            style={{
-              background: 'var(--sidebar-header-bg)',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
-              color: 'rgba(255,255,255,0.35)',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
-          >
-            <m.span
-              animate={{ rotate: collapsed ? 180 : 0 }}
-              transition={transition}
-              className="flex items-center justify-center"
-            >
-              <ChevronLeft size={13} />
-            </m.span>
-          </button>
 
           {/* Navegación */}
           <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-4">
@@ -307,6 +285,40 @@ export function Sidebar({ perfil }: SidebarProps) {
               </div>
             </m.div>
           </div>
+          {/* Botón toggle circular */}
+          <m.button
+            onClick={toggle}
+            aria-label={collapsed ? 'Expandir panel' : 'Colapsar panel'}
+            whileHover={{ scale: 1.12 }}
+            whileTap={{ scale: 0.92 }}
+            transition={{ duration: 0.15 }}
+            style={{
+              position: 'absolute',
+              right: -14,
+              top: 'calc(50% - 14px)',
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              background: 'var(--corp-green)',
+              color: '#fff',
+              border: '2px solid var(--bg-app)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.22)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              zIndex: 50,
+              flexShrink: 0,
+            }}
+          >
+            <m.span
+              animate={{ rotate: collapsed ? 180 : 0 }}
+              transition={transition}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <ChevronLeft size={14} />
+            </m.span>
+          </m.button>
         </m.aside>
       </LazyMotion>
     </MotionConfig>
