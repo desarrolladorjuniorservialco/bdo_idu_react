@@ -19,7 +19,7 @@ import type { CorrespondenciaInput } from '@/lib/validators/correspondencia.sche
 import type { Rol } from '@/types/database';
 import { Maximize2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { CorrespondenciaForm } from './CorrespondenciaForm';
 
 const ESTADOS = ['PENDIENTE', 'RESPONDIDO', 'NO APLICA RESPUESTA'] as const;
@@ -81,6 +81,14 @@ function formatDate(val: string | null | undefined): string {
   if (!y || !m || !day) return '—';
   return `${day}/${m}/${y}`;
 }
+
+const cellBase: React.CSSProperties = {
+  padding: '9px 12px',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  fontSize: '14px',
+};
 
 // ─── Multi-select dropdown ───────────────────────────────────────────────────
 function MultiSelect({
@@ -407,7 +415,6 @@ interface CorrespondenciaTableProps {
   rol: Rol;
   setEditando: (r: CorrespondenciaRow) => void;
   handleEliminar: (id: string) => void;
-  cellBase: React.CSSProperties;
   registros: CorrespondenciaRow[];
 }
 
@@ -420,7 +427,6 @@ function CorrespondenciaTable({
   rol,
   setEditando,
   handleEliminar,
-  cellBase,
   registros,
 }: CorrespondenciaTableProps) {
   return (
@@ -700,7 +706,7 @@ export default function CorrespondenciaClient({
   const visibleCols = useMemo(() => (canEdit ? COL_DEFS : COL_DEFS.slice(0, -1)), [canEdit]);
 
   // ── Resize handlers ────────────────────────────────────────────────────────
-  function startResize(e: React.MouseEvent, idx: number) {
+  const startResize = useCallback((e: React.MouseEvent, idx: number) => {
     e.preventDefault();
     resizing.current = { idx, startX: e.clientX, startW: colWidths[idx] };
 
@@ -721,7 +727,7 @@ export default function CorrespondenciaClient({
     }
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
-  }
+  }, [colWidths]);
 
   // ── Filter logic ───────────────────────────────────────────────────────────
   function clearFilters() {
@@ -802,14 +808,31 @@ export default function CorrespondenciaClient({
     });
   }
 
-  // ── Shared cell style ──────────────────────────────────────────────────────
-  const cellBase: React.CSSProperties = {
-    padding: '9px 12px',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontSize: '14px',
-  };
+  const overdueLegend = nVencidasVisible > 0 ? (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: '14px',
+        color: 'var(--text-muted)',
+      }}
+    >
+      <span
+        style={{
+          display: 'inline-block',
+          width: '16px',
+          height: '16px',
+          background: 'rgba(255,210,0,0.35)',
+          border: '1px solid #c8a800',
+          borderRadius: '3px',
+          flexShrink: 0,
+        }}
+      />
+      {nVencidasVisible} registro{nVencidasVisible > 1 ? 's' : ''} PENDIENTE
+      {nVencidasVisible > 1 ? 'S' : ''} con plazo de respuesta vencido
+    </div>
+  ) : null;
 
   return (
     <div className="space-y-4">
@@ -934,36 +957,11 @@ export default function CorrespondenciaClient({
         rol={rol}
         setEditando={setEditando}
         handleEliminar={handleEliminar}
-        cellBase={cellBase}
         registros={registros}
       />
 
       {/* ── Overdue legend ──────────────────────────────────────────────────── */}
-      {nVencidasVisible > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '14px',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <span
-            style={{
-              display: 'inline-block',
-              width: '16px',
-              height: '16px',
-              background: 'rgba(255,210,0,0.35)',
-              border: '1px solid #c8a800',
-              borderRadius: '3px',
-              flexShrink: 0,
-            }}
-          />
-          {nVencidasVisible} registro{nVencidasVisible > 1 ? 's' : ''} PENDIENTE
-          {nVencidasVisible > 1 ? 'S' : ''} con plazo de respuesta vencido
-        </div>
-      )}
+      {overdueLegend}
 
       {/* ── Edit Dialog ─────────────────────────────────────────────────────── */}
       {editando && (
@@ -1027,37 +1025,19 @@ export default function CorrespondenciaClient({
               rol={rol}
               setEditando={setEditando}
               handleEliminar={handleEliminar}
-              cellBase={cellBase}
               registros={registros}
             />
           </div>
 
-          {nVencidasVisible > 0 && (
+          {overdueLegend && (
             <div
               style={{
                 padding: '12px 24px',
                 borderTop: '1px solid var(--border)',
                 flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '14px',
-                color: 'var(--text-muted)',
               }}
             >
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: '16px',
-                  height: '16px',
-                  background: 'rgba(255,210,0,0.35)',
-                  border: '1px solid #c8a800',
-                  borderRadius: '3px',
-                  flexShrink: 0,
-                }}
-              />
-              {nVencidasVisible} registro{nVencidasVisible > 1 ? 's' : ''} PENDIENTE
-              {nVencidasVisible > 1 ? 'S' : ''} con plazo de respuesta vencido
+              {overdueLegend}
             </div>
           )}
         </DialogContent>
