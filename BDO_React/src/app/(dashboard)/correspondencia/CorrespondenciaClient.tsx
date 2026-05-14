@@ -683,6 +683,8 @@ export default function CorrespondenciaClient({
 
   // Column resize state — one width per COL_DEFS entry
   const [colWidths, setColWidths] = useState<number[]>(() => COL_DEFS.map((c) => c.defaultW));
+  const colWidthsRef = useRef(colWidths);
+  useEffect(() => { colWidthsRef.current = colWidths; }, [colWidths]);
   const resizing = useRef<{ idx: number; startX: number; startW: number } | null>(null);
 
   const canEdit = PUEDE_EDITAR.includes(rol);
@@ -708,7 +710,7 @@ export default function CorrespondenciaClient({
   // ── Resize handlers ────────────────────────────────────────────────────────
   const startResize = useCallback((e: React.MouseEvent, idx: number) => {
     e.preventDefault();
-    resizing.current = { idx, startX: e.clientX, startW: colWidths[idx] };
+    resizing.current = { idx, startX: e.clientX, startW: colWidthsRef.current[idx] };
 
     function onMove(ev: MouseEvent) {
       if (!resizing.current) return;
@@ -727,7 +729,7 @@ export default function CorrespondenciaClient({
     }
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
-  }, [colWidths]);
+  }, []);
 
   // ── Filter logic ───────────────────────────────────────────────────────────
   function clearFilters() {
