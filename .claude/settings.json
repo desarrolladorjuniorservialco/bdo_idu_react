@@ -76,6 +76,9 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SQL-CONSTRUSALCO\" -File | ForEach-Object { $_.Name })",
       "Skill(superpowers:executing-plans)",
       "Skill(superpowers:executing-plans:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Victor Pulido\\.claude\\projects\\c--Users-Victor-Pulido-Documents-GIT-BDO-IDU-React\\memory"
     ]
   }
 }
