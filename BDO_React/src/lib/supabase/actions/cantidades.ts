@@ -17,9 +17,9 @@ export async function fetchFotosCantidadesByContrato(contratoId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('rf_cantidades')
-    .select('folio, url, descripcion')
+    .select('folio, foto_url, observacion')
     .eq('contrato_id', contratoId);
-  return (data ?? []).map((f) => ({ registro_id: f.folio, url: driveUrlToProxyUrl(f.url), descripcion: f.descripcion }));
+  return (data ?? []).map((f) => ({ registro_id: f.folio, url: driveUrlToProxyUrl(f.foto_url), descripcion: f.observacion }));
 }
 
 export async function eliminarRegistroCantidad(id: string) {

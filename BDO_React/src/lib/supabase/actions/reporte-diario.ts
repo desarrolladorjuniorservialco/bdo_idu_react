@@ -26,7 +26,7 @@ export async function fetchSubtablasDiarioByContrato(contratoId: string) {
     supabase.from('bd_sst_ambiental').select('*').eq('contrato_id', contratoId),
     supabase
       .from('rf_reporte_diario')
-      .select('folio, url, descripcion')
+      .select('folio, foto_url, observaciones')
       .eq('contrato_id', contratoId),
   ]);
   return {
@@ -34,7 +34,7 @@ export async function fetchSubtablasDiarioByContrato(contratoId: string) {
     clima: clima.data ?? [],
     maquinaria: maquinaria.data ?? [],
     sst: sst.data ?? [],
-    fotos: (fotos.data ?? []).map((f) => ({ registro_id: f.folio, url: driveUrlToProxyUrl(f.url), descripcion: f.descripcion })),
+    fotos: (fotos.data ?? []).map((f) => ({ registro_id: f.folio, url: driveUrlToProxyUrl(f.foto_url), descripcion: f.observaciones })),
   };
 }
 

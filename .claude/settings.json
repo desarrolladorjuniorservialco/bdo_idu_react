@@ -75,7 +75,8 @@
       "Bash(git -C \"c:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-1556-2025\" remote -v)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SQL-CONSTRUSALCO\" -File | ForEach-Object { $_.Name })",
       "Skill(superpowers:executing-plans)",
-      "Skill(superpowers:executing-plans:*)"
+      "Skill(superpowers:executing-plans:*)",
+      "Bash(Test-Path \"c:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-React\\\\BDO_React\\\\.env.local\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\Victor Pulido\\.claude\\projects\\c--Users-Victor-Pulido-Documents-GIT-BDO-IDU-React\\memory"
