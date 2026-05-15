@@ -1,4 +1,5 @@
 'use server';
+import { driveUrlToProxyUrl } from '@/lib/drive';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
@@ -18,7 +19,7 @@ export async function fetchFotosCantidadesByContrato(contratoId: string) {
     .from('rf_cantidades')
     .select('registro_id, url, descripcion')
     .eq('contrato_id', contratoId);
-  return data ?? [];
+  return (data ?? []).map((f) => ({ ...f, url: driveUrlToProxyUrl(f.url) }));
 }
 
 export async function eliminarRegistroCantidad(id: string) {

@@ -1,4 +1,5 @@
 'use server';
+import { driveUrlToProxyUrl } from '@/lib/drive';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
@@ -33,7 +34,7 @@ export async function fetchSubtablasDiarioByContrato(contratoId: string) {
     clima: clima.data ?? [],
     maquinaria: maquinaria.data ?? [],
     sst: sst.data ?? [],
-    fotos: fotos.data ?? [],
+    fotos: (fotos.data ?? []).map((f) => ({ ...f, url: driveUrlToProxyUrl(f.url) })),
   };
 }
 

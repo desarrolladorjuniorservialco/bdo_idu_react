@@ -68,7 +68,14 @@
       "Bash(findstr /i \"test\")",
       "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.scripts, null, 2\\)\\)\")",
       "Bash(gh pr create --title 'feat: tabla correspondencia en modal + botón toggle circular en sidebar' --body ' *)",
-      "PowerShell(Get-Command gh -ErrorAction SilentlyContinue)"
+      "PowerShell(Get-Command gh -ErrorAction SilentlyContinue)",
+      "Bash(git config *)",
+      "Bash(Select-String \"credential|user|email\")",
+      "Bash(git -C \"c:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SQL-CONSTRUSALCO\" remote -v)",
+      "Bash(git -C \"c:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\BDO-IDU-1556-2025\" remote -v)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Victor Pulido\\\\Documents\\\\GIT\\\\SQL-CONSTRUSALCO\" -File | ForEach-Object { $_.Name })",
+      "Skill(superpowers:executing-plans)",
+      "Skill(superpowers:executing-plans:*)"
     ]
   }
 }
