@@ -167,7 +167,7 @@ export default function ReporteCantidadesClient({
                 <b>Valor:</b> {formatCOP((r.cantidad ?? 0) * (r.precio_unitario ?? 0))}
               </span>
             </div>
-            <PhotoGrid fotos={fotoMap[r.id] ?? []} />
+            <PhotoGrid fotos={fotoMap[r.folio] ?? []} />
             <ApprovalPanel
               registro={r}
               rol={rol}

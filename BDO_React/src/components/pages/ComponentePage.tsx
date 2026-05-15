@@ -159,7 +159,7 @@ export default function ComponentePage({
               </span>
             </div>
             {r.descripcion && <p className="text-sm">{r.descripcion}</p>}
-            <PhotoGrid fotos={fotoMap[r.id] ?? []} />
+            <PhotoGrid fotos={fotoMap[r.folio] ?? []} />
             <ApprovalPanel registro={r} rol={rol} tabla={tabla} rutaRevalidar={`/${page}`} />
           </div>
         )}

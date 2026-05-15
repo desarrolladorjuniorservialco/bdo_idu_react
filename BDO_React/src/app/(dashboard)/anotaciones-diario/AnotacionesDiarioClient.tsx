@@ -155,7 +155,7 @@ export default function AnotacionesDiarioClient({
       const clima = maps.clima[r.id]?.[0];
       const maquinaria = maps.maquinaria[r.id] ?? [];
       const sst = maps.sst[r.id] ?? [];
-      const fotos = maps.fotos[r.id] ?? [];
+      const fotos = maps.fotos[String(r.folio ?? '')] ?? [];
 
       return (
         <div className="space-y-4 p-4 text-sm">

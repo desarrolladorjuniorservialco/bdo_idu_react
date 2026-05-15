@@ -22,9 +22,9 @@ export async function fetchFotosComponentesByContrato(contratoId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('rf_componentes')
-    .select('registro_id, url, descripcion')
+    .select('folio, url, descripcion')
     .eq('contrato_id', contratoId);
-  return (data ?? []).map((f) => ({ ...f, url: driveUrlToProxyUrl(f.url) }));
+  return (data ?? []).map((f) => ({ registro_id: f.folio, url: driveUrlToProxyUrl(f.url), descripcion: f.descripcion }));
 }
 
 export async function fetchFormularioPmt(contratoId: string) {
