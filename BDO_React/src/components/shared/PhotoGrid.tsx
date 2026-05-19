@@ -5,6 +5,12 @@ interface Foto {
   descripcion?: string;
 }
 
+function toImageSrc(url: string): string {
+  const match = url.match(/\/file\/d\/([^/?#]+)/);
+  if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1024`;
+  return url;
+}
+
 export function PhotoGrid({ fotos }: { fotos: Foto[] }) {
   if (!fotos.length) return null;
   return (
@@ -23,7 +29,7 @@ export function PhotoGrid({ fotos }: { fotos: Foto[] }) {
           >
             <div className="relative aspect-square rounded-md overflow-hidden bg-[var(--muted)]">
               <Image
-                src={f.url}
+                src={toImageSrc(f.url)}
                 alt={f.descripcion ?? `Foto ${i + 1}`}
                 fill
                 sizes="(max-width: 640px) 50vw, 25vw"
