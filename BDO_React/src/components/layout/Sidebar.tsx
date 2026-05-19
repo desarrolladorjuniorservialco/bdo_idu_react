@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { NAV_ACCESS, NAV_CATEGORIES, ROL_LABELS } from '@/lib/config';
 import { cn } from '@/lib/utils';
 import type { Perfil } from '@/types/database';
@@ -16,7 +17,9 @@ import {
   SiMapbox,
   SiNotion,
 } from '@icons-pack/react-simple-icons';
+import * as Tooltip from '@radix-ui/react-tooltip';
 import { LazyMotion, MotionConfig, domAnimation, m, useReducedMotion } from 'framer-motion';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -42,9 +45,26 @@ const PAGE_ICONS: Record<
   'generar-informe': SiGoogledocs,
 };
 
+const EASE_DRAWER = 'cubic-bezier(0.32, 0.72, 0, 1)';
+const DURATION = '270ms';
+
 export function Sidebar({ perfil }: SidebarProps) {
   const pathname = usePathname();
   const reducedMotion = useReducedMotion();
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('sidebar-collapsed');
+    if (saved !== null) setCollapsed(saved === 'true');
+  }, []);
+
+  const toggle = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('sidebar-collapsed', String(next));
+      return next;
+    });
+  };
 
   const categories = NAV_CATEGORIES.filter((cat) =>
     cat.pages.some((page) => {
@@ -60,174 +80,442 @@ export function Sidebar({ perfil }: SidebarProps) {
     .join('')
     .toUpperCase();
 
+  const labelStyle: React.CSSProperties = {
+    opacity: collapsed ? 0 : 1,
+    maxWidth: collapsed ? 0 : 180,
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    transition: collapsed
+      ? `opacity 120ms ease, max-width ${DURATION} ${EASE_DRAWER}`
+      : `opacity 200ms ease 130ms, max-width ${DURATION} ${EASE_DRAWER}`,
+  };
+
+  const catHeaderStyle: React.CSSProperties = {
+    overflow: 'hidden',
+    maxHeight: collapsed ? 0 : 52,
+    opacity: collapsed ? 0 : 1,
+    marginBottom: collapsed ? 0 : 6,
+    transition: collapsed
+      ? `max-height ${DURATION} ${EASE_DRAWER}, opacity 140ms ease, margin-bottom ${DURATION} ${EASE_DRAWER}`
+      : `max-height ${DURATION} ${EASE_DRAWER}, opacity 200ms ease 80ms, margin-bottom ${DURATION} ${EASE_DRAWER}`,
+  };
+
   return (
     <MotionConfig reducedMotion="user">
       <LazyMotion features={domAnimation}>
-        <aside
-          className="flex flex-col w-60 min-h-screen shrink-0"
-          style={{
-            background: 'var(--bg-sidebar)',
-            borderRight: '1px solid rgba(0,0,0,0.20)',
-          }}
-        >
-          {/* Cabecera BOB */}
-          <div className="px-4 py-5 shrink-0" style={{ background: 'var(--sidebar-header-bg)' }}>
-            <div className="flex items-center gap-2 mb-1">
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black"
-                style={{ background: 'var(--corp-green)', color: '#fff' }}
-              >
-                B
-              </div>
-              <div>
-                <p
-                  className="font-black text-[15px] leading-none tracking-tight"
-                  style={{ color: '#FFFFFF' }}
-                >
-                  BOB
-                </p>
-                <p
-                  className="text-[8px] font-mono tracking-[0.18em] uppercase"
-                  style={{ color: 'rgba(255,255,255,0.40)' }}
-                >
-                  Sistema Bitácora
-                </p>
-              </div>
-            </div>
-            <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-              <p className="font-semibold text-[12px] leading-tight" style={{ color: '#FFFFFF' }}>
-                BDO · IDU-1556-2025
-              </p>
-              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                Contrato Grupo 4
-              </p>
-            </div>
-          </div>
-
-          {/* Navegación */}
-          <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
-            {categories.map((cat) => {
-              const pages = cat.pages.filter((page) => {
-                const roles = NAV_ACCESS[page.href.slice(1)];
-                return !roles || roles.includes(perfil.rol);
-              });
-              if (!pages.length) return null;
-
-              return (
-                <div key={cat.label}>
-                  <p
-                    className="text-[10px] font-mono tracking-widest uppercase px-2 mb-1.5"
-                    style={{ color: 'var(--sidebar-text-muted)' }}
-                  >
-                    {cat.label}
-                  </p>
-                  <div
-                    className="mb-2 mx-2 h-px"
-                    style={{ background: 'rgba(255,255,255,0.09)' }}
-                  />
-
-                  <div className="space-y-0.5">
-                    {pages.map((page) => {
-                      const segment = page.href.slice(1);
-                      const isActive =
-                        pathname === page.href || pathname.startsWith(`${page.href}/`);
-                      const Icon = PAGE_ICONS[segment];
-
-                      return (
-                        <Link
-                          key={page.href}
-                          href={page.href}
-                          className={cn(
-                            'relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] transition-colors duration-150',
-                            !isActive && 'hover:bg-white/[0.07]',
-                          )}
-                          style={
-                            isActive
-                              ? {
-                                  background: 'var(--sidebar-active-bg)',
-                                  color: '#FFFFFF',
-                                  fontWeight: 600,
-                                }
-                              : { color: 'var(--sidebar-text)' }
-                          }
-                        >
-                          {isActive && (
-                            <m.span
-                              layoutId="active-nav"
-                              className="absolute inset-0 rounded-lg"
-                              style={{
-                                background: 'var(--sidebar-active-bg)',
-                                zIndex: -1,
-                              }}
-                              transition={{
-                                type: reducedMotion ? 'tween' : 'spring',
-                                duration: reducedMotion ? 0 : undefined,
-                                stiffness: 380,
-                                damping: 30,
-                              }}
-                            />
-                          )}
-                          {Icon && (
-                            <Icon
-                              size={14}
-                              color={isActive ? '#FFFFFF' : 'rgba(255,255,255,0.45)'}
-                              className="shrink-0"
-                            />
-                          )}
-                          {page.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </nav>
-
-          {/* Footer perfil */}
-          <div
-            className="px-3 py-3 shrink-0"
+        <Tooltip.Provider delayDuration={300} skipDelayDuration={0}>
+          <aside
             style={{
-              borderTop: '1px solid rgba(255,255,255,0.07)',
-              background: 'var(--sidebar-footer-bg)',
+              width: collapsed ? 64 : 240,
+              minHeight: '100vh',
+              flexShrink: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              background: 'var(--bg-sidebar)',
+              borderRight: '1px solid rgba(0,0,0,0.20)',
+              overflow: 'hidden',
+              transition: `width ${DURATION} ${EASE_DRAWER}`,
             }}
           >
-            <div className="flex items-center gap-2.5 mb-2">
+            {/* Header */}
+            <div
+              style={{
+                padding: collapsed ? '20px 0' : '20px 16px',
+                background: 'var(--sidebar-header-bg)',
+                flexShrink: 0,
+                transition: `padding ${DURATION} ${EASE_DRAWER}`,
+              }}
+            >
               <div
-                className="flex-none w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                style={{ background: 'var(--corp-green)', color: '#fff' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                }}
               >
-                {initials}
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    background: 'var(--corp-green)',
+                    color: '#fff',
+                    flexShrink: 0,
+                  }}
+                >
+                  B
+                </div>
+                <div style={labelStyle}>
+                  <p
+                    style={{
+                      fontWeight: 900,
+                      fontSize: 15,
+                      lineHeight: 1,
+                      letterSpacing: '-0.025em',
+                      color: '#FFFFFF',
+                    }}
+                  >
+                    BOB
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 8,
+                      fontFamily: 'monospace',
+                      letterSpacing: '0.18em',
+                      textTransform: 'uppercase',
+                      color: 'rgba(255,255,255,0.40)',
+                    }}
+                  >
+                    Sistema Bitácora
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold truncate" style={{ color: '#FFFFFF' }}>
-                  {perfil.nombre}
+
+              <div
+                style={{
+                  overflow: 'hidden',
+                  maxHeight: collapsed ? 0 : 56,
+                  opacity: collapsed ? 0 : 1,
+                  marginTop: collapsed ? 0 : 12,
+                  paddingTop: collapsed ? 0 : 12,
+                  borderTop: collapsed ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                  transition: collapsed
+                    ? `max-height ${DURATION} ${EASE_DRAWER}, opacity 140ms ease, margin-top ${DURATION} ${EASE_DRAWER}, padding-top ${DURATION} ${EASE_DRAWER}`
+                    : `max-height ${DURATION} ${EASE_DRAWER}, opacity 200ms ease 80ms, margin-top ${DURATION} ${EASE_DRAWER}, padding-top ${DURATION} ${EASE_DRAWER}`,
+                }}
+              >
+                <p
+                  style={{ fontWeight: 600, fontSize: 12, lineHeight: 1.4, color: '#FFFFFF' }}
+                >
+                  BDO · IDU-1556-2025
                 </p>
-                <p className="text-[11px] truncate" style={{ color: 'var(--sidebar-text-muted)' }}>
-                  {ROL_LABELS[perfil.rol]}
+                <p style={{ fontSize: 11, marginTop: 2, color: 'rgba(255,255,255,0.45)' }}>
+                  Contrato Grupo 4
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 px-1">
-              <div
-                className="w-4 h-4 rounded grid grid-cols-2 gap-px p-0.5 shrink-0"
-                style={{ background: 'var(--corp-green)' }}
-                aria-hidden="true"
+
+            {/* Toggle button */}
+            <div
+              style={{
+                padding: collapsed ? '8px 0' : '8px 12px',
+                display: 'flex',
+                justifyContent: collapsed ? 'center' : 'flex-end',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                flexShrink: 0,
+                transition: `padding ${DURATION} ${EASE_DRAWER}`,
+              }}
+            >
+              <button
+                onClick={toggle}
+                aria-label={collapsed ? 'Expandir panel' : 'Colapsar panel'}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  border: '1px solid rgba(255,255,255,0.14)',
+                  background: 'rgba(255,255,255,0.07)',
+                  color: 'rgba(255,255,255,0.55)',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  transition: 'background 150ms ease, color 150ms ease, transform 100ms ease-out',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.14)';
+                  e.currentTarget.style.color = '#FFFFFF';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.55)';
+                }}
+                onMouseDown={(e) => {
+                  e.currentTarget.style.transform = 'scale(0.92)';
+                }}
+                onMouseUp={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
               >
-                <div className="bg-white rounded-[1px]" />
-                <div className="bg-white rounded-[1px]" />
-                <div className="bg-white rounded-[1px]" />
-                <div className="bg-white rounded-[1px]" />
-              </div>
-              <p
-                className="text-[10px] font-mono tracking-widest uppercase"
-                style={{ color: 'rgba(255,255,255,0.30)' }}
-              >
-                Powered by Servialco
-              </p>
+                {collapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
+              </button>
             </div>
-          </div>
-        </aside>
+
+            {/* Navigation */}
+            <nav
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                paddingTop: 16,
+                paddingBottom: 16,
+                paddingLeft: collapsed ? 8 : 12,
+                paddingRight: collapsed ? 8 : 12,
+                transition: `padding ${DURATION} ${EASE_DRAWER}`,
+              }}
+            >
+              {categories.map((cat) => {
+                const pages = cat.pages.filter((page) => {
+                  const roles = NAV_ACCESS[page.href.slice(1)];
+                  return !roles || roles.includes(perfil.rol);
+                });
+                if (!pages.length) return null;
+
+                return (
+                  <div key={cat.label} style={{ marginBottom: 20 }}>
+                    <div style={catHeaderStyle}>
+                      <p
+                        style={{
+                          fontSize: 10,
+                          fontFamily: 'monospace',
+                          letterSpacing: '0.1em',
+                          textTransform: 'uppercase',
+                          paddingLeft: 8,
+                          paddingRight: 8,
+                          color: 'var(--sidebar-text-muted)',
+                        }}
+                      >
+                        {cat.label}
+                      </p>
+                      <div
+                        style={{
+                          marginTop: 6,
+                          marginLeft: 8,
+                          marginRight: 8,
+                          height: 1,
+                          background: 'rgba(255,255,255,0.09)',
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {pages.map((page) => {
+                        const segment = page.href.slice(1);
+                        const isActive =
+                          pathname === page.href || pathname.startsWith(`${page.href}/`);
+                        const Icon = PAGE_ICONS[segment];
+
+                        return (
+                          <Tooltip.Root key={page.href}>
+                            <Tooltip.Trigger asChild>
+                              <Link
+                                href={page.href}
+                                className={cn(!isActive && 'hover:bg-white/[0.07]')}
+                                style={{
+                                  position: 'relative',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: collapsed ? 'center' : 'flex-start',
+                                  gap: collapsed ? 0 : 10,
+                                  padding: collapsed ? '9px 4px' : '8px 10px',
+                                  borderRadius: 8,
+                                  fontSize: 13,
+                                  textDecoration: 'none',
+                                  transition: `padding ${DURATION} ${EASE_DRAWER}, gap ${DURATION} ${EASE_DRAWER}`,
+                                  ...(isActive
+                                    ? {
+                                        background: 'var(--sidebar-active-bg)',
+                                        color: '#FFFFFF',
+                                        fontWeight: 600,
+                                      }
+                                    : { color: 'var(--sidebar-text)' }),
+                                }}
+                              >
+                                {isActive && (
+                                  <m.span
+                                    layoutId="active-nav"
+                                    style={{
+                                      position: 'absolute',
+                                      inset: 0,
+                                      borderRadius: 8,
+                                      background: 'var(--sidebar-active-bg)',
+                                      zIndex: -1,
+                                    }}
+                                    transition={{
+                                      type: reducedMotion ? 'tween' : 'spring',
+                                      duration: reducedMotion ? 0 : undefined,
+                                      stiffness: 380,
+                                      damping: 30,
+                                    }}
+                                  />
+                                )}
+                                {Icon && (
+                                  <Icon
+                                    size={15}
+                                    color={isActive ? '#FFFFFF' : 'rgba(255,255,255,0.50)'}
+                                    className="shrink-0"
+                                  />
+                                )}
+                                <span style={labelStyle}>{page.label}</span>
+                              </Link>
+                            </Tooltip.Trigger>
+                            {collapsed && (
+                              <Tooltip.Portal>
+                                <Tooltip.Content
+                                  side="right"
+                                  sideOffset={10}
+                                  style={{
+                                    backgroundColor: 'var(--bg-sidebar)',
+                                    color: '#FFFFFF',
+                                    fontSize: 12,
+                                    fontWeight: 500,
+                                    padding: '5px 10px',
+                                    borderRadius: 6,
+                                    border: '1px solid rgba(255,255,255,0.12)',
+                                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+                                    zIndex: 9999,
+                                  }}
+                                >
+                                  {page.label}
+                                  <Tooltip.Arrow
+                                    style={{ fill: 'var(--bg-sidebar)' }}
+                                    width={8}
+                                    height={4}
+                                  />
+                                </Tooltip.Content>
+                              </Tooltip.Portal>
+                            )}
+                          </Tooltip.Root>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </nav>
+
+            {/* Footer */}
+            <div
+              style={{
+                padding: collapsed ? '12px 8px' : '12px',
+                borderTop: '1px solid rgba(255,255,255,0.07)',
+                background: 'var(--sidebar-footer-bg)',
+                flexShrink: 0,
+                transition: `padding ${DURATION} ${EASE_DRAWER}`,
+              }}
+            >
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: collapsed ? 0 : 10,
+                      marginBottom: collapsed ? 0 : 8,
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      transition: `gap ${DURATION} ${EASE_DRAWER}, margin-bottom ${DURATION} ${EASE_DRAWER}`,
+                      cursor: 'default',
+                    }}
+                  >
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        background: 'var(--corp-green)',
+                        color: '#fff',
+                      }}
+                    >
+                      {initials}
+                    </div>
+                    <div style={labelStyle}>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: '#FFFFFF' }}>
+                        {perfil.nombre}
+                      </p>
+                      <p style={{ fontSize: 11, color: 'var(--sidebar-text-muted)' }}>
+                        {ROL_LABELS[perfil.rol]}
+                      </p>
+                    </div>
+                  </div>
+                </Tooltip.Trigger>
+                {collapsed && (
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      side="right"
+                      sideOffset={10}
+                      style={{
+                        backgroundColor: 'var(--bg-sidebar)',
+                        color: '#FFFFFF',
+                        fontSize: 12,
+                        padding: '6px 10px',
+                        borderRadius: 6,
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+                        zIndex: 9999,
+                      }}
+                    >
+                      <p style={{ fontWeight: 600 }}>{perfil.nombre}</p>
+                      <p style={{ fontSize: 11, opacity: 0.6, marginTop: 2 }}>
+                        {ROL_LABELS[perfil.rol]}
+                      </p>
+                      <Tooltip.Arrow style={{ fill: 'var(--bg-sidebar)' }} width={8} height={4} />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                )}
+              </Tooltip.Root>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingLeft: 4,
+                  overflow: 'hidden',
+                  maxHeight: collapsed ? 0 : 20,
+                  opacity: collapsed ? 0 : 1,
+                  transition: collapsed
+                    ? `max-height ${DURATION} ${EASE_DRAWER}, opacity 120ms ease`
+                    : `max-height ${DURATION} ${EASE_DRAWER}, opacity 200ms ease 120ms`,
+                }}
+              >
+                <div
+                  style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: 3,
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: 1,
+                    padding: 2,
+                    background: 'var(--corp-green)',
+                    flexShrink: 0,
+                  }}
+                  aria-hidden="true"
+                >
+                  <div style={{ background: '#fff', borderRadius: 1 }} />
+                  <div style={{ background: '#fff', borderRadius: 1 }} />
+                  <div style={{ background: '#fff', borderRadius: 1 }} />
+                  <div style={{ background: '#fff', borderRadius: 1 }} />
+                </div>
+                <p
+                  style={{
+                    fontSize: 10,
+                    fontFamily: 'monospace',
+                    letterSpacing: '0.18em',
+                    textTransform: 'uppercase',
+                    color: 'rgba(255,255,255,0.30)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Powered by Servialco
+                </p>
+              </div>
+            </div>
+          </aside>
+        </Tooltip.Provider>
       </LazyMotion>
     </MotionConfig>
   );
