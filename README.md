@@ -453,16 +453,16 @@ Las fotos de obra se almacenan en Google Drive (Unidad Compartida) y no son acce
 
 **Flujo de una petición de imagen:**
 ```
-Browser (usuario autenticado)
-    │  GET /api/foto?id={file_id}  (con cookies de Supabase)
+Browser
+    │  GET /api/foto?id={file_id}
     ▼
 Route Handler (Vercel serverless)
-    │  verifica sesión via createClient()
     │  obtiene access_token (OAuth2 refresh — cacheado por instancia)
-    │  GET googleapis.com/drive/v3/files/{file_id}?alt=media
+    │  GET drive/v3/files/{id}?fields=thumbnailLink  →  thumbnail (≈50–150 KB)
+    │  fallback: GET drive/v3/files/{id}?alt=media   →  archivo completo
     ▼
-Google Drive
-    │  retorna bytes de la imagen
+Vercel CDN edge — cachea la imagen 24 h (Cache-Control: public)
+    │  segunda petición → sirve desde el edge sin tocar Drive
     ▼
 Browser — renderiza la foto
 ```
@@ -475,7 +475,10 @@ Browser — renderiza la foto
 | `GOOGLE_CLIENT_SECRET` | OAuth2 client secret |
 | `GOOGLE_REFRESH_TOKEN` | Refresh token con acceso a Drive |
 
-El access token se renueva automáticamente usando el refresh token cuando expira. El cache `private, max-age=86400` permite al navegador guardar la imagen 24 h sin volver a pedirla al proxy.
+**Decisiones de rendimiento:**
+- **Thumbnail en vez del archivo completo:** `thumbnailLink` de la API de Drive devuelve una imagen de ≈50–150 KB (frente a los 700–900 KB del archivo comprimido por el sync). Se ajusta a `=s800` para calidad adecuada en el grid.
+- **Sin verificación de sesión Supabase en el proxy:** el middleware Edge ya protege todas las rutas del dashboard. Los `file_id` de Drive son UUIDs de 33 caracteres —indescifrables en la práctica—, lo que sustituye la comprobación de sesión en este endpoint específico.
+- **`Cache-Control: public`:** permite que el CDN de Vercel cachee la imagen en el edge. La primera carga descarga desde Drive; las cargas posteriores (de cualquier usuario) se sirven desde el edge más cercano en ≤10 ms.
 
 ### 9.6 Revalidación de caché tras mutaciones
 
