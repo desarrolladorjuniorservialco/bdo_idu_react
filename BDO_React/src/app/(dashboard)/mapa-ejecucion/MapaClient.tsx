@@ -189,22 +189,23 @@ function RecordTable({
 
   return (
     <div
-      className="rounded-lg border overflow-x-auto overflow-y-auto"
-      style={{ borderColor: 'var(--border)', maxHeight: '520px' }}
+      className="rounded-lg border overflow-hidden"
+      style={{ borderColor: 'var(--border)' }}
     >
+      <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: '520px' }}>
       <table className="w-full text-sm border-collapse">
         <thead>
           <tr
-            className="sticky top-0 z-10"
             style={{ background: 'var(--bg-card, #f8f9fa)' }}
           >
             {available.map((c) => (
               <th
                 key={c}
-                className="px-3 py-2 text-left font-semibold whitespace-nowrap"
+                className="px-3 py-2 text-left font-semibold whitespace-nowrap sticky top-0 z-10"
                 style={{
                   color: 'var(--text-muted)',
                   borderBottom: '1px solid var(--border)',
+                  background: 'var(--bg-card, #f8f9fa)',
                 }}
               >
                 {labels[c] ?? c}
@@ -236,6 +237,7 @@ function RecordTable({
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -623,13 +625,16 @@ export default function MapaClient({
 
       <div>
         {/* Tab headers */}
-        <div className="flex border-b mb-3" style={{ borderColor: 'var(--border)' }}>
+        <div
+          className="flex border-b mb-3 overflow-x-auto"
+          style={{ borderColor: 'var(--border)', scrollbarWidth: 'none' }}
+        >
           {TABS.map((t) => (
             <button
               key={t.key}
               type="button"
               onClick={() => setActiveTab(t.key)}
-              className="px-4 py-2 text-xs font-semibold transition-colors"
+              className="px-4 py-2 text-xs font-semibold transition-colors shrink-0"
               style={{
                 color: activeTab === t.key ? 'var(--accent-teal)' : 'var(--text-muted)',
                 borderBottom:
