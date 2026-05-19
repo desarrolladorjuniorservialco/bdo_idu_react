@@ -28,7 +28,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
       <div className="flex flex-col flex-1 min-w-0">
         <Header perfil={perfil as Perfil} />
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 overflow-auto">
           <PageWrapper>{children}</PageWrapper>
         </main>
       </div>

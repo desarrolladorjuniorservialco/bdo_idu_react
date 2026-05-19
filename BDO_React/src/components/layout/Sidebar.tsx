@@ -1,25 +1,28 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { type ComponentType, type CSSProperties, useEffect, useState } from 'react';
 import { NAV_ACCESS, NAV_CATEGORIES, ROL_LABELS } from '@/lib/config';
 import { cn } from '@/lib/utils';
+import { useSidebarStore } from '@/stores/sidebarStore';
 import type { Perfil } from '@/types/database';
-import {
-  SiAsana,
-  SiDatadog,
-  SiGmail,
-  SiGoogleanalytics,
-  SiGooglecalendar,
-  SiGoogledocs,
-  SiGooglemaps,
-  SiGooglesheets,
-  SiHandshake,
-  SiLeaflet,
-  SiMapbox,
-  SiNotion,
-} from '@icons-pack/react-simple-icons';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { LazyMotion, MotionConfig, domAnimation, m, useReducedMotion } from 'framer-motion';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import {
+  Activity,
+  BookOpen,
+  CalendarCheck,
+  ClipboardList,
+  FileOutput,
+  FileText,
+  Leaf,
+  Mail,
+  Map,
+  MapPin,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Route,
+  Users,
+  Wallet,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -29,20 +32,21 @@ interface SidebarProps {
 
 const PAGE_ICONS: Record<
   string,
-  React.ComponentType<{ size?: number; color?: string; className?: string }>
+  ComponentType<{ size?: number; color?: string; className?: string; strokeWidth?: number }>
 > = {
-  'estado-actual': SiAsana,
-  'mapa-ejecucion': SiGooglemaps,
-  presupuesto: SiGooglesheets,
-  correspondencia: SiGmail,
-  anotaciones: SiNotion,
-  'anotaciones-diario': SiGooglecalendar,
-  'reporte-cantidades': SiGoogleanalytics,
-  'componente-ambiental': SiLeaflet,
-  'componente-social': SiHandshake,
-  'componente-pmt': SiMapbox,
-  'seguimiento-pmts': SiDatadog,
-  'generar-informe': SiGoogledocs,
+  'estado-actual': Activity,
+  'mapa-ejecucion': Map,
+  presupuesto: Wallet,
+  correspondencia: Mail,
+  anotaciones: FileText,
+  'anotaciones-diario': BookOpen,
+  'reporte-cantidades': ClipboardList,
+  'componente-ambiental': Leaf,
+  'componente-social': Users,
+  'componente-pmt': Route,
+  'seguimiento-pmts': MapPin,
+  'generar-informe': FileOutput,
+  'cierre-semanal': CalendarCheck,
 };
 
 const EASE_DRAWER = 'cubic-bezier(0.32, 0.72, 0, 1)';
@@ -52,11 +56,26 @@ export function Sidebar({ perfil }: SidebarProps) {
   const pathname = usePathname();
   const reducedMotion = useReducedMotion();
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const { mobileOpen, closeMobile } = useSidebarStore();
 
   useEffect(() => {
     const saved = localStorage.getItem('sidebar-collapsed');
     if (saved !== null) setCollapsed(saved === 'true');
   }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  // Cierra la sidebar móvil al navegar
+  useEffect(() => {
+    closeMobile();
+  }, [pathname, closeMobile]);
 
   const toggle = () => {
     setCollapsed((prev) => {
@@ -80,47 +99,79 @@ export function Sidebar({ perfil }: SidebarProps) {
     .join('')
     .toUpperCase();
 
-  const labelStyle: React.CSSProperties = {
-    opacity: collapsed ? 0 : 1,
-    maxWidth: collapsed ? 0 : 180,
+  // En móvil siempre se muestra expandida
+  const isCollapsed = isMobile ? false : collapsed;
+
+  const labelStyle: CSSProperties = {
+    opacity: isCollapsed ? 0 : 1,
+    maxWidth: isCollapsed ? 0 : 200,
     overflow: 'hidden',
     whiteSpace: 'nowrap',
-    transition: collapsed
+    transition: isCollapsed
       ? `opacity 120ms ease, max-width ${DURATION} ${EASE_DRAWER}`
       : `opacity 200ms ease 130ms, max-width ${DURATION} ${EASE_DRAWER}`,
   };
 
-  const catHeaderStyle: React.CSSProperties = {
+  const catHeaderStyle: CSSProperties = {
     overflow: 'hidden',
-    maxHeight: collapsed ? 0 : 52,
-    opacity: collapsed ? 0 : 1,
-    marginBottom: collapsed ? 0 : 6,
-    transition: collapsed
+    maxHeight: isCollapsed ? 0 : 52,
+    opacity: isCollapsed ? 0 : 1,
+    marginBottom: isCollapsed ? 0 : 6,
+    transition: isCollapsed
       ? `max-height ${DURATION} ${EASE_DRAWER}, opacity 140ms ease, margin-bottom ${DURATION} ${EASE_DRAWER}`
       : `max-height ${DURATION} ${EASE_DRAWER}, opacity 200ms ease 80ms, margin-bottom ${DURATION} ${EASE_DRAWER}`,
   };
+
+  const sidebarPositionStyle: CSSProperties = isMobile
+    ? {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100dvh',
+        width: 288,
+        zIndex: 50,
+        transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: `transform ${DURATION} ${EASE_DRAWER}`,
+      }
+    : {
+        width: collapsed ? 64 : 240,
+        minHeight: '100vh',
+        flexShrink: 0,
+        transition: `width ${DURATION} ${EASE_DRAWER}`,
+      };
 
   return (
     <MotionConfig reducedMotion="user">
       <LazyMotion features={domAnimation}>
         <Tooltip.Provider delayDuration={300} skipDelayDuration={0}>
+          {/* Backdrop móvil */}
+          {isMobile && mobileOpen && (
+            <div
+              onClick={closeMobile}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(4, 14, 30, 0.65)',
+                backdropFilter: 'blur(3px)',
+                zIndex: 49,
+              }}
+            />
+          )}
+
           <aside
             style={{
-              width: collapsed ? 64 : 240,
-              minHeight: '100vh',
-              flexShrink: 0,
+              ...sidebarPositionStyle,
               display: 'flex',
               flexDirection: 'column',
               background: 'var(--bg-sidebar)',
               borderRight: '1px solid rgba(0,0,0,0.20)',
               overflow: 'hidden',
-              transition: `width ${DURATION} ${EASE_DRAWER}`,
             }}
           >
             {/* Header */}
             <div
               style={{
-                padding: collapsed ? '20px 0' : '20px 16px',
+                padding: isCollapsed ? '20px 0' : '20px 16px',
                 background: 'var(--sidebar-header-bg)',
                 flexShrink: 0,
                 transition: `padding ${DURATION} ${EASE_DRAWER}`,
@@ -131,7 +182,7 @@ export function Sidebar({ perfil }: SidebarProps) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
-                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  justifyContent: isCollapsed ? 'center' : 'flex-start',
                 }}
               >
                 <div
@@ -180,19 +231,17 @@ export function Sidebar({ perfil }: SidebarProps) {
               <div
                 style={{
                   overflow: 'hidden',
-                  maxHeight: collapsed ? 0 : 56,
-                  opacity: collapsed ? 0 : 1,
-                  marginTop: collapsed ? 0 : 12,
-                  paddingTop: collapsed ? 0 : 12,
-                  borderTop: collapsed ? 'none' : '1px solid rgba(255,255,255,0.08)',
-                  transition: collapsed
+                  maxHeight: isCollapsed ? 0 : 56,
+                  opacity: isCollapsed ? 0 : 1,
+                  marginTop: isCollapsed ? 0 : 12,
+                  paddingTop: isCollapsed ? 0 : 12,
+                  borderTop: isCollapsed ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                  transition: isCollapsed
                     ? `max-height ${DURATION} ${EASE_DRAWER}, opacity 140ms ease, margin-top ${DURATION} ${EASE_DRAWER}, padding-top ${DURATION} ${EASE_DRAWER}`
                     : `max-height ${DURATION} ${EASE_DRAWER}, opacity 200ms ease 80ms, margin-top ${DURATION} ${EASE_DRAWER}, padding-top ${DURATION} ${EASE_DRAWER}`,
                 }}
               >
-                <p
-                  style={{ fontWeight: 600, fontSize: 12, lineHeight: 1.4, color: '#FFFFFF' }}
-                >
+                <p style={{ fontWeight: 600, fontSize: 12, lineHeight: 1.4, color: '#FFFFFF' }}>
                   BDO · IDU-1556-2025
                 </p>
                 <p style={{ fontSize: 11, marginTop: 2, color: 'rgba(255,255,255,0.45)' }}>
@@ -201,54 +250,60 @@ export function Sidebar({ perfil }: SidebarProps) {
               </div>
             </div>
 
-            {/* Toggle button */}
-            <div
-              style={{
-                padding: collapsed ? '8px 0' : '8px 12px',
-                display: 'flex',
-                justifyContent: collapsed ? 'center' : 'flex-end',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
-                flexShrink: 0,
-                transition: `padding ${DURATION} ${EASE_DRAWER}`,
-              }}
-            >
-              <button
-                onClick={toggle}
-                aria-label={collapsed ? 'Expandir panel' : 'Colapsar panel'}
+            {/* Toggle — solo en desktop */}
+            {!isMobile && (
+              <div
                 style={{
+                  padding: isCollapsed ? '8px 0' : '8px 12px',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 28,
-                  height: 28,
-                  borderRadius: 6,
-                  border: '1px solid rgba(255,255,255,0.14)',
-                  background: 'rgba(255,255,255,0.07)',
-                  color: 'rgba(255,255,255,0.55)',
-                  cursor: 'pointer',
+                  justifyContent: isCollapsed ? 'center' : 'flex-end',
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
                   flexShrink: 0,
-                  transition: 'background 150ms ease, color 150ms ease, transform 100ms ease-out',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.14)';
-                  e.currentTarget.style.color = '#FFFFFF';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.55)';
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.transform = 'scale(0.92)';
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
+                  transition: `padding ${DURATION} ${EASE_DRAWER}`,
                 }}
               >
-                {collapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
-              </button>
-            </div>
+                <button
+                  onClick={toggle}
+                  aria-label={isCollapsed ? 'Expandir panel' : 'Colapsar panel'}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 28,
+                    height: 28,
+                    borderRadius: 6,
+                    border: '1px solid rgba(122,201,67,0.45)',
+                    background: 'rgba(122,201,67,0.10)',
+                    color: 'var(--corp-green)',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    boxShadow: '0 0 0 0 rgba(122,201,67,0)',
+                    transition:
+                      'background 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 100ms ease-out',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(122,201,67,0.20)';
+                    e.currentTarget.style.borderColor = 'rgba(122,201,67,0.70)';
+                    e.currentTarget.style.boxShadow = '0 0 10px rgba(122,201,67,0.28)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(122,201,67,0.10)';
+                    e.currentTarget.style.borderColor = 'rgba(122,201,67,0.45)';
+                    e.currentTarget.style.boxShadow = '0 0 0 0 rgba(122,201,67,0)';
+                  }}
+                  onMouseDown={(e) => {
+                    e.currentTarget.style.transform = 'scale(0.92)';
+                  }}
+                  onMouseUp={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
+                  {isCollapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
+                </button>
+              </div>
+            )}
 
-            {/* Navigation */}
+            {/* Navegación */}
             <nav
               style={{
                 flex: 1,
@@ -256,8 +311,8 @@ export function Sidebar({ perfil }: SidebarProps) {
                 overflowX: 'hidden',
                 paddingTop: 16,
                 paddingBottom: 16,
-                paddingLeft: collapsed ? 8 : 12,
-                paddingRight: collapsed ? 8 : 12,
+                paddingLeft: isCollapsed ? 8 : 12,
+                paddingRight: isCollapsed ? 8 : 12,
                 transition: `padding ${DURATION} ${EASE_DRAWER}`,
               }}
             >
@@ -312,9 +367,9 @@ export function Sidebar({ perfil }: SidebarProps) {
                                   position: 'relative',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  justifyContent: collapsed ? 'center' : 'flex-start',
-                                  gap: collapsed ? 0 : 10,
-                                  padding: collapsed ? '9px 4px' : '8px 10px',
+                                  justifyContent: isCollapsed ? 'center' : 'flex-start',
+                                  gap: isCollapsed ? 0 : 10,
+                                  padding: isCollapsed ? '9px 4px' : '9px 10px',
                                   borderRadius: 8,
                                   fontSize: 13,
                                   textDecoration: 'none',
@@ -349,14 +404,16 @@ export function Sidebar({ perfil }: SidebarProps) {
                                 {Icon && (
                                   <Icon
                                     size={15}
-                                    color={isActive ? '#FFFFFF' : 'rgba(255,255,255,0.50)'}
+                                    color={isActive ? '#FFFFFF' : 'rgba(255,255,255,0.60)'}
                                     className="shrink-0"
+                                    strokeWidth={isActive ? 2.5 : 2}
                                   />
                                 )}
                                 <span style={labelStyle}>{page.label}</span>
                               </Link>
                             </Tooltip.Trigger>
-                            {collapsed && (
+                            {/* Tooltip solo en desktop colapsado */}
+                            {isCollapsed && !isMobile && (
                               <Tooltip.Portal>
                                 <Tooltip.Content
                                   side="right"
@@ -394,7 +451,7 @@ export function Sidebar({ perfil }: SidebarProps) {
             {/* Footer */}
             <div
               style={{
-                padding: collapsed ? '12px 8px' : '12px',
+                padding: isCollapsed ? '12px 8px' : '12px',
                 borderTop: '1px solid rgba(255,255,255,0.07)',
                 background: 'var(--sidebar-footer-bg)',
                 flexShrink: 0,
@@ -407,9 +464,9 @@ export function Sidebar({ perfil }: SidebarProps) {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: collapsed ? 0 : 10,
-                      marginBottom: collapsed ? 0 : 8,
-                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      gap: isCollapsed ? 0 : 10,
+                      marginBottom: isCollapsed ? 0 : 8,
+                      justifyContent: isCollapsed ? 'center' : 'flex-start',
                       transition: `gap ${DURATION} ${EASE_DRAWER}, margin-bottom ${DURATION} ${EASE_DRAWER}`,
                       cursor: 'default',
                     }}
@@ -441,7 +498,7 @@ export function Sidebar({ perfil }: SidebarProps) {
                     </div>
                   </div>
                 </Tooltip.Trigger>
-                {collapsed && (
+                {isCollapsed && !isMobile && (
                   <Tooltip.Portal>
                     <Tooltip.Content
                       side="right"
@@ -474,9 +531,9 @@ export function Sidebar({ perfil }: SidebarProps) {
                   gap: 6,
                   paddingLeft: 4,
                   overflow: 'hidden',
-                  maxHeight: collapsed ? 0 : 20,
-                  opacity: collapsed ? 0 : 1,
-                  transition: collapsed
+                  maxHeight: isCollapsed ? 0 : 20,
+                  opacity: isCollapsed ? 0 : 1,
+                  transition: isCollapsed
                     ? `max-height ${DURATION} ${EASE_DRAWER}, opacity 120ms ease`
                     : `max-height ${DURATION} ${EASE_DRAWER}, opacity 200ms ease 120ms`,
                 }}
