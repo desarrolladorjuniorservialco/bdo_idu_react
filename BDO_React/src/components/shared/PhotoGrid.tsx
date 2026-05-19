@@ -11,6 +11,10 @@ function toImageSrc(url: string): string {
   return url;
 }
 
+function isDriveUrl(url: string): boolean {
+  return url.includes('drive.google.com');
+}
+
 export function PhotoGrid({ fotos }: { fotos: Foto[] }) {
   if (!fotos.length) return null;
   return (
@@ -34,6 +38,7 @@ export function PhotoGrid({ fotos }: { fotos: Foto[] }) {
                 fill
                 sizes="(max-width: 640px) 50vw, 25vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-200"
+                unoptimized={isDriveUrl(f.url)}
               />
             </div>
             {f.descripcion && (

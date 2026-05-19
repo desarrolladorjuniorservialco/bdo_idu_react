@@ -91,7 +91,10 @@ En `next.config.ts`:
 
 - **`output: 'standalone'`** — genera un build autocontenido (incluye solo las dependencias necesarias). Permite despliegue en Docker, aunque el destino actual es Vercel.
 - **`optimizePackageImports`** — tree-shaking agresivo sobre `lucide-react`, `recharts`, `framer-motion` y `@icons-pack/react-simple-icons`. Solo los símbolos importados se incluyen en el bundle.
-- **`images.remotePatterns`** — permite optimización de imágenes desde `*.supabase.co/storage/v1/object/public/**`.
+- **`images.remotePatterns`** — permite optimización de imágenes desde tres orígenes:
+  - `*.supabase.co/storage/v1/object/public/**` — legado (fotos antiguas aún en Supabase Storage).
+  - `drive.google.com/thumbnail` — thumbnail directo de archivos Google Drive (usado actualmente para fotos de obra).
+  - `lh3.googleusercontent.com` — CDN de Google para imágenes de Drive.
 
 ---
 
@@ -428,12 +431,24 @@ La comunicación es siempre **unidireccional**: el script de sync escribe en Sup
 | `tramos_bd` | ✓ | ✓ (`meta_fisica_ejec`) | `sync_geo.py` |
 | `tramos_bd_historial` | ✓ | ✓ (audit trail) | La propia app |
 | `formulario_pmt` | ✓ | — | `sync_formularios.py` |
-| `rf_cantidades/componentes/reporte_diario` | ✓ | — | `sync_rf.py` |
+| `rf_cantidades/componentes/reporte_diario` | ✓ | — | `sync_rf.py` (fotos en Google Drive; URL en `foto_url`) |
 | `historial_estados` | ✓ | vía trigger automático | Trigger `tg_historial` |
 | `notificaciones` | ✓ | vía trigger automático | Trigger `tg_notificacion` |
 | `sync_state` | — | — | `sync_formularios.py` |
 
-### 9.4 Revalidación de caché tras mutaciones
+### 9.4 Relación fotos ↔ formularios
+
+Las tablas `rf_*` **no tienen FK** hacia las tablas `registros_*`. La relación se navega por `folio` (campo texto). El sync (`sync_rf.py`) inserta filas con los campos `folio`, `foto_url` y `observaciones` / `observacion`; el tipo `FotoRegistro` en la app los mapea como:
+
+| Columna BD | Campo en `FotoRegistro` | Descripción |
+|---|---|---|
+| `folio` | `folio` | Clave de agrupación (enlaza foto↔formulario) |
+| `foto_url` | `url` | URL de Google Drive (viewer) — `PhotoGrid` la convierte a thumbnail |
+| `observaciones` / `observacion` | `descripcion` | Texto descriptivo opcional |
+
+`PhotoGrid` usa la función `toImageSrc()` para transformar la URL del viewer (`/file/d/{id}/view`) a la URL de thumbnail (`/thumbnail?id={id}&sz=w1024`) que Next.js `<Image>` puede cargar directamente. El `href` del enlace sigue apuntando al viewer de Drive para que el usuario pueda abrir la foto en tamaño completo.
+
+### 9.5 Revalidación de caché tras mutaciones
 
 Las Server Actions usan `revalidatePath()` de Next.js para invalidar páginas cacheadas después de cada mutación:
 
@@ -442,6 +457,8 @@ Las Server Actions usan `revalidatePath()` de Next.js para invalidar páginas ca
 revalidatePath('/reporte-cantidades');
 // La próxima visita a esa URL hará un nuevo fetch desde Supabase.
 ```
+
+---
 
 Esto garantiza que los datos mostrados reflejen el nuevo estado sin necesidad de que el usuario recargue manualmente.
 
@@ -566,7 +583,8 @@ src/
     themeStore.ts             Zustand: preferencia de tema
 
   types/
-    database.ts               Tipos TypeScript derivados del esquema Supabase
+    database.ts               Tipos TypeScript: Perfil, Contrato, RegistroCantidad, FotoRegistro…
+                              FotoRegistro: { folio, url, descripcion } — agrupado por folio al mostrar
 ```
 
 ---
