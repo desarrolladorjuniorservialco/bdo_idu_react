@@ -124,7 +124,7 @@ export interface Notificacion {
 }
 
 export interface FotoRegistro {
-  registro_id: string;
+  folio: string;
   url: string;
   descripcion?: string;
 }

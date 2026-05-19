@@ -59,8 +59,8 @@ export default function ReporteCantidadesClient({
   const fotoMap = useMemo(() => {
     const m: Record<string, FotoRegistro[]> = {};
     for (const f of fotos) {
-      if (!m[f.registro_id]) m[f.registro_id] = [];
-      m[f.registro_id].push(f);
+      if (!m[f.folio]) m[f.folio] = [];
+      m[f.folio].push(f);
     }
     return m;
   }, [fotos]);
@@ -167,7 +167,7 @@ export default function ReporteCantidadesClient({
                 <b>Valor:</b> {formatCOP((r.cantidad ?? 0) * (r.precio_unitario ?? 0))}
               </span>
             </div>
-            <PhotoGrid fotos={fotoMap[r.id] ?? []} />
+            <PhotoGrid fotos={fotoMap[r.folio] ?? []} />
             <ApprovalPanel
               registro={r}
               rol={rol}

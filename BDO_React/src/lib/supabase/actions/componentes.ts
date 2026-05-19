@@ -21,7 +21,7 @@ export async function fetchFotosComponentesByContrato(contratoId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('rf_componentes')
-    .select('registro_id, url, descripcion')
+    .select('folio, url:foto_url, descripcion:observaciones')
     .eq('contrato_id', contratoId);
   return data ?? [];
 }

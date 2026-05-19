@@ -94,12 +94,20 @@ export default function AnotacionesDiarioClient({
       return mapped;
     };
 
+    const fotosByFolio: Record<string, FotoRegistro[]> = {};
+    for (const f of subtablas.fotos) {
+      const key = f.folio ?? '';
+      if (!key) continue;
+      if (!fotosByFolio[key]) fotosByFolio[key] = [];
+      fotosByFolio[key].push(f);
+    }
+
     return {
       personal: toMap(subtablas.personal),
       clima: toMap(subtablas.clima),
       maquinaria: toMap(subtablas.maquinaria),
       sst: toMap(subtablas.sst),
-      fotos: toMap(subtablas.fotos),
+      fotos: fotosByFolio,
     };
   }, [subtablas]);
 
@@ -155,7 +163,7 @@ export default function AnotacionesDiarioClient({
       const clima = maps.clima[r.id]?.[0];
       const maquinaria = maps.maquinaria[r.id] ?? [];
       const sst = maps.sst[r.id] ?? [];
-      const fotos = maps.fotos[r.id] ?? [];
+      const fotos = maps.fotos[String(r.folio ?? '')] ?? [];
 
       return (
         <div className="space-y-4 p-4 text-sm">

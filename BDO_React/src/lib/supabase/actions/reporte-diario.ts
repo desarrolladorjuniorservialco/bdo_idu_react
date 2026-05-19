@@ -25,7 +25,7 @@ export async function fetchSubtablasDiarioByContrato(contratoId: string) {
     supabase.from('bd_sst_ambiental').select('*').eq('contrato_id', contratoId),
     supabase
       .from('rf_reporte_diario')
-      .select('registro_id, url, descripcion')
+      .select('folio, url:foto_url, descripcion:observaciones')
       .eq('contrato_id', contratoId),
   ]);
   return {

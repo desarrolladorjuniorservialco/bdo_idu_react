@@ -75,8 +75,8 @@ export default function ComponentePage({
   const fotoMap = useMemo(() => {
     const m: Record<string, FotoRegistro[]> = {};
     for (const f of fotos) {
-      if (!m[f.registro_id]) m[f.registro_id] = [];
-      m[f.registro_id].push(f);
+      if (!m[f.folio]) m[f.folio] = [];
+      m[f.folio].push(f);
     }
     return m;
   }, [fotos]);
@@ -159,7 +159,7 @@ export default function ComponentePage({
               </span>
             </div>
             {r.descripcion && <p className="text-sm">{r.descripcion}</p>}
-            <PhotoGrid fotos={fotoMap[r.id] ?? []} />
+            <PhotoGrid fotos={fotoMap[r.folio] ?? []} />
             <ApprovalPanel registro={r} rol={rol} tabla={tabla} rutaRevalidar={`/${page}`} />
           </div>
         )}
