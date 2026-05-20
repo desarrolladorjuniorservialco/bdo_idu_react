@@ -34,7 +34,6 @@ export async function aprobar(
   }
 
   const campoTramo = tabla === 'registros_cantidades' ? 'tramo_descripcion' : 'tramo';
-  const edits = camposEditables ?? {};
 
   const payload: Record<string, unknown> = {
     estado: config.estadoResultante,
@@ -43,11 +42,13 @@ export async function aprobar(
     [config.campos.campo_apr]: user?.id,
     [config.campos.campo_estado]: 'aprobado',
     [config.campos.campo_fecha]: new Date().toISOString(),
-    ...(edits.tramo !== undefined && { [campoTramo]: edits.tramo }),
-    ...(edits.civ !== undefined && { civ: edits.civ }),
-    ...(edits.codigo_elemento !== undefined && { codigo_elemento: edits.codigo_elemento }),
-    ...(edits.unidad !== undefined && { unidad: edits.unidad }),
-    ...(edits.item_pago !== undefined && { item_pago: edits.item_pago }),
+    ...(camposEditables && {
+      [campoTramo]: camposEditables.tramo,
+      civ: camposEditables.civ,
+      codigo_elemento: camposEditables.codigo_elemento,
+      unidad: camposEditables.unidad,
+      item_pago: camposEditables.item_pago,
+    }),
   };
 
   const { error } = await supabase.from(tabla).update(payload).eq('id', registroId);
@@ -86,7 +87,6 @@ export async function devolver(
   }
 
   const campoTramo = tabla === 'registros_cantidades' ? 'tramo_descripcion' : 'tramo';
-  const edits = camposEditables ?? {};
 
   const payload: Record<string, unknown> = {
     estado: 'DEVUELTO',
@@ -94,11 +94,13 @@ export async function devolver(
     [config.campos.campo_apr]: user?.id,
     [config.campos.campo_estado]: 'devuelto',
     [config.campos.campo_fecha]: new Date().toISOString(),
-    ...(edits.tramo !== undefined && { [campoTramo]: edits.tramo }),
-    ...(edits.civ !== undefined && { civ: edits.civ }),
-    ...(edits.codigo_elemento !== undefined && { codigo_elemento: edits.codigo_elemento }),
-    ...(edits.unidad !== undefined && { unidad: edits.unidad }),
-    ...(edits.item_pago !== undefined && { item_pago: edits.item_pago }),
+    ...(camposEditables && {
+      [campoTramo]: camposEditables.tramo,
+      civ: camposEditables.civ,
+      codigo_elemento: camposEditables.codigo_elemento,
+      unidad: camposEditables.unidad,
+      item_pago: camposEditables.item_pago,
+    }),
   };
 
   const { error } = await supabase.from(tabla).update(payload).eq('id', registroId);
