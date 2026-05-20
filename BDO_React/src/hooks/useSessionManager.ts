@@ -32,6 +32,7 @@ export function useSessionManager({
   const lastActivityRef = useRef<number>(Date.now());
   const onLogoutRef = useRef(onLogout);
   const didLogoutRef = useRef(false);
+  const warningVisibleRef = useRef(false);
 
   useEffect(() => {
     onLogoutRef.current = onLogout;
@@ -40,23 +41,35 @@ export function useSessionManager({
   const logout = useCallback(() => {
     if (didLogoutRef.current) return;
     didLogoutRef.current = true;
-    localStorage.removeItem(SESSION_START_KEY);
+    try {
+      localStorage.removeItem(SESSION_START_KEY);
+    } catch {
+      // ignore
+    }
     onLogoutRef.current();
   }, []);
 
   const extendSession = useCallback(() => {
     lastActivityRef.current = Date.now();
+    warningVisibleRef.current = false;
     setWarningVisible(false);
   }, []);
 
   useEffect(() => {
     lastActivityRef.current = Date.now();
 
-    const stored = localStorage.getItem(SESSION_START_KEY);
-    let sessionStart = stored ? Number(stored) : Number.NaN;
-    if (Number.isNaN(sessionStart)) {
+    let sessionStart: number;
+    try {
+      const stored = localStorage.getItem(SESSION_START_KEY);
+      const parsed = stored ? Number(stored) : Number.NaN;
+      if (!Number.isNaN(parsed)) {
+        sessionStart = parsed;
+      } else {
+        sessionStart = Date.now();
+        localStorage.setItem(SESSION_START_KEY, String(sessionStart));
+      }
+    } catch {
       sessionStart = Date.now();
-      localStorage.setItem(SESSION_START_KEY, String(sessionStart));
     }
 
     // Immediate expiry check
@@ -70,10 +83,21 @@ export function useSessionManager({
     const inactivityRemaining = inactivityMs - (Date.now() - lastActivityRef.current);
     const initialMin = Math.min(initialSessionRemaining, inactivityRemaining);
     setSecondsRemaining(Math.ceil(initialMin / TICK_MS));
-    if (initialMin <= warningBeforeMs) {
-      setWarningVisible(true);
+
+    function showWarning() {
+      if (!warningVisibleRef.current) {
+        warningVisibleRef.current = true;
+        setWarningVisible(true);
+      }
     }
 
+    if (initialMin <= warningBeforeMs) {
+      showWarning();
+    }
+
+    // visibilitychange is intentionally omitted: the setInterval ticks while
+    // the tab is hidden (at reduced frequency), and Date.now() in the tick
+    // correctly measures elapsed wall-clock time for both timers.
     function resetActivity() {
       lastActivityRef.current = Date.now();
     }
@@ -95,7 +119,7 @@ export function useSessionManager({
 
       setSecondsRemaining(Math.ceil(minRemaining / TICK_MS));
       if (minRemaining <= warningBeforeMs) {
-        setWarningVisible(true);
+        showWarning();
       }
     }, TICK_MS);
 
@@ -105,7 +129,8 @@ export function useSessionManager({
         window.removeEventListener(event, resetActivity);
       }
     };
-  }, [inactivityMs, sessionMaxMs, warningBeforeMs, logout]);
+    // logout is stable (useCallback with empty deps) — safe to omit from deps array
+  }, [inactivityMs, sessionMaxMs, warningBeforeMs]);
 
   return { warningVisible, secondsRemaining, extendSession, logout };
 }

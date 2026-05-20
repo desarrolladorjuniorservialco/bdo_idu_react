@@ -8,6 +8,7 @@ describe('useSessionManager', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
     localStorage.clear();
+    opts.onLogout.mockReset();
   });
 
   afterEach(() => {
@@ -79,8 +80,10 @@ describe('useSessionManager', () => {
       sessionMaxMs: 60_000,
       onLogout,
     }));
-    act(() => { vi.advanceTimersByTime(9_000); });
-    window.dispatchEvent(new Event('mousemove'));
+    act(() => {
+      vi.advanceTimersByTime(9_000);
+      window.dispatchEvent(new Event('mousemove'));
+    });
     act(() => { vi.advanceTimersByTime(9_000); });
     expect(onLogout).not.toHaveBeenCalled();
   });
@@ -99,6 +102,23 @@ describe('useSessionManager', () => {
     expect(result.current.warningVisible).toBe(false);
     act(() => { vi.advanceTimersByTime(9_000); });
     expect(onLogout).not.toHaveBeenCalled();
+  });
+
+  it('extendSession does not re-show warning on the next tick', () => {
+    const { result } = renderHook(() => useSessionManager({
+      ...opts,
+      inactivityMs: 10_000,
+      sessionMaxMs: 60_000,
+    }));
+    // Advance to warning zone
+    act(() => { vi.advanceTimersByTime(9_000); });
+    expect(result.current.warningVisible).toBe(true);
+    // Extend — hides warning
+    act(() => { result.current.extendSession(); });
+    expect(result.current.warningVisible).toBe(false);
+    // Next tick — warning should NOT reappear (inactivity was reset)
+    act(() => { vi.advanceTimersByTime(1_000); });
+    expect(result.current.warningVisible).toBe(false);
   });
 
   it('logout removes bdo-session-start and calls onLogout', () => {
