@@ -1,7 +1,7 @@
 'use server';
 import { APROBACION_CONFIG } from '@/lib/config';
 import { createClient } from '@/lib/supabase/server';
-import { aprobacionSchema, devolucionSchema, type CamposEditables } from '@/lib/validators/approval.schema';
+import { aprobacionSchema, devolucionSchema, camposEditablesSchema, type CamposEditables } from '@/lib/validators/approval.schema';
 import type { Rol } from '@/types/database';
 import { revalidatePath } from 'next/cache';
 
@@ -15,6 +15,9 @@ export async function aprobar(
   camposEditables?: CamposEditables,
 ) {
   const parsed = aprobacionSchema.parse({ cantidad_validada: cantidadValidada, observacion });
+  const parsedCampos = camposEditables
+    ? camposEditablesSchema.parse(camposEditables)
+    : undefined;
   const config = APROBACION_CONFIG[rol];
   if (!config) throw new Error(`Rol ${rol} no puede aprobar`);
 
@@ -42,12 +45,12 @@ export async function aprobar(
     [config.campos.campo_apr]: user?.id,
     [config.campos.campo_estado]: 'aprobado',
     [config.campos.campo_fecha]: new Date().toISOString(),
-    ...(camposEditables && {
-      [campoTramo]: camposEditables.tramo,
-      civ: camposEditables.civ,
-      codigo_elemento: camposEditables.codigo_elemento,
-      unidad: camposEditables.unidad,
-      item_pago: camposEditables.item_pago,
+    ...(parsedCampos && {
+      [campoTramo]: parsedCampos.tramo,
+      civ: parsedCampos.civ,
+      codigo_elemento: parsedCampos.codigo_elemento,
+      unidad: parsedCampos.unidad,
+      item_pago: parsedCampos.item_pago,
     }),
   };
 
@@ -67,6 +70,9 @@ export async function devolver(
   camposEditables?: CamposEditables,
 ) {
   const parsed = devolucionSchema.parse({ observacion });
+  const parsedCampos = camposEditables
+    ? camposEditablesSchema.parse(camposEditables)
+    : undefined;
   const config = APROBACION_CONFIG[rol];
   if (!config) throw new Error(`Rol ${rol} no puede devolver`);
   if (!config.puedeDevolver) throw new Error(`Rol ${rol} no tiene permiso para devolver`);
@@ -94,12 +100,12 @@ export async function devolver(
     [config.campos.campo_apr]: user?.id,
     [config.campos.campo_estado]: 'devuelto',
     [config.campos.campo_fecha]: new Date().toISOString(),
-    ...(camposEditables && {
-      [campoTramo]: camposEditables.tramo,
-      civ: camposEditables.civ,
-      codigo_elemento: camposEditables.codigo_elemento,
-      unidad: camposEditables.unidad,
-      item_pago: camposEditables.item_pago,
+    ...(parsedCampos && {
+      [campoTramo]: parsedCampos.tramo,
+      civ: parsedCampos.civ,
+      codigo_elemento: parsedCampos.codigo_elemento,
+      unidad: parsedCampos.unidad,
+      item_pago: parsedCampos.item_pago,
     }),
   };
 

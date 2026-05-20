@@ -115,7 +115,7 @@ describe('ApprovalPanel', () => {
     expect(Number(input.value)).toBe(7);
   });
 
-  // --- Tests nuevos (fallarán hasta que se implemente Task 5) ---
+  // --- Tests: sección corrección de datos ---
 
   it('obra ve sección "Corrección de datos del registro" cuando puedeAccionar', () => {
     render(
