@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { APROBACION_CONFIG } from '@/lib/config';
 import { aprobar, devolver } from '@/lib/supabase/actions/approval';
 import { aprobacionSchema, devolucionSchema } from '@/lib/validators/approval.schema';
-import type { AprobacionInput, DevolucionInput } from '@/lib/validators/approval.schema';
+import type { AprobacionInput, DevolucionInput, CamposEditables } from '@/lib/validators/approval.schema';
 import type { Rol } from '@/types/database';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useTransition } from 'react';
@@ -27,8 +27,19 @@ export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalP
   const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
 
   const config = APROBACION_CONFIG[rol];
-
   const puedeAccionar = config && (config.estadosAccion as string[]).includes(registro.estado);
+
+  const [camposEditables, setCamposEditables] = useState<CamposEditables>({
+    tramo: String(registro.tramo_descripcion ?? registro.tramo ?? ''),
+    civ: String(registro.civ ?? ''),
+    codigo_elemento: String(registro.codigo_elemento ?? ''),
+    unidad: String(registro.unidad ?? ''),
+    item_pago: String(registro.item_pago ?? ''),
+  });
+
+  function handleCampoChange(campo: keyof CamposEditables, valor: string) {
+    setCamposEditables((prev) => ({ ...prev, [campo]: valor }));
+  }
 
   const cantidadDefault =
     (config ? (registro[config.campos.campo_cant] ?? null) : null) ?? registro.cantidad ?? 0;
@@ -53,6 +64,7 @@ export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalP
           data.cantidad_validada,
           data.observacion,
           rutaRevalidar,
+          camposEditables,
         );
         setFeedbackSuccess('Registro aprobado correctamente.');
       } catch (e) {
@@ -66,7 +78,7 @@ export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalP
     setFeedbackSuccess(null);
     startTransition(async () => {
       try {
-        await devolver(registro.id, tabla, rol, data.observacion, rutaRevalidar);
+        await devolver(registro.id, tabla, rol, data.observacion, rutaRevalidar, camposEditables);
         setFeedbackSuccess('Registro devuelto.');
       } catch (e) {
         setFeedbackError(e instanceof Error ? e.message : 'No fue posible devolver el registro.');
@@ -86,6 +98,61 @@ export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalP
           >
             Panel de aprobación
           </p>
+
+          {/* Corrección de datos del registro */}
+          <div
+            className="rounded-md p-3 space-y-3"
+            style={{ background: 'var(--bg-secondary, #F8FAFC)', border: '1px solid var(--border, #E2E8F0)' }}
+          >
+            <p
+              className="text-[10px] font-mono tracking-widest uppercase"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Corrección de datos del registro
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor={`tramo-${registro.id}`}>Tramo</Label>
+                <Input
+                  id={`tramo-${registro.id}`}
+                  value={camposEditables.tramo}
+                  onChange={(e) => handleCampoChange('tramo', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor={`civ-${registro.id}`}>CIV</Label>
+                <Input
+                  id={`civ-${registro.id}`}
+                  value={camposEditables.civ}
+                  onChange={(e) => handleCampoChange('civ', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor={`codigo-${registro.id}`}>Cód. Elemento</Label>
+                <Input
+                  id={`codigo-${registro.id}`}
+                  value={camposEditables.codigo_elemento}
+                  onChange={(e) => handleCampoChange('codigo_elemento', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor={`unidad-${registro.id}`}>Unidad</Label>
+                <Input
+                  id={`unidad-${registro.id}`}
+                  value={camposEditables.unidad}
+                  onChange={(e) => handleCampoChange('unidad', e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor={`item-${registro.id}`}>Ítem de pago</Label>
+              <Input
+                id={`item-${registro.id}`}
+                value={camposEditables.item_pago}
+                onChange={(e) => handleCampoChange('item_pago', e.target.value)}
+              />
+            </div>
+          </div>
 
           {/* Formulario Aprobar */}
           <form
@@ -151,7 +218,7 @@ export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalP
         </div>
       )}
 
-      {/* Feedback inline — FUERA de puedeAccionar para sobrevivir re-renders */}
+      {/* Feedback inline */}
       {feedbackError && (
         <p
           className="text-xs rounded-md px-3 py-2"
