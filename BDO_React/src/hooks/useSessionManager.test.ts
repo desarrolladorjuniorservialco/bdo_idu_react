@@ -5,6 +5,13 @@ import { useSessionManager } from './useSessionManager';
 const KEY = 'bdo-session-start';
 
 describe('useSessionManager', () => {
+  const opts = {
+    inactivityMs: 10_000,
+    sessionMaxMs: 10_000,
+    warningBeforeMs: 2_000,
+    onLogout: vi.fn(),
+  };
+
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
     localStorage.clear();
@@ -15,13 +22,6 @@ describe('useSessionManager', () => {
     vi.useRealTimers();
     localStorage.clear();
   });
-
-  const opts = {
-    inactivityMs: 10_000,
-    sessionMaxMs: 10_000,
-    warningBeforeMs: 2_000,
-    onLogout: vi.fn(),
-  };
 
   it('writes bdo-session-start to localStorage on first mount', () => {
     renderHook(() => useSessionManager(opts));

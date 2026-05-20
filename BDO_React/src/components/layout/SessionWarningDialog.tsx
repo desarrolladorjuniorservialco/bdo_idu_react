@@ -29,11 +29,11 @@ export function SessionWarningDialog({
           <DialogHeader>
             <DialogTitle>Tu sesión está por expirar</DialogTitle>
           </DialogHeader>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">
+          <DialogPrimitive.Description className="mt-2 text-sm text-[var(--text-muted)]">
             Tu sesión se cerrará en{' '}
             <span className="font-semibold tabular-nums">{secondsRemaining}</span>{' '}
             segundo{secondsRemaining !== 1 ? 's' : ''}.
-          </p>
+          </DialogPrimitive.Description>
           <div className="mt-6 flex justify-end gap-3">
             <Button variant="outline" onClick={onLogout}>
               Cerrar sesión

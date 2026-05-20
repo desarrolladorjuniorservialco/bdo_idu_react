@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { useSessionManager } from '@/hooks/useSessionManager';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
@@ -14,7 +15,7 @@ export function SessionGuard(): JSX.Element {
   const router = useRouter();
   const clearAuth = useAuthStore((s) => s.clearAuth);
 
-  async function handleLogout(): Promise<void> {
+  const handleLogout = useCallback(async (): Promise<void> => {
     const supabase = createClient();
     try {
       await supabase.auth.signOut();
@@ -23,7 +24,7 @@ export function SessionGuard(): JSX.Element {
     }
     clearAuth();
     router.push('/login');
-  }
+  }, [clearAuth, router]);
 
   const { warningVisible, secondsRemaining, extendSession, logout } = useSessionManager({
     inactivityMs: INACTIVITY_MS,

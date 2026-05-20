@@ -708,9 +708,7 @@ export default function PresupuestoClient({
             border: '1px solid var(--border)',
           }}
         >
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Sin datos de meta física. Verifica la tabla <code>tramos_bd</code> en Supabase.
-          </p>
+          
         </div>
       ) : tramosData.length === 0 ? (
         <div
