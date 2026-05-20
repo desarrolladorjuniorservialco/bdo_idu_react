@@ -73,7 +73,7 @@ export default function ReporteCantidadesClient({
     if (filters.buscar) {
       const q = filters.buscar.toLowerCase();
       rows = rows.filter((r) =>
-        [r.folio, r.civ, r.actividad, r.tramo].some((v) =>
+        [r.folio, r.civ, r.actividad, r.tramo_descripcion].some((v) =>
           String(v ?? '')
             .toLowerCase()
             .includes(q),
@@ -152,7 +152,7 @@ export default function ReporteCantidadesClient({
                 <b>CIV:</b> {r.civ ?? '—'}
               </span>
               <span>
-                <b>Tramo:</b> {r.tramo ?? '—'}
+                <b>Tramo:</b> {r.tramo_descripcion ?? '—'}
               </span>
               <span>
                 <b>Unidad:</b> {r.unidad}
