@@ -141,7 +141,7 @@ export default function LoginPage() {
             </div>
 
             {/* Corner brackets */}
-            <div style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%', position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+            <div style={{ position: 'absolute', zIndex: 1, width: '100%', height: '100%', inset: 0, pointerEvents: 'none' }}>
               {(
                 [
                   {
