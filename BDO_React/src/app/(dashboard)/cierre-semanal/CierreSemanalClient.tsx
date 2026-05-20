@@ -119,7 +119,7 @@ export default function CierreSemanalClient({
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 py-6 space-y-5">
       {/* Encabezado y filtro */}
       <div className="flex flex-col sm:flex-row sm:items-end gap-4">
         <div>
@@ -194,24 +194,42 @@ export default function CierreSemanalClient({
       </div>
 
       {/* Secciones */}
-      <SeccionAnotaciones
-        items={filteredAnotaciones.slice(0, MAX)}
-        total={filteredAnotaciones.length}
-      />
-      <SeccionDiario items={filteredDiario.slice(0, MAX)} total={filteredDiario.length} />
-      <SeccionCantidades
-        items={filteredCantidades.slice(0, MAX)}
-        total={filteredCantidades.length}
-      />
-      <SeccionCorrespondencia
-        items={filteredCorrespondencia.slice(0, MAX)}
-        total={filteredCorrespondencia.length}
-      />
-      <SeccionComponentes
-        items={filteredComponentes.slice(0, MAX)}
-        total={filteredComponentes.length}
-      />
-      <SeccionPresupuesto items={presupuestoItems} tramos={tramos} />
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+      >
+        <SeccionPresupuesto items={presupuestoItems} tramos={tramos} />
+      </div>
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+      >
+        <SeccionAnotaciones items={filteredAnotaciones.slice(0, MAX)} total={filteredAnotaciones.length} />
+      </div>
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+      >
+        <SeccionDiario items={filteredDiario.slice(0, MAX)} total={filteredDiario.length} />
+      </div>
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+      >
+        <SeccionCantidades items={filteredCantidades.slice(0, MAX)} total={filteredCantidades.length} />
+      </div>
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+      >
+        <SeccionCorrespondencia items={filteredCorrespondencia.slice(0, MAX)} total={filteredCorrespondencia.length} />
+      </div>
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
+      >
+        <SeccionComponentes items={filteredComponentes.slice(0, MAX)} total={filteredComponentes.length} />
+      </div>
     </div>
   );
 }
