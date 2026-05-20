@@ -6,7 +6,7 @@ import { getCachedPerfil, getCachedSession, getCachedUser } from '@/lib/supabase
 import type { Perfil } from '@/types/database';
 import { redirect } from 'next/navigation';
 import { AuthInitializer } from './AuthInitializer';
-import { InactivityGuard } from './InactivityGuard';
+import { SessionGuard } from './SessionGuard';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCachedUser();
@@ -23,7 +23,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="flex min-h-screen" style={{ background: 'var(--bg-app)' }}>
       <ThemeApplier />
       <AuthInitializer perfil={perfil as Perfil} accessToken={accessToken} />
-      <InactivityGuard />
+      <SessionGuard />
       <Sidebar perfil={perfil as Perfil} />
 
       <div className="flex flex-col flex-1 min-w-0">
