@@ -67,7 +67,8 @@ export function useSessionManager({
     }
 
     // Set accurate initial display values
-    const initialMin = Math.min(initialSessionRemaining, inactivityMs);
+    const inactivityRemaining = inactivityMs - (Date.now() - lastActivityRef.current);
+    const initialMin = Math.min(initialSessionRemaining, inactivityRemaining);
     setSecondsRemaining(Math.ceil(initialMin / TICK_MS));
     if (initialMin <= warningBeforeMs) {
       setWarningVisible(true);

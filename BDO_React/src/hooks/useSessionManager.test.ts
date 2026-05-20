@@ -139,4 +139,15 @@ describe('useSessionManager', () => {
     act(() => { vi.advanceTimersByTime(3_000); });
     expect(result.current.secondsRemaining).toBe(initial - 3);
   });
+
+  it('extendSession does not modify bdo-session-start in localStorage', () => {
+    const { result } = renderHook(() => useSessionManager({
+      ...opts,
+      inactivityMs: 10_000,
+      sessionMaxMs: 60_000,
+    }));
+    const before = localStorage.getItem(KEY);
+    act(() => { result.current.extendSession(); });
+    expect(localStorage.getItem(KEY)).toBe(before);
+  });
 });
