@@ -1,4 +1,4 @@
-import { fetchPresupuesto } from '@/lib/supabase/actions/presupuesto';
+sin dataimport { fetchPresupuesto } from '@/lib/supabase/actions/presupuesto';
 import { getCachedPerfil, getCachedUser } from '@/lib/supabase/cached-queries';
 import { createClient } from '@/lib/supabase/server';
 import PresupuestoClient from './PresupuestoClient';
