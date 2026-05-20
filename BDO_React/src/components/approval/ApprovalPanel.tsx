@@ -218,7 +218,7 @@ export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalP
         </div>
       )}
 
-      {/* Feedback inline */}
+      {/* Feedback inline — FUERA de puedeAccionar para sobrevivir re-renders */}
       {feedbackError && (
         <p
           className="text-xs rounded-md px-3 py-2"
