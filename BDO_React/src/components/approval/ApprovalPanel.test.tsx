@@ -27,6 +27,15 @@ const registroBorrador = {
 
 const registroRevisado = { ...registroBorrador, id: 'r2', estado: 'REVISADO' };
 
+const registroConCampos = {
+  ...registroBorrador,
+  tramo_descripcion: 'Tramo Norte',
+  civ: '1234567',
+  codigo_elemento: 'EP-01',
+  unidad: 'm²',
+  item_pago: '3.1.1',
+};
+
 describe('ApprovalPanel', () => {
   it('obra ve formulario aprobar pero NO formulario devolver', () => {
     render(
@@ -104,5 +113,47 @@ describe('ApprovalPanel', () => {
     );
     const input = screen.getByLabelText(/cantidad validada/i) as HTMLInputElement;
     expect(Number(input.value)).toBe(7);
+  });
+
+  // --- Tests nuevos (fallarán hasta que se implemente Task 5) ---
+
+  it('obra ve sección "Corrección de datos del registro" cuando puedeAccionar', () => {
+    render(
+      <ApprovalPanel
+        registro={registroConCampos}
+        rol="obra"
+        tabla="registros_cantidades"
+        rutaRevalidar="/reporte-cantidades"
+      />,
+    );
+    expect(screen.getByText(/corrección de datos del registro/i)).toBeInTheDocument();
+  });
+
+  it('campos editables se pre-llenan con los valores actuales del registro', () => {
+    render(
+      <ApprovalPanel
+        registro={registroConCampos}
+        rol="obra"
+        tabla="registros_cantidades"
+        rutaRevalidar="/reporte-cantidades"
+      />,
+    );
+    expect(screen.getByLabelText(/tramo/i) as HTMLInputElement).toHaveValue('Tramo Norte');
+    expect(screen.getByLabelText(/civ/i) as HTMLInputElement).toHaveValue('1234567');
+    expect(screen.getByLabelText(/cód\. elemento/i) as HTMLInputElement).toHaveValue('EP-01');
+    expect(screen.getByLabelText(/unidad/i) as HTMLInputElement).toHaveValue('m²');
+    expect(screen.getByLabelText(/ítem de pago/i) as HTMLInputElement).toHaveValue('3.1.1');
+  });
+
+  it('operativo no ve sección corrección de datos', () => {
+    render(
+      <ApprovalPanel
+        registro={registroConCampos}
+        rol="operativo"
+        tabla="registros_cantidades"
+        rutaRevalidar="/reporte-cantidades"
+      />,
+    );
+    expect(screen.queryByText(/corrección de datos del registro/i)).not.toBeInTheDocument();
   });
 });
