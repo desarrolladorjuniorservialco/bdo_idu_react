@@ -30,9 +30,17 @@ export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalP
   const puedeAccionar = config && (config.estadosAccion as string[]).includes(registro.estado);
 
   const [camposEditables, setCamposEditables] = useState<CamposEditables>({
-    tramo: String(registro.tramo_descripcion ?? registro.tramo ?? ''),
+    tramo: String(
+      tabla === 'registros_reporte_diario'
+        ? (registro.id_tramo ?? '')
+        : (registro.tramo_descripcion ?? registro.tramo ?? '')
+    ),
     civ: String(registro.civ ?? ''),
-    codigo_elemento: String(registro.codigo_elemento ?? ''),
+    codigo_elemento: String(
+      tabla === 'registros_reporte_diario'
+        ? (registro.pk_id ?? '')
+        : (registro.codigo_elemento ?? '')
+    ),
     unidad: String(registro.unidad ?? ''),
     item_pago: String(registro.item_pago ?? ''),
   });
@@ -144,14 +152,16 @@ export function ApprovalPanel({ registro, rol, tabla, rutaRevalidar }: ApprovalP
                 />
               </div>
             </div>
-            <div>
-              <Label htmlFor={`item-${registro.id}`}>Ítem de pago</Label>
-              <Input
-                id={`item-${registro.id}`}
-                value={camposEditables.item_pago}
-                onChange={(e) => handleCampoChange('item_pago', e.target.value)}
-              />
-            </div>
+            {tabla !== 'registros_reporte_diario' && (
+              <div>
+                <Label htmlFor={`item-${registro.id}`}>Ítem de pago</Label>
+                <Input
+                  id={`item-${registro.id}`}
+                  value={camposEditables.item_pago}
+                  onChange={(e) => handleCampoChange('item_pago', e.target.value)}
+                />
+              </div>
+            )}
           </div>
 
           {/* Formulario Aprobar */}
