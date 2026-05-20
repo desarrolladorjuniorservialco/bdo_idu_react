@@ -15,9 +15,6 @@ export async function aprobar(
   camposEditables?: CamposEditables,
 ) {
   const parsed = aprobacionSchema.parse({ cantidad_validada: cantidadValidada, observacion });
-  const parsedCampos = camposEditables
-    ? camposEditablesSchema.parse(camposEditables)
-    : undefined;
   const config = APROBACION_CONFIG[rol];
   if (!config) throw new Error(`Rol ${rol} no puede aprobar`);
 
@@ -36,7 +33,15 @@ export async function aprobar(
     throw new Error(`Transicion invalida desde estado ${current?.estado ?? 'NULO'}`);
   }
 
-  const campoTramo = tabla === 'registros_cantidades' ? 'tramo_descripcion' : 'tramo';
+  const campoTramo = tabla === 'registros_cantidades' ? 'tramo_descripcion'
+    : tabla === 'registros_reporte_diario' ? 'id_tramo'
+    : 'tramo';
+
+  const campoCodigo = tabla === 'registros_reporte_diario' ? 'pk_id' : 'codigo_elemento';
+
+  const parsedCampos = camposEditables
+    ? camposEditablesSchema.parse(camposEditables)
+    : undefined;
 
   const payload: Record<string, unknown> = {
     estado: config.estadoResultante,
@@ -48,9 +53,9 @@ export async function aprobar(
     ...(parsedCampos && {
       [campoTramo]: parsedCampos.tramo,
       civ: parsedCampos.civ,
-      codigo_elemento: parsedCampos.codigo_elemento,
+      [campoCodigo]: parsedCampos.codigo_elemento,
       unidad: parsedCampos.unidad,
-      item_pago: parsedCampos.item_pago,
+      ...(tabla !== 'registros_reporte_diario' && { item_pago: parsedCampos.item_pago }),
     }),
   };
 
@@ -70,9 +75,6 @@ export async function devolver(
   camposEditables?: CamposEditables,
 ) {
   const parsed = devolucionSchema.parse({ observacion });
-  const parsedCampos = camposEditables
-    ? camposEditablesSchema.parse(camposEditables)
-    : undefined;
   const config = APROBACION_CONFIG[rol];
   if (!config) throw new Error(`Rol ${rol} no puede devolver`);
   if (!config.puedeDevolver) throw new Error(`Rol ${rol} no tiene permiso para devolver`);
@@ -92,7 +94,15 @@ export async function devolver(
     throw new Error(`Transicion invalida desde estado ${current?.estado ?? 'NULO'}`);
   }
 
-  const campoTramo = tabla === 'registros_cantidades' ? 'tramo_descripcion' : 'tramo';
+  const campoTramo = tabla === 'registros_cantidades' ? 'tramo_descripcion'
+    : tabla === 'registros_reporte_diario' ? 'id_tramo'
+    : 'tramo';
+
+  const campoCodigo = tabla === 'registros_reporte_diario' ? 'pk_id' : 'codigo_elemento';
+
+  const parsedCampos = camposEditables
+    ? camposEditablesSchema.parse(camposEditables)
+    : undefined;
 
   const payload: Record<string, unknown> = {
     estado: 'DEVUELTO',
@@ -103,9 +113,9 @@ export async function devolver(
     ...(parsedCampos && {
       [campoTramo]: parsedCampos.tramo,
       civ: parsedCampos.civ,
-      codigo_elemento: parsedCampos.codigo_elemento,
+      [campoCodigo]: parsedCampos.codigo_elemento,
       unidad: parsedCampos.unidad,
-      item_pago: parsedCampos.item_pago,
+      ...(tabla !== 'registros_reporte_diario' && { item_pago: parsedCampos.item_pago }),
     }),
   };
 
