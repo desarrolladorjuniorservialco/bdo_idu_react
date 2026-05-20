@@ -36,6 +36,16 @@ const registroConCampos = {
   item_pago: '3.1.1',
 };
 
+// Fixture para registros_reporte_diario
+const registroDiarioBorrador = {
+  ...registroBorrador,
+  id_tramo: 'T-05',
+  civ: '9876543',
+  pk_id: 'PK-10',
+  unidad: 'ml',
+  // sin item_pago
+};
+
 describe('ApprovalPanel', () => {
   it('obra ve formulario aprobar pero NO formulario devolver', () => {
     render(
@@ -155,5 +165,46 @@ describe('ApprovalPanel', () => {
       />,
     );
     expect(screen.queryByText(/corrección de datos del registro/i)).not.toBeInTheDocument();
+  });
+
+  // --- Tests: registros_reporte_diario ---
+
+  it('diario: obra ve sección corrección de datos', () => {
+    render(
+      <ApprovalPanel
+        registro={registroDiarioBorrador}
+        rol="obra"
+        tabla="registros_reporte_diario"
+        rutaRevalidar="/anotaciones-diario"
+      />,
+    );
+    expect(screen.getByText(/corrección de datos del registro/i)).toBeInTheDocument();
+  });
+
+  it('diario: campos se pre-llenan desde id_tramo y pk_id', () => {
+    render(
+      <ApprovalPanel
+        registro={registroDiarioBorrador}
+        rol="obra"
+        tabla="registros_reporte_diario"
+        rutaRevalidar="/anotaciones-diario"
+      />,
+    );
+    expect(screen.getByLabelText(/tramo/i) as HTMLInputElement).toHaveValue('T-05');
+    expect(screen.getByLabelText(/civ/i) as HTMLInputElement).toHaveValue('9876543');
+    expect(screen.getByLabelText(/cód\. elemento/i) as HTMLInputElement).toHaveValue('PK-10');
+    expect(screen.getByLabelText(/unidad/i) as HTMLInputElement).toHaveValue('ml');
+  });
+
+  it('diario: no se muestra campo ítem de pago', () => {
+    render(
+      <ApprovalPanel
+        registro={registroDiarioBorrador}
+        rol="obra"
+        tabla="registros_reporte_diario"
+        rutaRevalidar="/anotaciones-diario"
+      />,
+    );
+    expect(screen.queryByLabelText(/ítem de pago/i)).not.toBeInTheDocument();
   });
 });
