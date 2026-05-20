@@ -13,11 +13,11 @@ export type AprobacionInput = z.infer<typeof aprobacionSchema>;
 export type DevolucionInput  = z.infer<typeof devolucionSchema>;
 
 export const camposEditablesSchema = z.object({
-  tramo: z.string(),
-  civ: z.string(),
-  codigo_elemento: z.string(),
-  unidad: z.string(),
-  item_pago: z.string(),
+  tramo: z.string().optional(),
+  civ: z.string().optional(),
+  codigo_elemento: z.string().optional(),
+  unidad: z.string().optional(),
+  item_pago: z.string().optional(),
 });
 
 export type CamposEditables = z.infer<typeof camposEditablesSchema>;
