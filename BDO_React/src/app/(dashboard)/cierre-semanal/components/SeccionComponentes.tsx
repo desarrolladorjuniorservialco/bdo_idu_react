@@ -38,7 +38,7 @@ export function SeccionComponentes({ items, total }: Props) {
               className="text-[15px] font-semibold leading-tight"
               style={{ color: 'var(--text-primary)' }}
             >
-              Componentes HSE
+              Componentes Trasnversales
             </h2>
             <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
               Actividades ambientales, sociales y de PMT
