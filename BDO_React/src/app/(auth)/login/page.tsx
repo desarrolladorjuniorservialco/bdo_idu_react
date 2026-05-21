@@ -118,7 +118,7 @@ export default function LoginPage() {
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: reducedMotion ? 0 : 1.35 }}
+            transition={{ duration: reducedMotion ? 0 : 1.08 }}
           >
             {/* Background Image: Blueprint */}
             <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
@@ -200,7 +200,7 @@ export default function LoginPage() {
                 }}
                 initial={{ width: 0 }}
                 animate={{ width: 56 }}
-                transition={{ duration: 1.125, delay: 0.8 }}
+                transition={{ duration: 0.9, delay: 0.8 }}
               />
               <p
                 style={{
@@ -221,7 +221,7 @@ export default function LoginPage() {
               style={{ position: 'relative', zIndex: 2 }}
               initial={{ opacity: 0, y: 36 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: reducedMotion ? 0 : 1.35, delay: 0.5 }}
+              transition={{ duration: reducedMotion ? 0 : 1.08, delay: 0.5 }}
             >
               <m.h1
                 style={{
@@ -235,7 +235,7 @@ export default function LoginPage() {
                 }}
                 initial={{ opacity: 0, x: -24 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: reducedMotion ? 0 : 1.35, delay: 0.8 }}
+                transition={{ duration: reducedMotion ? 0 : 1.08, delay: 0.8 }}
               >
                 BOB
               </m.h1>
@@ -315,7 +315,7 @@ export default function LoginPage() {
             style={{ background: '#F4F6F8', padding: '32px 24px', position: 'relative' }}
             initial={{ opacity: 0, x: 18 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.9, delay: 0.5 }}
+            transition={{ duration: reducedMotion ? 0 : 0.72, delay: 0.5 }}
           >
             {/* Subtle dot pattern */}
             <div
@@ -366,7 +366,7 @@ export default function LoginPage() {
                 }}
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: reducedMotion ? 0 : 0.9, delay: 0.55 }}
+                transition={{ duration: reducedMotion ? 0 : 0.72, delay: 0.55 }}
               >
                 {/* Card header */}
                 <div style={{ marginBottom: 34 }}>
