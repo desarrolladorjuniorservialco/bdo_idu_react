@@ -266,6 +266,7 @@ export default function LoginPage() {
                 Gestión confiable y transparente de actividades
               </p>
             </m.div>
+          </m.div>
 
           {/* ─────────── Right form panel ─────────── */}
           <m.div
