@@ -11,23 +11,21 @@ export default async function Page() {
   const contratoId = perfil!.contrato_id;
   const supabase = await createClient();
 
-  const [presupuestoData, contratoRes, cantAprobRes] = await Promise.all([
+  const [presupuestoData, contratoRes] = await Promise.all([
     fetchPresupuesto(contratoId),
     supabase.from('contratos').select('valor_contrato').eq('id', contratoId).single(),
-    supabase
-      .from('registros_cantidades')
-      .select('cantidad, precio_unitario, item_pago')
-      .eq('contrato_id', contratoId)
-      .eq('estado', 'APROBADO'),
   ]);
 
   const valorContrato = Number(contratoRes.data?.valor_contrato ?? 0);
-  const cantAprobadas = cantAprobRes.data ?? [];
-  const valorEjecutado = cantAprobadas.reduce(
-    (sum, r) => sum + (Number(r.cantidad) || 0) * (Number(r.precio_unitario) || 0),
+
+  // Derivar KPIs desde la vista (ya incluye ejecución acumulada por item)
+  const valorEjecutado = presupuestoData.items.reduce(
+    (sum, item) => sum + (Number((item as Record<string, unknown>).valor_ejecutado) || 0),
     0,
   );
-  const itemsConEjecucion = new Set(cantAprobadas.map((r) => r.item_pago).filter(Boolean)).size;
+  const itemsConEjecucion = presupuestoData.items.filter(
+    (item) => Number((item as Record<string, unknown>).cantidad_ejecutada) > 0,
+  ).length;
 
   return (
     <PresupuestoClient

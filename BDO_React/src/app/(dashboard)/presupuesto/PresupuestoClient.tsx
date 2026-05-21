@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { ExportCsvButton } from '@/components/shared/ExportCsvButton';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { formatCOP } from '@/lib/utils';
 import type { Rol } from '@/types/database';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -32,7 +32,7 @@ function toNumber(value: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-// â”€â”€â”€ Paleta IDU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Paleta IDU ──────────────────────────────────────────────
 const IDU_BLUE = '#002D57';
 const IDU_GREEN = '#6D8E2D';
 const IDU_TEAL = '#0076B0';
@@ -71,7 +71,7 @@ const TIPOS: Record<
   },
 };
 
-// â”€â”€â”€ Anchos por defecto de la tabla presupuestal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Anchos por defecto de la tabla presupuestal ─────────────
 const DEFAULT_COL_WIDTHS = [110, 220, 55, 95, 110, 120, 95, 120, 130];
 const COL_HEADERS = [
   'Capítulo',
@@ -85,7 +85,7 @@ const COL_HEADERS = [
   'Ejecución',
 ];
 
-// â”€â”€â”€ Hook redimensionamiento de columnas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Hook redimensionamiento de columnas ──────────────────────
 function useColumnResize(defaults: number[]) {
   const [widths, setWidths] = useState<number[]>(defaults);
 
@@ -116,12 +116,15 @@ function useColumnResize(defaults: number[]) {
   return { widths, startResize };
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Helpers ──────────────────────────────────────────────────
 function pctColor(pct: number) {
   if (pct >= 70) return IDU_GREEN;
   if (pct >= 40) return '#FD7E14';
   return '#ED1C24';
 }
+
+// Easing estándar para animaciones de datos
+const EASE_OUT_EXPO = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 function GlobalProgressBar({
   label,
@@ -137,6 +140,13 @@ function GlobalProgressBar({
   total: string;
 }) {
   const fill = pctColor(pct);
+  const [displayPct, setDisplayPct] = useState(0);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDisplayPct(Math.min(pct, 100)));
+    return () => cancelAnimationFrame(id);
+  }, [pct]);
+
   return (
     <div
       className="rounded-lg p-4"
@@ -155,8 +165,12 @@ function GlobalProgressBar({
       </div>
       <div className="h-5 rounded-full overflow-hidden" style={{ background: 'var(--muted)' }}>
         <div
-          className="h-full rounded-full flex items-center justify-end pr-2 transition-all duration-700"
-          style={{ width: `${Math.min(pct, 100)}%`, background: fill }}
+          className="h-full rounded-full flex items-center justify-end pr-2"
+          style={{
+            width: `${displayPct}%`,
+            background: fill,
+            transition: `width 900ms ${EASE_OUT_EXPO}`,
+          }}
         >
           {pct > 8 && <span className="text-[10px] font-bold text-white">{pct.toFixed(1)}%</span>}
         </div>
@@ -186,7 +200,11 @@ function InlineProgressBar({ pct }: { pct: number }) {
       >
         <div
           className="h-full rounded-full"
-          style={{ width: `${Math.min(pct, 100)}%`, background: fill }}
+          style={{
+            width: `${Math.min(pct, 100)}%`,
+            background: fill,
+            transition: `width 500ms ${EASE_OUT_EXPO}`,
+          }}
         />
       </div>
       <span className="text-[10px] font-mono tabular-nums w-10 text-right" style={{ color: fill }}>
@@ -198,6 +216,13 @@ function InlineProgressBar({ pct }: { pct: number }) {
 
 function TypeProgressBar({ pct, label }: { pct: number; label?: string }) {
   const fill = pctColor(pct);
+  const [displayPct, setDisplayPct] = useState(0);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDisplayPct(Math.min(pct, 100)));
+    return () => cancelAnimationFrame(id);
+  }, [pct]);
+
   return (
     <div className="mt-2">
       <div className="flex justify-between mb-1">
@@ -213,7 +238,11 @@ function TypeProgressBar({ pct, label }: { pct: number; label?: string }) {
       <div className="h-3 rounded-full overflow-hidden" style={{ background: 'var(--muted)' }}>
         <div
           className="h-full rounded-full"
-          style={{ width: `${Math.min(pct, 100)}%`, background: fill }}
+          style={{
+            width: `${displayPct}%`,
+            background: fill,
+            transition: `width 700ms ${EASE_OUT_EXPO}`,
+          }}
         />
       </div>
     </div>
@@ -225,17 +254,47 @@ function TabBar({
   active,
   onChange,
 }: { tabs: string[]; active: string; onChange: (t: string) => void }) {
+  const n = tabs.length;
+  const activeIdx = Math.max(0, tabs.indexOf(active));
+
   return (
-    <div className="flex gap-1 rounded-lg p-1" style={{ background: 'var(--muted)' }}>
+    <div className="relative flex rounded-lg p-1" style={{ background: 'var(--muted)' }}>
+      {/* Pill deslizante — hardware-accelerated vía transform */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          top: 4,
+          bottom: 4,
+          left: 4,
+          width: `calc((100% - 8px) / ${n})`,
+          background: IDU_BLUE,
+          borderRadius: 6,
+          transform: `translateX(calc(${activeIdx} * 100%))`,
+          transition: `transform 220ms ${EASE_OUT_EXPO}`,
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      />
       {tabs.map((t) => (
         <button
           key={t}
           type="button"
           onClick={() => onChange(t)}
-          className="flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-all"
-          style={
-            active === t ? { background: IDU_BLUE, color: '#fff' } : { color: 'var(--text-muted)' }
-          }
+          style={{
+            flex: 1,
+            position: 'relative',
+            zIndex: 1,
+            padding: '6px 12px',
+            fontSize: 12,
+            fontWeight: 600,
+            borderRadius: 6,
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            color: active === t ? '#fff' : 'var(--text-muted)',
+            transition: 'color 180ms ease',
+          }}
         >
           {t}
         </button>
@@ -244,7 +303,7 @@ function TabBar({
   );
 }
 
-// â”€â”€â”€ Componente principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Componente principal ────────────────────────────────────
 export default function PresupuestoClient({
   items,
   tramos,
@@ -260,7 +319,7 @@ export default function PresupuestoClient({
   valorEjecutado: number;
   itemsConEjecucion: number;
 }) {
-  // â”€â”€ Filtros â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Filtros ───────────────────────────────────────────────
   const [compFilter, setCompFilter] = useState<string>('Todos');
   const [buscar, setBuscar] = useState('');
 
@@ -292,7 +351,7 @@ export default function PresupuestoClient({
     return list;
   }, [items, compFilter, buscar]);
 
-  // â”€â”€ KPIs financieros â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── KPIs financieros ─────────────────────────────────────
   const kpis = useMemo(() => {
     const pct = valorContrato > 0 ? (valorEjecutado / valorContrato) * 100 : 0;
     return {
@@ -303,36 +362,35 @@ export default function PresupuestoClient({
     };
   }, [valorContrato, valorEjecutado]);
 
-  // â”€â”€ Gráfica por capítulo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Gráfica por capítulo ─────────────────────────────────
   const chartDataCap = useMemo(() => {
-    const by: Record<string, { presupuestado: number; ejecutado: number }> = {};
+    const by: Record<string, { code: string; name: string; presupuestado: number; ejecutado: number }> = {};
     for (const i of itemsFiltrados) {
-      const key = String(i.capitulo ?? i.componente ?? i.compenente ?? 'Sin capítulo');
-      if (!by[key]) by[key] = { presupuestado: 0, ejecutado: 0 };
-      by[key].presupuestado +=
-        toNumber(i.valor_total) || toNumber(i.cantidad) * toNumber(i.precio_unitario);
-      by[key].ejecutado +=
+      const name = String(i.capitulo ?? i.componente ?? i.compenente ?? 'Sin capítulo');
+      const code = String(i.capitulo_num ?? name);
+      if (!by[code]) by[code] = { code, name, presupuestado: 0, ejecutado: 0 };
+      by[code].presupuestado +=
+        toNumber(i.valor_total) || toNumber(i.cantidad_ppto ?? i.cantidad) * toNumber(i.precio_unitario);
+      by[code].ejecutado +=
         toNumber(i.valor_ejecutado) || toNumber(i.cantidad_ejecutada) * toNumber(i.precio_unitario);
     }
-    return Object.entries(by).map(([name, v]) => ({ name, ...v }));
+    return Object.values(by);
   }, [itemsFiltrados]);
 
-  // â”€â”€ Redimensionamiento de columnas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Redimensionamiento de columnas ───────────────────────
   const { widths, startResize } = useColumnResize(DEFAULT_COL_WIDTHS);
   const totalTableWidth = widths.reduce((a, b) => a + b, 0);
 
-  // â”€â”€ Meta física â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Meta física ──────────────────────────────────────────
   const tramosData = useMemo(() => {
     return tramos
       .map((t) => {
         const infra = String(t.infraestructura ?? '').toUpperCase();
-        // meta: preferir meta_fisica, luego derivar por tipo
         const meta = Number(
           t.meta_fisica ??
             (infra === 'CI' ? t.cicloruta_km : infra === 'EP' ? t.esp_publico_m2 : null) ??
             0,
         );
-        // ejecutado puede ser numÃ©rico (cantidad) o booleano legacy
         const ejecRaw = t.ejecutado;
         const ejec =
           typeof ejecRaw === 'boolean'
@@ -374,17 +432,25 @@ export default function PresupuestoClient({
           (t as Record<string, unknown>).id_tramo ??
             (t as Record<string, unknown>).nombre ??
             (t as Record<string, unknown>).id ??
-            'â€”',
+            '—',
         ),
         meta: t._meta,
         ejecutado: t._ejec,
       }));
   }, [tramosData, activeCodigo]);
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const tooltipStyle: React.CSSProperties = {
+    fontSize: 11,
+    borderRadius: 8,
+    border: '1px solid var(--border)',
+    background: 'var(--bg-card)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+  };
+
+  // ─────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
-      {/* â”€â”€ Filtros â”€â”€ */}
+      {/* ── Filtros ── */}
       <div
         className="rounded-xl p-4 space-y-3"
         style={{
@@ -426,7 +492,7 @@ export default function PresupuestoClient({
         </div>
       </div>
 
-      {/* â”€â”€ KPIs financieros â”€â”€ */}
+      {/* ── KPIs financieros ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard
           label="Valor total contrato"
@@ -454,7 +520,7 @@ export default function PresupuestoClient({
         />
       </div>
 
-      {/* â”€â”€ Barra de ejecución global â”€â”€ */}
+      {/* ── Barra de ejecución global ── */}
       <GlobalProgressBar
         label="Ejecución global del presupuesto"
         pct={kpis.pct}
@@ -463,7 +529,7 @@ export default function PresupuestoClient({
         total={formatCOP(kpis.total)}
       />
 
-      {/* â”€â”€ Gráfica por capítulo â”€â”€ */}
+      {/* ── Gráfica por capítulo ── */}
       {chartDataCap.length > 0 && (
         <div
           className="rounded-xl p-4"
@@ -480,21 +546,21 @@ export default function PresupuestoClient({
               barCategoryGap="30%"
             >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+              <XAxis dataKey="code" tick={{ fontSize: 10 }} />
               <YAxis
                 tickFormatter={(v: string | number) => `$${(toNumber(v) / 1_000_000).toFixed(0)}M`}
                 tick={{ fontSize: 10 }}
               />
               <Tooltip
+                labelFormatter={(code: string) => {
+                  const entry = chartDataCap.find((d) => d.code === code);
+                  return entry?.name ?? code;
+                }}
                 formatter={(v: string | number, name: string) => [
                   `$${(toNumber(v) / 1_000_000).toFixed(1)} M`,
-                  name === 'presupuestado' ? 'Presupuestado' : 'Ejecutado',
+                  name,
                 ]}
-                contentStyle={{
-                  fontSize: 11,
-                  borderRadius: 8,
-                  border: '1px solid var(--border)',
-                }}
+                contentStyle={tooltipStyle}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               <Bar
@@ -502,14 +568,27 @@ export default function PresupuestoClient({
                 name="Presupuestado"
                 fill={IDU_BLUE}
                 radius={[4, 4, 0, 0]}
+                isAnimationActive
+                animationDuration={750}
+                animationEasing="ease-out"
+                animationBegin={80}
               />
-              <Bar dataKey="ejecutado" name="Ejecutado" fill={IDU_GREEN} radius={[4, 4, 0, 0]} />
+              <Bar
+                dataKey="ejecutado"
+                name="Ejecutado"
+                fill={IDU_GREEN}
+                radius={[4, 4, 0, 0]}
+                isAnimationActive
+                animationDuration={750}
+                animationEasing="ease-out"
+                animationBegin={200}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
       )}
 
-      {/* â”€â”€ Tabla presupuestal con columnas redimensionables â”€â”€ */}
+      {/* ── Tabla presupuestal con columnas redimensionables ── */}
       <div>
         <div className="flex justify-between items-center mb-2">
           <p className="text-sm font-semibold">Tabla presupuestal</p>
@@ -517,7 +596,6 @@ export default function PresupuestoClient({
         </div>
 
         <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-          {/* contenedor con scroll horizontal + vertical (~10 filas Ã— 38px) */}
           <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 420 }}>
             <table
               style={{
@@ -548,7 +626,6 @@ export default function PresupuestoClient({
                       }}
                     >
                       {h}
-                      {/* Manija de redimensionamiento */}
                       <div
                         onPointerDown={startResize(i)}
                         style={{
@@ -585,7 +662,7 @@ export default function PresupuestoClient({
                   </tr>
                 ) : (
                   itemsFiltrados.map((item: BudgetItem, idx: number) => {
-                    const cantProg = toNumber(item.cantidad ?? item.cantidad_contrato);
+                    const cantProg = toNumber(item.cantidad_ppto ?? item.cantidad ?? item.cantidad_contrato);
                     const pu = toNumber(item.precio_unitario ?? item.valor_unitario);
                     const vProg = toNumber(item.valor_total) || cantProg * pu;
                     const cantEjec = toNumber(item.cantidad_ejecutada);
@@ -605,6 +682,7 @@ export default function PresupuestoClient({
                         key={String(item.id ?? idx)}
                         style={{
                           background: idx % 2 === 0 ? 'transparent' : 'var(--muted)',
+                          transition: 'background 150ms ease',
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.background =
@@ -619,16 +697,16 @@ export default function PresupuestoClient({
                           style={cellStyle}
                           title={String(item.capitulo ?? item.componente ?? '')}
                         >
-                          {String(item.capitulo ?? item.componente ?? item.compenente ?? 'â€”')}
+                          {String(item.capitulo ?? item.componente ?? item.compenente ?? '—')}
                         </td>
                         <td
                           style={cellStyle}
                           title={String(item.actividad ?? item.descripcion ?? '')}
                         >
-                          {String(item.actividad ?? item.descripcion ?? 'â€”')}
+                          {String(item.actividad ?? item.descripcion ?? '—')}
                         </td>
                         <td style={{ ...cellStyle, fontFamily: 'monospace' }}>
-                          {String(item.unidad ?? item.und ?? 'â€”')}
+                          {String(item.unidad ?? item.und ?? '—')}
                         </td>
                         <td
                           style={{
@@ -692,14 +770,14 @@ export default function PresupuestoClient({
         </div>
 
         <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-muted)' }}>
-          {itemsFiltrados.length} ítems Â· arrastra el borde de la columna para redimensionar Â·
+          {itemsFiltrados.length} ítems · arrastra el borde de la columna para redimensionar ·
           desplaza verticalmente para ver más
         </p>
       </div>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SECCIÓN META FÍSICA â€” siempre visible
-          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* ══════════════════════════════════════════════════════
+          SECCIÓN META FÍSICA — siempre visible
+          ══════════════════════════════════════════════════ */}
       {tramos.length === 0 ? (
         <div
           className="rounded-xl p-6 text-center"
@@ -708,7 +786,7 @@ export default function PresupuestoClient({
             border: '1px solid var(--border)',
           }}
         >
-          
+
         </div>
       ) : tramosData.length === 0 ? (
         <div
@@ -725,7 +803,7 @@ export default function PresupuestoClient({
         </div>
       ) : (
         <>
-          {/* â”€â”€ KPIs acumulados por tipo â”€â”€ */}
+          {/* ── KPIs acumulados por tipo ── */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {Object.entries(TIPOS).map(([codigo, info]) => {
               const k = metaKpis[codigo] ?? {
@@ -748,7 +826,7 @@ export default function PresupuestoClient({
                     label={info.nombre}
                     value={`${k.ejec.toLocaleString('es-CO', { maximumFractionDigits: 1 })} / ${k.meta.toLocaleString('es-CO', { maximumFractionDigits: 1 })} ${info.und}`}
                     accent={info.accent}
-                    sublabel={`${k.count} tramo(s) Â· Pendiente: ${Math.max(k.meta - k.ejec, 0).toLocaleString('es-CO', { maximumFractionDigits: 1 })} ${info.und}`}
+                    sublabel={`${k.count} tramo(s) · Pendiente: ${Math.max(k.meta - k.ejec, 0).toLocaleString('es-CO', { maximumFractionDigits: 1 })} ${info.und}`}
                   />
                   <TypeProgressBar pct={k.pct} label="Avance" />
                 </div>
@@ -756,7 +834,7 @@ export default function PresupuestoClient({
             })}
           </div>
 
-          {/* â”€â”€ Dashboard por tramo con tabs â”€â”€ */}
+          {/* ── Dashboard por tramo con tabs ── */}
           <div
             className="rounded-xl p-4 space-y-4"
             style={{
@@ -775,7 +853,7 @@ export default function PresupuestoClient({
                 {/* Gráfica barras */}
                 <div className="lg:col-span-3">
                   <p className="text-xs font-semibold mb-3" style={{ color: 'var(--text-muted)' }}>
-                    Meta física vs Ejecutado â€” {activeTab} ({TIPOS[activeCodigo].und})
+                    Meta física vs Ejecutado — {activeTab} ({TIPOS[activeCodigo].und})
                   </p>
                   <ResponsiveContainer width="100%" height={320}>
                     <BarChart
@@ -812,11 +890,7 @@ export default function PresupuestoClient({
                         }}
                       />
                       <Tooltip
-                        contentStyle={{
-                          fontSize: 11,
-                          borderRadius: 8,
-                          border: '1px solid var(--border)',
-                        }}
+                        contentStyle={tooltipStyle}
                         formatter={(v: string | number, name: string) => [
                           `${toNumber(v).toLocaleString('es-CO', { maximumFractionDigits: 2 })} ${TIPOS[activeCodigo].und}`,
                           name === 'meta' ? 'Meta física' : 'Ejecutado',
@@ -831,12 +905,20 @@ export default function PresupuestoClient({
                         name="meta"
                         fill={TIPOS[activeCodigo].colorMeta}
                         radius={[4, 4, 0, 0]}
+                        isAnimationActive
+                        animationDuration={750}
+                        animationEasing="ease-out"
+                        animationBegin={80}
                       />
                       <Bar
                         dataKey="ejecutado"
                         name="ejecutado"
                         fill={TIPOS[activeCodigo].colorEjec}
                         radius={[4, 4, 0, 0]}
+                        isAnimationActive
+                        animationDuration={750}
+                        animationEasing="ease-out"
+                        animationBegin={200}
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -882,7 +964,10 @@ export default function PresupuestoClient({
                                   (t as Record<string, unknown>).id ??
                                   idx,
                               )}
-                              style={{ borderTop: '1px solid var(--border)' }}
+                              style={{
+                                borderTop: '1px solid var(--border)',
+                                transition: 'background 150ms ease',
+                              }}
                             >
                               <td
                                 style={{
@@ -895,7 +980,7 @@ export default function PresupuestoClient({
                                   (t as Record<string, unknown>).id_tramo ??
                                     (t as Record<string, unknown>).nombre ??
                                     (t as Record<string, unknown>).id ??
-                                    'â€”',
+                                    '—',
                                 )}
                               </td>
                               <td
