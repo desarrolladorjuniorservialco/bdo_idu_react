@@ -267,48 +267,6 @@ export default function LoginPage() {
               </p>
             </m.div>
 
-            {/* Bottom: Powered by Servialco */}
-            <div
-              style={{
-                position: 'relative',
-                zIndex: 2,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 14,
-              }}
-            >
-              <div style={{ opacity: 0.8 }}>
-                <ServialcoMark />
-              </div>
-              <div>
-                <p
-                  style={{
-                    fontSize: 9,
-                    letterSpacing: '0.18em',
-                    color: 'rgba(255,255,255,0.7)',
-                    textTransform: 'uppercase',
-                    marginBottom: 3,
-                    fontFamily: ff,
-                    fontWeight: 600,
-                  }}
-                >
-                  Powered by
-                </p>
-                <p
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 800,
-                    color: '#FFFFFF',
-                    letterSpacing: '0.05em',
-                    fontFamily: ff,
-                  }}
-                >
-                  Servialco
-                </p>
-              </div>
-            </div>
-          </m.div>
-
           {/* ─────────── Right form panel ─────────── */}
           <m.div
             className="flex-1 flex items-center justify-center"
