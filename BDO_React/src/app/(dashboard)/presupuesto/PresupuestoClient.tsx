@@ -310,7 +310,7 @@ export default function PresupuestoClient({
       const key = String(i.capitulo ?? i.componente ?? i.compenente ?? 'Sin capítulo');
       if (!by[key]) by[key] = { presupuestado: 0, ejecutado: 0 };
       by[key].presupuestado +=
-        toNumber(i.valor_total) || toNumber(i.cantidad) * toNumber(i.precio_unitario);
+        toNumber(i.valor_total) || toNumber(i.cantidad_ppto ?? i.cantidad) * toNumber(i.precio_unitario);
       by[key].ejecutado +=
         toNumber(i.valor_ejecutado) || toNumber(i.cantidad_ejecutada) * toNumber(i.precio_unitario);
     }
@@ -585,7 +585,7 @@ export default function PresupuestoClient({
                   </tr>
                 ) : (
                   itemsFiltrados.map((item: BudgetItem, idx: number) => {
-                    const cantProg = toNumber(item.cantidad ?? item.cantidad_contrato);
+                    const cantProg = toNumber(item.cantidad_ppto ?? item.cantidad ?? item.cantidad_contrato);
                     const pu = toNumber(item.precio_unitario ?? item.valor_unitario);
                     const vProg = toNumber(item.valor_total) || cantProg * pu;
                     const cantEjec = toNumber(item.cantidad_ejecutada);
