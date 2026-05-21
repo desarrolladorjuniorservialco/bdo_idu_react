@@ -14,7 +14,7 @@ Aplicación web para seguimiento y aprobación de contratos de obra civil en cam
 6. [Integración Continua y Despliegue (CI/CD)](#6-integración-continua-y-despliegue-cicd)
 7. [Límites de Infraestructura](#7-límites-de-infraestructura)
 8. [Variables de Entorno y Seguridad](#8-variables-de-entorno-y-seguridad)
-9. [Flujo de datos y contacto con el sync Python](#9-flujo-de-datos-y-contacto-con-el-sync-python)
+9. [Flujo de datos y contacto con el sync Python](#9-flujo-de-datos-y-contacto-con-el-sync-python) · [9.5 Proxy de fotos](#95-proxy-de-fotos-apifoto)
 10. [Estado de la aplicación (Zustand)](#10-estado-de-la-aplicación-zustand)
 11. [Flujo de aprobación](#11-flujo-de-aprobación)
 12. [Estructura de archivos](#12-estructura-de-archivos)
@@ -91,10 +91,7 @@ En `next.config.ts`:
 
 - **`output: 'standalone'`** — genera un build autocontenido (incluye solo las dependencias necesarias). Permite despliegue en Docker, aunque el destino actual es Vercel.
 - **`optimizePackageImports`** — tree-shaking agresivo sobre `lucide-react`, `recharts`, `framer-motion` y `@icons-pack/react-simple-icons`. Solo los símbolos importados se incluyen en el bundle.
-- **`images.remotePatterns`** — permite optimización de imágenes desde tres orígenes:
-  - `*.supabase.co/storage/v1/object/public/**` — legado (fotos antiguas aún en Supabase Storage).
-  - `drive.google.com/thumbnail` — thumbnail directo de archivos Google Drive (usado actualmente para fotos de obra).
-  - `lh3.googleusercontent.com` — CDN de Google para imágenes de Drive.
+- **`images.remotePatterns`** — permite optimización de imágenes desde `*.supabase.co/storage/v1/object/public/**` (legado). Las fotos de Google Drive se sirven a través del proxy interno `/api/foto` y no requieren dominio externo en esta lista.
 
 ---
 
@@ -443,12 +440,47 @@ Las tablas `rf_*` **no tienen FK** hacia las tablas `registros_*`. La relación 
 | Columna BD | Campo en `FotoRegistro` | Descripción |
 |---|---|---|
 | `folio` | `folio` | Clave de agrupación (enlaza foto↔formulario) |
-| `foto_url` | `url` | URL de Google Drive (viewer) — `PhotoGrid` la convierte a thumbnail |
+| `foto_url` | `url` | URL viewer de Google Drive — `PhotoGrid` extrae el `file_id` y genera `/api/foto?id={file_id}` |
 | `observaciones` / `observacion` | `descripcion` | Texto descriptivo opcional |
 
-`PhotoGrid` usa la función `toImageSrc()` para transformar la URL del viewer (`/file/d/{id}/view`) a la URL de thumbnail (`/thumbnail?id={id}&sz=w1024`) que Next.js `<Image>` puede cargar directamente. El `href` del enlace sigue apuntando al viewer de Drive para que el usuario pueda abrir la foto en tamaño completo.
+`PhotoGrid` usa `toImageSrc()` para convertir la URL del viewer de Drive (`/file/d/{id}/view`) a una URL del proxy interno `/api/foto?id={id}`. El `href` del enlace sigue apuntando al viewer original para abrir la foto en tamaño completo en Google Drive.
 
-### 9.5 Revalidación de caché tras mutaciones
+### 9.5 Proxy de fotos (`/api/foto`)
+
+**Archivo:** `src/app/api/foto/route.ts`
+
+Las fotos de obra se almacenan en Google Drive (Unidad Compartida) y no son accesibles públicamente. El proxy permite que cualquier usuario autenticado en la app vea las fotos sin necesidad de tener acceso directo a Drive.
+
+**Flujo de una petición de imagen:**
+```
+Browser
+    │  GET /api/foto?id={file_id}
+    ▼
+Route Handler (Vercel serverless)
+    │  obtiene access_token (OAuth2 refresh — cacheado por instancia)
+    │  GET drive/v3/files/{id}?fields=thumbnailLink  →  thumbnail (≈50–150 KB)
+    │  fallback: GET drive/v3/files/{id}?alt=media   →  archivo completo
+    ▼
+Vercel CDN edge — cachea la imagen 24 h (Cache-Control: public)
+    │  segunda petición → sirve desde el edge sin tocar Drive
+    ▼
+Browser — renderiza la foto
+```
+
+**Variables de entorno requeridas (Vercel Secrets):**
+
+| Variable | Descripción |
+|---|---|
+| `GOOGLE_CLIENT_ID` | OAuth2 client ID de Google |
+| `GOOGLE_CLIENT_SECRET` | OAuth2 client secret |
+| `GOOGLE_REFRESH_TOKEN` | Refresh token con acceso a Drive |
+
+**Decisiones de rendimiento:**
+- **Thumbnail en vez del archivo completo:** `thumbnailLink` de la API de Drive devuelve una imagen de ≈50–150 KB (frente a los 700–900 KB del archivo comprimido por el sync). Se ajusta a `=s800` para calidad adecuada en el grid.
+- **Sin verificación de sesión Supabase en el proxy:** el middleware Edge ya protege todas las rutas del dashboard. Los `file_id` de Drive son UUIDs de 33 caracteres —indescifrables en la práctica—, lo que sustituye la comprobación de sesión en este endpoint específico.
+- **`Cache-Control: public`:** permite que el CDN de Vercel cachee la imagen en el edge. La primera carga descarga desde Drive; las cargas posteriores (de cualquier usuario) se sirven desde el edge más cercano en ≤10 ms.
+
+### 9.6 Revalidación de caché tras mutaciones
 
 Las Server Actions usan `revalidatePath()` de Next.js para invalidar páginas cacheadas después de cada mutación:
 

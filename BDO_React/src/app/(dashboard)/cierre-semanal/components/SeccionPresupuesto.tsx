@@ -1,4 +1,5 @@
 import { KpiCard } from '@/components/shared/KpiCard';
+import { BarChart2 } from 'lucide-react';
 import { computeMetaKpis, computePresupuestoKpis, formatCOP } from '../cierre-semanal.utils';
 
 const TIPOS = {
@@ -34,7 +35,35 @@ export function SeccionPresupuesto({ items, tramos }: Props) {
   const metaKpis = computeMetaKpis(tramos);
 
   return (
-    <section>
+    <section className="p-5 sm:p-6">
+      <div
+        className="flex items-start justify-between mb-5 pb-4"
+        style={{ borderBottom: '1px solid var(--border)' }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
+            style={{
+              background: 'color-mix(in srgb, var(--accent-green) 12%, transparent)',
+              color: 'var(--accent-green)',
+            }}
+          >
+            <BarChart2 size={18} />
+          </div>
+          <div>
+            <h2
+              className="text-[15px] font-semibold leading-tight"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              Presupuesto y Avance
+            </h2>
+            <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              Ejecución financiera y metas físicas del contrato
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <KpiCard
           label="Valor total contrato"
@@ -63,8 +92,8 @@ export function SeccionPresupuesto({ items, tramos }: Props) {
       </div>
 
       <p
-        className="text-xs font-semibold uppercase tracking-wide mb-2"
-        style={{ color: 'var(--text-muted)' }}
+        className="text-[13px] font-semibold mb-3"
+        style={{ color: 'var(--text-primary)' }}
       >
         Meta Física
       </p>

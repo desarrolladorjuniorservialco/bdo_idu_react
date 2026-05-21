@@ -1,4 +1,4 @@
-﻿import Image from 'next/image';
+import Image from 'next/image';
 
 interface Foto {
   url: string;
@@ -7,12 +7,8 @@ interface Foto {
 
 function toImageSrc(url: string): string {
   const match = url.match(/\/file\/d\/([^/?#]+)/);
-  if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1024`;
+  if (match) return `/api/foto?id=${match[1]}`;
   return url;
-}
-
-function isDriveUrl(url: string): boolean {
-  return url.includes('drive.google.com');
 }
 
 export function PhotoGrid({ fotos }: { fotos: Foto[] }) {
@@ -38,7 +34,7 @@ export function PhotoGrid({ fotos }: { fotos: Foto[] }) {
                 fill
                 sizes="(max-width: 640px) 50vw, 25vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-200"
-                unoptimized={isDriveUrl(f.url)}
+                unoptimized
               />
             </div>
             {f.descripcion && (

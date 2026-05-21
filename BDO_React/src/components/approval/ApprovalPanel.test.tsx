@@ -27,6 +27,25 @@ const registroBorrador = {
 
 const registroRevisado = { ...registroBorrador, id: 'r2', estado: 'REVISADO' };
 
+const registroConCampos = {
+  ...registroBorrador,
+  tramo_descripcion: 'Tramo Norte',
+  civ: '1234567',
+  codigo_elemento: 'EP-01',
+  unidad: 'm²',
+  item_pago: '3.1.1',
+};
+
+// Fixture para registros_reporte_diario
+const registroDiarioBorrador = {
+  ...registroBorrador,
+  id_tramo: 'T-05',
+  civ: '9876543',
+  pk_id: 'PK-10',
+  unidad: 'ml',
+  // sin item_pago
+};
+
 describe('ApprovalPanel', () => {
   it('obra ve formulario aprobar pero NO formulario devolver', () => {
     render(
@@ -104,5 +123,88 @@ describe('ApprovalPanel', () => {
     );
     const input = screen.getByLabelText(/cantidad validada/i) as HTMLInputElement;
     expect(Number(input.value)).toBe(7);
+  });
+
+  // --- Tests: sección corrección de datos ---
+
+  it('obra ve sección "Corrección de datos del registro" cuando puedeAccionar', () => {
+    render(
+      <ApprovalPanel
+        registro={registroConCampos}
+        rol="obra"
+        tabla="registros_cantidades"
+        rutaRevalidar="/reporte-cantidades"
+      />,
+    );
+    expect(screen.getByText(/corrección de datos del registro/i)).toBeInTheDocument();
+  });
+
+  it('campos editables se pre-llenan con los valores actuales del registro', () => {
+    render(
+      <ApprovalPanel
+        registro={registroConCampos}
+        rol="obra"
+        tabla="registros_cantidades"
+        rutaRevalidar="/reporte-cantidades"
+      />,
+    );
+    expect(screen.getByLabelText(/tramo/i) as HTMLInputElement).toHaveValue('Tramo Norte');
+    expect(screen.getByLabelText(/civ/i) as HTMLInputElement).toHaveValue('1234567');
+    expect(screen.getByLabelText(/cód\. elemento/i) as HTMLInputElement).toHaveValue('EP-01');
+    expect(screen.getByLabelText(/unidad/i) as HTMLInputElement).toHaveValue('m²');
+    expect(screen.getByLabelText(/ítem de pago/i) as HTMLInputElement).toHaveValue('3.1.1');
+  });
+
+  it('operativo no ve sección corrección de datos', () => {
+    render(
+      <ApprovalPanel
+        registro={registroConCampos}
+        rol="operativo"
+        tabla="registros_cantidades"
+        rutaRevalidar="/reporte-cantidades"
+      />,
+    );
+    expect(screen.queryByText(/corrección de datos del registro/i)).not.toBeInTheDocument();
+  });
+
+  // --- Tests: registros_reporte_diario ---
+
+  it('diario: obra ve sección corrección de datos', () => {
+    render(
+      <ApprovalPanel
+        registro={registroDiarioBorrador}
+        rol="obra"
+        tabla="registros_reporte_diario"
+        rutaRevalidar="/anotaciones-diario"
+      />,
+    );
+    expect(screen.getByText(/corrección de datos del registro/i)).toBeInTheDocument();
+  });
+
+  it('diario: campos se pre-llenan desde id_tramo y pk_id', () => {
+    render(
+      <ApprovalPanel
+        registro={registroDiarioBorrador}
+        rol="obra"
+        tabla="registros_reporte_diario"
+        rutaRevalidar="/anotaciones-diario"
+      />,
+    );
+    expect(screen.getByLabelText(/tramo/i) as HTMLInputElement).toHaveValue('T-05');
+    expect(screen.getByLabelText(/civ/i) as HTMLInputElement).toHaveValue('9876543');
+    expect(screen.getByLabelText(/cód\. elemento/i) as HTMLInputElement).toHaveValue('PK-10');
+    expect(screen.getByLabelText(/unidad/i) as HTMLInputElement).toHaveValue('ml');
+  });
+
+  it('diario: no se muestra campo ítem de pago', () => {
+    render(
+      <ApprovalPanel
+        registro={registroDiarioBorrador}
+        rol="obra"
+        tabla="registros_reporte_diario"
+        rutaRevalidar="/anotaciones-diario"
+      />,
+    );
+    expect(screen.queryByLabelText(/ítem de pago/i)).not.toBeInTheDocument();
   });
 });

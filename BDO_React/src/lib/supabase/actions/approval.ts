@@ -1,7 +1,7 @@
 'use server';
 import { APROBACION_CONFIG } from '@/lib/config';
 import { createClient } from '@/lib/supabase/server';
-import { aprobacionSchema, devolucionSchema } from '@/lib/validators/approval.schema';
+import { aprobacionSchema, devolucionSchema, camposEditablesSchema, type CamposEditables } from '@/lib/validators/approval.schema';
 import type { Rol } from '@/types/database';
 import { revalidatePath } from 'next/cache';
 
@@ -12,6 +12,7 @@ export async function aprobar(
   cantidadValidada: number,
   observacion: string | undefined,
   rutaRevalidar: string,
+  camposEditables?: CamposEditables,
 ) {
   const parsed = aprobacionSchema.parse({ cantidad_validada: cantidadValidada, observacion });
   const config = APROBACION_CONFIG[rol];
@@ -32,6 +33,16 @@ export async function aprobar(
     throw new Error(`Transicion invalida desde estado ${current?.estado ?? 'NULO'}`);
   }
 
+  const campoTramo = tabla === 'registros_cantidades' ? 'tramo_descripcion'
+    : tabla === 'registros_reporte_diario' ? 'id_tramo'
+    : 'tramo';
+
+  const campoCodigo = tabla === 'registros_reporte_diario' ? 'pk_id' : 'codigo_elemento';
+
+  const parsedCampos = camposEditables
+    ? camposEditablesSchema.parse(camposEditables)
+    : undefined;
+
   const payload: Record<string, unknown> = {
     estado: config.estadoResultante,
     [config.campos.campo_cant]: parsed.cantidad_validada,
@@ -39,6 +50,13 @@ export async function aprobar(
     [config.campos.campo_apr]: user?.id,
     [config.campos.campo_estado]: 'aprobado',
     [config.campos.campo_fecha]: new Date().toISOString(),
+    ...(parsedCampos && {
+      [campoTramo]: parsedCampos.tramo,
+      civ: parsedCampos.civ,
+      [campoCodigo]: parsedCampos.codigo_elemento,
+      unidad: parsedCampos.unidad,
+      ...(tabla !== 'registros_reporte_diario' && { item_pago: parsedCampos.item_pago }),
+    }),
   };
 
   const { error } = await supabase.from(tabla).update(payload).eq('id', registroId);
@@ -54,6 +72,7 @@ export async function devolver(
   rol: Rol,
   observacion: string,
   rutaRevalidar: string,
+  camposEditables?: CamposEditables,
 ) {
   const parsed = devolucionSchema.parse({ observacion });
   const config = APROBACION_CONFIG[rol];
@@ -75,12 +94,29 @@ export async function devolver(
     throw new Error(`Transicion invalida desde estado ${current?.estado ?? 'NULO'}`);
   }
 
+  const campoTramo = tabla === 'registros_cantidades' ? 'tramo_descripcion'
+    : tabla === 'registros_reporte_diario' ? 'id_tramo'
+    : 'tramo';
+
+  const campoCodigo = tabla === 'registros_reporte_diario' ? 'pk_id' : 'codigo_elemento';
+
+  const parsedCampos = camposEditables
+    ? camposEditablesSchema.parse(camposEditables)
+    : undefined;
+
   const payload: Record<string, unknown> = {
     estado: 'DEVUELTO',
     [config.campos.campo_obs]: parsed.observacion,
     [config.campos.campo_apr]: user?.id,
     [config.campos.campo_estado]: 'devuelto',
     [config.campos.campo_fecha]: new Date().toISOString(),
+    ...(parsedCampos && {
+      [campoTramo]: parsedCampos.tramo,
+      civ: parsedCampos.civ,
+      [campoCodigo]: parsedCampos.codigo_elemento,
+      unidad: parsedCampos.unidad,
+      ...(tabla !== 'registros_reporte_diario' && { item_pago: parsedCampos.item_pago }),
+    }),
   };
 
   const { error } = await supabase.from(tabla).update(payload).eq('id', registroId);

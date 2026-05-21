@@ -55,10 +55,13 @@ export interface RegistroCantidad {
   folio: string;
   fecha_creacion: string;
   tramo?: string;
+  tramo_descripcion?: string;   // columna real en registros_cantidades
   civ?: string;
+  codigo_elemento?: string;     // columna pk_id / codigo_elemento
   capitulo?: string;
   actividad: string;
   unidad: string;
+  item_pago?: string;           // columna item_pago
   cantidad: number;
   precio_unitario: number;
   estado: Estado;
@@ -84,6 +87,10 @@ export interface RegistroComponente {
   tipo_actividad?: string;
   actividad?: string;
   tramo?: string;
+  civ?: string;                 // columna civ
+  codigo_elemento?: string;     // columna codigo_elemento
+  unidad?: string;              // columna unidad
+  item_pago?: string;           // columna item_pago
   descripcion?: string;
   estado: Estado;
   cant_residente?: number;

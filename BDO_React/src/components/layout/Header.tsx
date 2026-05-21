@@ -3,9 +3,10 @@ import { ROL_LABELS } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotifStore } from '@/stores/notifStore';
+import { useSidebarStore } from '@/stores/sidebarStore';
 import { useThemeStore } from '@/stores/themeStore';
 import type { Perfil } from '@/types/database';
-import { Bell, ChevronRight, LogOut, Moon, Sun } from 'lucide-react';
+import { Bell, ChevronRight, LogOut, Menu, Moon, Sun } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
@@ -20,6 +21,7 @@ export function Header({ perfil }: HeaderProps) {
   const unread = notifs.filter((n) => !n.leida).length;
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggle);
+  const openMobileSidebar = useSidebarStore((s) => s.openMobile);
 
   async function handleLogout() {
     const supabase = createClient();
@@ -39,16 +41,27 @@ export function Header({ perfil }: HeaderProps) {
 
   return (
     <header
-      className="sticky top-0 z-40 flex items-center justify-between h-14 px-6"
+      className="sticky top-0 z-40 flex items-center justify-between h-14 px-3 sm:px-6"
       style={{
         background: 'var(--bg-card)',
         borderBottom: '1px solid var(--border)',
         boxShadow: 'var(--shadow-sm)',
       }}
     >
+      {/* Hamburger móvil */}
+      <button
+        type="button"
+        onClick={openMobileSidebar}
+        aria-label="Abrir menú de navegación"
+        className="flex md:hidden items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150 hover:bg-[var(--muted)] mr-1 shrink-0"
+        style={{ color: 'var(--text-muted)' }}
+      >
+        <Menu className="h-5 w-5" aria-hidden="true" />
+      </button>
+
       {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-sm">
-        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+      <div className="flex items-center gap-1.5 text-sm min-w-0">
+        <span className="font-medium truncate max-w-[120px] sm:max-w-none" style={{ color: 'var(--text-primary)' }}>
           {perfil.nombre}
         </span>
         <ChevronRight className="h-3.5 w-3.5" style={{ color: 'var(--text-muted)' }} />
