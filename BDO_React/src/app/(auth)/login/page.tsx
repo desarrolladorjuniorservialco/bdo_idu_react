@@ -111,7 +111,7 @@ export default function LoginPage() {
         <div style={{ minHeight: '100vh', display: 'flex', fontFamily: ff }}>
           {/* ─────────── Left branding panel ─────────── */}
           <m.div
-            className="hidden lg:flex lg:w-[46%] flex-col justify-between relative overflow-hidden"
+            className="hidden lg:flex lg:w-[46%] flex-col justify-center relative overflow-hidden"
             style={{
               backgroundColor: '#061526', // Color de respaldo
               padding: '52px',
@@ -191,7 +191,7 @@ export default function LoginPage() {
             </div>
 
             {/* Top accent */}
-            <div style={{ position: 'relative', zIndex: 2 }}>
+            <div style={{ position: 'absolute', top: 52, left: 52, zIndex: 2 }}>
               <m.div
                 style={{
                   height: 2,
